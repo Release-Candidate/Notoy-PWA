@@ -1,0 +1,14 @@
+;; shadow-cljs configuration
+{:source-paths
+ ["src/dev"
+  "src/main"
+  "src/test"]
+
+ :dependencies
+ [[cider/cider-nrepl "RELEASE"], [reagent "1.1.0"]]
+
+ :dev-http {8080 "public"}
+
+ :builds
+ {:pwa {:target :browser
+        :modules {:main {:init-fn rc.notoy.app/init}}}}}

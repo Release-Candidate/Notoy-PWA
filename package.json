@@ -1,0 +1,14 @@
+{
+  "name": "notoy",
+  "version": "0.0.1",
+  "private": true,
+  "devDependencies": {
+    "shadow-cljs": "2.16.6"
+  },
+  "dependencies": {
+    "create-react-class": "^15.7.0",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-markdown": "^7.1.0"
+  }
+}

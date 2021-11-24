@@ -14,7 +14,7 @@
 
 (def root
   "The root div of the HTML, the div for the Reagent app to render to."
-  (.querySelector js/document "#root"))
+  (js/document.querySelector  "#root"))
 
 (defn init
   "Main Entry point of the PWA."
@@ -22,4 +22,7 @@
   (rdom/render
    [:div
     [:h1 "Reagent!"]
-    [:p "This is my PWA."]] root))
+    [:p "This is my PWA."]]
+   root)
+  (let [worker (js/Worker. "js/worker.js")]
+    (.. worker (postMessage "Hi to Worker!"))))

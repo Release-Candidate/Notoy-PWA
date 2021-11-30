@@ -1,3 +1,5 @@
 node_modules/
 .spago/
 output/
+packages.dhall/
+/.psc-ide-port

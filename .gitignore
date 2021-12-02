@@ -1,5 +1,8 @@
 node_modules/
 .spago/
+.cache/
 output/
 packages.dhall/
 /.psc-ide-port
+dist/
+.parcel-cache/

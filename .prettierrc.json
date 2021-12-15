@@ -1,12 +1,12 @@
 {
     "bracketSameLine": true,
-     "tabWidth": 4,
-     "useTabs": false,
-     "htmlWhitespaceSensitivity": "ignore",
-     "semi": false,
-     "bracketSpacing": true,
-     "arrowParens": "always",
-     "endOfLine": "lf",
-     "proseWrap": "preserve",
-     "singleQuote": false
+    "tabWidth": 4,
+    "useTabs": false,
+    "htmlWhitespaceSensitivity": "ignore",
+    "semi": false,
+    "bracketSpacing": true,
+    "arrowParens": "always",
+    "endOfLine": "lf",
+    "proseWrap": "preserve",
+    "singleQuote": false
 }

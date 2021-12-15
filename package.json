@@ -15,14 +15,13 @@
       "test": "spago test",
       "repl": "spago repl",
       "bundle": "gulp bundle",
-      "server": "gulp serve"
+      "serve": "parcel --open"
    },
    "devDependencies": {
       "delete": "^1.1.0",
       "eslint": "^8.3.0",
       "gulp": "^4.0.2",
       "gulp-cli": "^2.3.0",
-      "gulp-webserver": "^0.9.1",
       "parcel": "^2.0.1",
       "parcel-bundler": "^1.12.5",
       "spago": "^0.20.3"

@@ -59,12 +59,12 @@
         },
         {
             "type": "npm",
-            "script": "server",
+            "script": "serve",
             "problemMatcher": [
                 "$gulp-tsc"
             ],
-            "label": "npm: server",
-            "detail": "gulp serve"
+            "label": "npm: serve",
+            "detail": "parcel --open"
         }
     ]
 }

@@ -14,9 +14,6 @@ const { series, parallel } = require("gulp")
 // eslint-disable-next-line no-undef
 const { src, dest } = require("gulp")
 
-// eslint-disable-next-line no-var
-var server = require("gulp-webserver")
-
 // eslint-disable-next-line no-undef
 const { exec } = require("child_process")
 
@@ -42,12 +39,16 @@ function runSpago() {
 //==============================================================================
 // Start HTTP server.
 function runHTTP() {
-    return src("dist").pipe(
-        server({
-            livereload: true,
-            open: true,
-            port: 8080,
-        })
+    return exec(
+        "parcel --open",
+        (error, stdout, stderr) => {
+            if (error) {
+                console.error(`exec error: ${error}`)
+                return
+            }
+            console.log(`stdout: ${stdout}`)
+            console.log(`stderr: ${stderr}`)
+        }
     )
 }
 

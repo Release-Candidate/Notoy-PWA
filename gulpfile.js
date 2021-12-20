@@ -79,7 +79,7 @@ function runSpago() {
 //==============================================================================
 // Start HTTP server.
 function runHTTP() {
-    return exec("parcel --open", (error, stdout, stderr) => {
+    return exec("parcel --open --https", (error, stdout, stderr) => {
         if (error) {
             console.error(`exec error: ${error}`)
             return
@@ -92,7 +92,7 @@ function runHTTP() {
 //==============================================================================
 // Run parcel-bundle on `index.html`.
 function runParcel() {
-    return exec("parcel build", (error, stdout, stderr) => {
+    return exec("parcel --https", (error, stdout, stderr) => {
         if (error) {
             console.error(`exec error: ${error}`)
             return

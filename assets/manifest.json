@@ -1,10 +1,10 @@
 {
     "$schema": "https://json.schemastore.org/web-manifest-combined.json",
-    "name": "HackerWeb",
-    "short_name": "HackerWeb",
+    "name": "Notoy",
+    "short_name": "Notoy",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#fff",
     "version": "0.0.0",
-    "description": "A readable Hacker News app."
+    "description": "Notoy."
 }

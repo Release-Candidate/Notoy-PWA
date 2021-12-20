@@ -1,0 +1,10 @@
+{
+    "$schema": "https://json.schemastore.org/web-manifest-combined.json",
+    "name": "HackerWeb",
+    "short_name": "HackerWeb",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#fff",
+    "version": "0.0.0",
+    "description": "A readable Hacker News app."
+}

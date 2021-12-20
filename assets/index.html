@@ -1,22 +1,24 @@
 <!DOCTYPE html>
 <html>
+    <head>
+        <meta charset="utf-8" />
+        <link rel="manifest" href="manifest.json" />
+        <script type="module">
+            if ("serviceWorker" in navigator) {
+                navigator.serviceWorker
+                    .register(
+                        new URL("../src/service_worker/sw.js", import.meta.url),
+                        { type: "module" }
+                    )
+                    .then(function () {
+                        console.log("Service Worker Registered")
+                    })
+            }
+        </script>
+    </head>
 
-<head>
-    <meta charset="utf-8" />
-    <script type="module">
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker
-                .register(new URL('../src/service_worker/sw.js', import.meta.url),
-                    { type: 'module' })
-                .then(function () { console.log("Service Worker Registered"); });
-        }
-    </script>
-</head>
-
-<body>
-    <div id="root">
-
-    </div>
-    <script src="../output/app.js"></script>
-</body>
+    <body>
+        <div id="root"></div>
+        <script src="../output/app.js"></script>
+    </body>
 </html>

@@ -20,6 +20,46 @@ const { exec } = require("child_process")
 // eslint-disable-next-line no-undef
 const del = require("delete")
 
+// eslint-disable-next-line no-undef
+const replace = require("gulp-string-replace")
+
+// eslint-disable-next-line no-undef
+const fs = require("fs")
+
+//==============================================================================
+// Replace Version
+
+function scanChangelogVersion() {
+    let version = ""
+    try {
+        const data = fs.readFileSync("./CHANGELOG.md", "utf8")
+        const match = data
+            .toString()
+            .match(/##\s+Version\s+(?<versionMatch>[0-9]+.[0-9]+.[0-9]+)/u)
+        version = match.groups.versionMatch
+    } catch (err) {
+        // eslint-disable-next-line no-console
+        console.log(err)
+    }
+
+    return version
+}
+
+function replaceVersion(dirName, version) {
+    return src("./" + dirName + "/manifest.json")
+        .pipe(
+            replace(
+                /"version":\s+"[0-9]+.[0-9]+.[0-9]+",/gu,
+                '"version": "' + version + '",'
+            )
+        )
+        .pipe(dest("./dist"))
+}
+
+function replaceVersionAssets() {
+    return replaceVersion("assets", scanChangelogVersion())
+}
+
 //==============================================================================
 // Run spago bundle.
 function runSpago() {
@@ -39,17 +79,14 @@ function runSpago() {
 //==============================================================================
 // Start HTTP server.
 function runHTTP() {
-    return exec(
-        "parcel --open",
-        (error, stdout, stderr) => {
-            if (error) {
-                console.error(`exec error: ${error}`)
-                return
-            }
-            console.log(`stdout: ${stdout}`)
-            console.log(`stderr: ${stderr}`)
+    return exec("parcel --open", (error, stdout, stderr) => {
+        if (error) {
+            console.error(`exec error: ${error}`)
+            return
         }
-    )
+        console.log(`stdout: ${stdout}`)
+        console.log(`stderr: ${stderr}`)
+    })
 }
 
 //==============================================================================
@@ -85,7 +122,10 @@ function cleanOutput(cb) {
 exports.clean = parallel(cleanDist, cleanOutput)
 
 // eslint-disable-next-line no-undef
-exports.bundle = series(runSpago, runParcel)
+exports.bundle = parallel(series(runSpago, runParcel), replaceVersionAssets)
 
 // eslint-disable-next-line no-undef
-exports.serve = series(runSpago, runParcel, runHTTP)
+exports.serve = parallel(
+    series(runSpago, runParcel, runHTTP),
+    replaceVersionAssets
+)

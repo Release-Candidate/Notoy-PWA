@@ -18,6 +18,7 @@
         "serve": "parcel --open"
     },
     "devDependencies": {
+        "@parcel/service-worker": "^2.0.1",
         "@parcel/transformer-webmanifest": "^2.0.1",
         "delete": "^1.1.0",
         "eslint": "^8.3.0",

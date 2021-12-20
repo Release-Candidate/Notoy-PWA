@@ -53,7 +53,7 @@ function replaceVersion(dirName, version) {
                 '"version": "' + version + '",'
             )
         )
-        .pipe(dest("./dist"))
+        .pipe(dest("./" + dirName))
 }
 
 function replaceVersionAssets() {

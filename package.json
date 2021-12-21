@@ -14,7 +14,7 @@
         "build": "gulp bundle",
         "test": "spago test",
         "repl": "spago repl",
-        "bundle": "gulp bundle && parcel build http/index.html --public-url ./",
+        "bundle": "parcel build http/index.html --public-url ./",
         "serve": "gulp serve"
     },
     "devDependencies": {

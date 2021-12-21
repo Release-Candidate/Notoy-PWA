@@ -186,7 +186,7 @@ exports.clean = parallel(cleanDist, cleanOutput, cleanHTTP)
 
 // eslint-disable-next-line no-undef
 exports.bundle = parallel(
-    series(runSpago, runParcel),
+    series(runSpago),
     copyServiceWorker,
     series(copyAssets, replaceVersionOutdir)
 )

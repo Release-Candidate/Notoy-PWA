@@ -2,7 +2,7 @@
     "targets": {
         "app": {
             "context": "browser",
-            "source": "http/index.html",
+            "source": "./http/index.html",
             "distDir": "./dist/"
         }
     },
@@ -11,13 +11,14 @@
         "list": "gulp --tasks",
         "clean": "gulp clean",
         "install": "spago install",
-        "build": "spago build",
+        "build": "gulp bundle",
         "test": "spago test",
         "repl": "spago repl",
-        "bundle": "gulp bundle",
+        "bundle": "gulp bundle && parcel build http/index.html --public-url ./",
         "serve": "gulp serve"
     },
     "devDependencies": {
+        "@parcel/packager-raw-url": "^2.0.1",
         "@parcel/service-worker": "^2.0.1",
         "@parcel/transformer-webmanifest": "^2.0.1",
         "delete": "^1.1.0",

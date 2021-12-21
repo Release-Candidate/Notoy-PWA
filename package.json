@@ -2,8 +2,8 @@
     "targets": {
         "app": {
             "context": "browser",
-            "source": "./http/index.html",
-            "distDir": "./dist/"
+            "source": "http/index.html",
+            "distDir": "dist/"
         }
     },
     "browserslist": "> 0.5%, last 2 versions, not dead",
@@ -11,10 +11,10 @@
         "list": "gulp --tasks",
         "clean": "gulp clean",
         "install": "spago install",
-        "build": "gulp bundle",
+        "build": "spago build",
         "test": "spago test",
         "repl": "spago repl",
-        "bundle": "parcel build http/index.html --public-url ./",
+        "bundle": "gulp bundle",
         "serve": "gulp serve"
     },
     "devDependencies": {

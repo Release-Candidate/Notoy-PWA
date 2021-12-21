@@ -6,3 +6,4 @@ packages.dhall/
 /.psc-ide-port
 dist/
 .parcel-cache/
+http/

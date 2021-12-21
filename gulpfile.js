@@ -135,14 +135,17 @@ function runHTTPS() {
 //==============================================================================
 // Run parcel-bundle on `index.html`.
 function runParcel() {
-    return exec("parcel", (error, stdout, stderr) => {
-        if (error) {
-            console.error(`exec error: ${error}`)
-            return
+    return exec(
+        `parcel build ${outDir}/index.html --public-url ./`,
+        (error, stdout, stderr) => {
+            if (error) {
+                console.error(`exec error: ${error}`)
+                return
+            }
+            console.log(`Parcel stdout: ${stdout}`)
+            console.log(`Parcel stderr: ${stderr}`)
         }
-        console.log(`Parcel stdout: ${stdout}`)
-        console.log(`Parcel stderr: ${stderr}`)
-    })
+    )
 }
 
 //==============================================================================

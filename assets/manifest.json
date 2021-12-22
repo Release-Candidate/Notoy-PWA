@@ -11,7 +11,7 @@
     "version": "0.0.0",
     "description": "Notoy.",
     "share_target": {
-        "action": "/share-target/",
+        "action": "/",
         "method": "GET",
         "params": {
             "title": "title",

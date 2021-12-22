@@ -11,11 +11,12 @@
         "list": "gulp --tasks",
         "clean": "gulp clean",
         "install": "spago install",
-        "build": "spago build",
+        "build": "bundle-app --main Main --to ./http/app.js",
         "test": "spago test",
         "repl": "spago repl",
         "bundle": "gulp bundle",
-        "serve": "gulp serve"
+        "serve": "parcel",
+        "https": "gulp serve"
     },
     "devDependencies": {
         "@parcel/packager-raw-url": "^2.0.1",

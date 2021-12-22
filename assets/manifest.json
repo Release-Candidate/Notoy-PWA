@@ -6,6 +6,7 @@
     "id": "/",
     "scope": "/",
     "display": "standalone",
+    "theme_color": "#bfab91",
     "background_color": "#bfab91",
     "version": "0.0.0",
     "description": "Notoy.",

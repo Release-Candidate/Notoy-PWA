@@ -10,6 +10,15 @@
     "background_color": "#bfab91",
     "version": "0.0.0",
     "description": "Notoy.",
+    "share_target": {
+        "action": "/share-target/",
+        "method": "GET",
+        "params": {
+            "title": "title",
+            "text": "text",
+            "url": "url"
+        }
+    },
     "icons": [
         {
             "src": "./icons/icon.svg",

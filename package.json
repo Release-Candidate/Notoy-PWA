@@ -11,7 +11,7 @@
         "list": "gulp --tasks",
         "clean": "gulp clean",
         "install": "spago install",
-        "build": "bundle-app --main Main --to ./http/app.js",
+        "build": "spago bundle-app --main Main --to ./http/app.js",
         "test": "spago test",
         "repl": "spago repl",
         "bundle": "gulp bundle",

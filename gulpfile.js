@@ -94,7 +94,7 @@ function replaceVersion(dirName, version) {
                 '"version": "' + version + '",'
             )
         )
-        .pipe(dest("./" + dirName))
+        .pipe(dest(dirName))
 }
 
 function replaceVersionOutdir() {
@@ -105,7 +105,7 @@ function replaceVersionOutdir() {
 // Run spago bundle.
 function runSpago() {
     return exec(
-        `spago bundle-app --main Main --to ${spagoOutdir}/${appJS}`,
+        `spago bundle-app --main Main --to ${outDir}/${appJS}`,
         (error, stdout, stderr) => {
             if (error) {
                 console.error(`exec error: ${error}`)
@@ -136,7 +136,8 @@ function runHTTPS() {
 // Run parcel-bundle on `index.html`.
 function runParcel() {
     return exec(
-        `parcel build ${outDir}/index.html --public-url ./`,
+        //`parcel build ${outDir}/index.html --public-url ./`,
+        "parcel",
         (error, stdout, stderr) => {
             if (error) {
                 console.error(`exec error: ${error}`)

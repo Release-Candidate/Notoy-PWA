@@ -1,4 +1,14 @@
-module Main where
+-- SPDX-License-Identifier: GPL-3.0-or-later
+-- Copyright (C) 2021 Roland Csaszar
+--
+-- Project:  notoy-pwa
+-- File:     Main.purs
+-- Date:     23.Dec.2021
+--
+-- ==============================================================================
+module Main
+  ( main
+  ) where
 
 import Prelude
 import Data.Maybe (Maybe(..))
@@ -13,6 +23,14 @@ import Web.HTML.Window (location, toEventTarget)
 import Web.URL (fromAbsolute, searchParams)
 import Web.URL.URLSearchParams (get)
 
+-- | The field names of the share target GET URL.
+shareTargetFields ::
+  { text :: String -- | Text field. Holding the URL on Android too.
+  , title :: String -- | The title field.
+  , url :: String -- | The URL field. NOT used on Android.
+  }
+shareTargetFields = { title: "title", url: "url", text: "text" }
+
 handleShare :: Event -> Effect Unit
 handleShare _ = do
   w <- window
@@ -25,12 +43,28 @@ handleShare _ = do
       let
         toSearch = searchParams u
 
-        sharedUrl = get "url" toSearch
+        sharedTitle = get shareTargetFields.title toSearch
+
+        sharedUrl = get shareTargetFields.url toSearch
+
+        sharedText = get shareTargetFields.text toSearch
       in
-        case sharedUrl of
-          Just str -> do
-            log $ "URL: " <> str
-          Nothing -> pure unit
+        case sharedTitle, sharedUrl, sharedText of
+          Just shT, Just shU, Just shTx -> do
+            log $ "Title: " <> shT <> " URL: " <> shU <> " Text: " <> shTx
+          Just shT, Just shU, Nothing -> do
+            log $ "Title: " <> shT <> " URL: " <> shU
+          Just shT, Nothing, Just shTx -> do
+            log $ "Title: " <> shT <> " Text: " <> shTx
+          Just shT, Nothing, Nothing -> do
+            log $ "Title: " <> shT
+          Nothing, Just shU, Just shTx -> do
+            log $ " URL: " <> shU <> " Text: " <> shTx
+          Nothing, Just shU, Nothing -> do
+            log $ " URL: " <> shU
+          Nothing, Nothing, Just shTx -> do
+            log $ " Text: " <> shTx
+          Nothing, Nothing, Nothing -> pure unit
     Nothing -> pure unit
 
 main :: Effect Unit

@@ -47,10 +47,7 @@ const serveDir = "./dist"
 // JS requires
 
 // eslint-disable-next-line no-undef
-const { series, parallel } = require("gulp")
-
-// eslint-disable-next-line no-undef
-const { src, dest } = require("gulp")
+const { series, parallel, src, dest } = require("gulp")
 
 // eslint-disable-next-line no-undef
 const { exec } = require("child_process")

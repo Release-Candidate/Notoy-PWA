@@ -27,9 +27,7 @@ import Web.URL (URL, fromAbsolute)
 -}
 getCurrentUrlString :: Unit -> Effect String
 getCurrentUrlString _ = do
-  w <- window
-  loc <- location w
-  href loc
+  window >>= location >>= href
 
 {-
 | Return the current URL in the browser's address bar as a `Maybe URL`.

@@ -22,7 +22,7 @@ import Data.Maybe (Maybe(..))
 | * `title` - the title of the note.
 | * `url` - the URL of the website the note is about.
 | * `shrtDesc` - the short description text.
-| * `longDesc` - the longer, more detailed description.
+| * `longDesc` - the longer, detailed description.
 -}
 data Note
   = Note

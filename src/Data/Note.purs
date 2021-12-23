@@ -13,22 +13,51 @@ module Data.Note
 
 import Prelude
 import Data.Generic.Rep (class Generic)
-import Data.Maybe (Maybe)
-import Data.Options (Options)
-import Data.Show.Generic (genericShow)
+import Data.Maybe (Maybe(..))
 
+{-
+| The actual data and text of the note.
+|
+| Any of these may be missing (`Nothing`).
+| * `title` - the title of the note.
+| * `url` - the URL of the website the note is about.
+| * `shrtDesc` - the short description text.
+| * `longDesc` - the longer, more detailed description.
+-}
 data Note
   = Note
     { title :: Maybe String
     , url :: Maybe String
     , shortDesc :: Maybe String
     , longDesc :: Maybe String
-    , options :: Options
     }
 
 derive instance eqNote :: Eq Note
 
+derive instance ordNote :: Ord Note
+
 derive instance genericNote :: Generic Note _
 
 instance showNote :: Show Note where
-  show = genericShow
+  show ( Note
+      { title: title
+    , url: url
+    , shortDesc: shortDesc
+    , longDesc: longDesc
+    }
+  ) =
+    let
+      showField :: String -> Maybe String -> String
+      showField name val = case val of
+        Just s -> name <> ": " <> s <> " "
+        Nothing -> ""
+
+      titleString = showField "Title" title
+
+      urlString = showField "URL" url
+
+      shortString = showField "Short Description" shortDesc
+
+      longString = showField "Detailed Description" longDesc
+    in
+      titleString <> urlString <> shortString <> longString

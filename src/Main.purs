@@ -5,7 +5,10 @@
 -- File:     Main.purs
 -- Date:     23.Dec.2021
 --
--- ==============================================================================
+-- =============================================================================
+-- | # Module Main
+-- |
+-- | Main entry point of the app.
 module Main
   ( main
   ) where
@@ -15,6 +18,6 @@ import Effect (Effect)
 import ShareTarget.Event (registerShareEvent)
 import Web.HTML (window)
 
+-- | Main entry point of the app.
 main :: Effect Unit
-main = do
-  registerShareEvent =<< window
+main = registerShareEvent =<< window

@@ -12,33 +12,41 @@ module ShareTarget.Event
 
 import Prelude
 import Data.Maybe (Maybe(..))
+import Data.Note (Note(..))
 import Effect (Effect)
 import Effect.Console (log)
+import Helpers.HTML (getCurrentUrl)
 import Web.Event.EventTarget (addEventListener, eventListener)
 import Web.Event.Internal.Types (Event)
-import Web.HTML (Window, window)
+import Web.HTML (Window)
 import Web.HTML.Event.EventTypes (domcontentloaded)
-import Web.HTML.Location (href)
-import Web.HTML.Window (location, toEventTarget)
-import Web.URL (fromAbsolute, searchParams)
+import Web.HTML.Window (toEventTarget)
+import Web.URL (searchParams)
 import Web.URL.URLSearchParams (get)
 
--- | The field names of the share target GET URL.
+{-
+| The field names of the share target GET URL.
+|
+| * text :: String - Text field. Holding the URL on Android too.
+| * title :: String - The title field.
+| * url :: String - The URL field. NOT used on Android.
+-}
 shareTargetFields ::
-  { text :: String -- | Text field. Holding the URL on Android too.
-  , title :: String -- | The title field.
-  , url :: String -- | The URL field. NOT used on Android.
+  { text :: String
+  , title :: String
+  , url :: String
   }
 shareTargetFields = { title: "title", url: "url", text: "text" }
 
+{-
+| Event handler for the share event (`domcontentloaded`).
+|
+| Called, when a website has been shared with this app.
+-}
 handleShare :: Event -> Effect Unit
 handleShare _ = do
-  w <- window
-  loc <- location w
-  urlString <- href loc
-  let
-    urlUrl = fromAbsolute urlString
-  case urlUrl of
+  url <- getCurrentUrl unit
+  case url of
     Just u ->
       let
         toSearch = searchParams u
@@ -48,31 +56,18 @@ handleShare _ = do
         sharedUrl = get shareTargetFields.url toSearch
 
         sharedText = get shareTargetFields.text toSearch
+
+        note = Note { title: sharedTitle, url: sharedUrl, shortDesc: sharedText, longDesc: Just "" }
       in
-        case sharedTitle, sharedUrl, sharedText of
-          Just shT, Just shU, Just shTx -> do
-            log $ "Title: " <> shT <> " URL: " <> shU <> " Text: " <> shTx
-          Just shT, Just shU, Nothing -> do
-            log $ "Title: " <> shT <> " URL: " <> shU
-          Just shT, Nothing, Just shTx -> do
-            log $ "Title: " <> shT <> " Text: " <> shTx
-          Just shT, Nothing, Nothing -> do
-            log $ "Title: " <> shT
-          Nothing, Just shU, Just shTx -> do
-            log $ " URL: " <> shU <> " Text: " <> shTx
-          Nothing, Just shU, Nothing -> do
-            log $ " URL: " <> shU
-          Nothing, Nothing, Just shTx -> do
-            log $ " Text: " <> shTx
-          Nothing, Nothing, Nothing -> pure unit
+        log $ show note
     Nothing -> pure unit
 
 {-
 | Register the handler for the share event.
 |
-| param w :: Window The event target.
+| * w :: Window - The event target.
 -}
 registerShareEvent ∷ Window → Effect Unit
 registerShareEvent w = do
   domListener <- eventListener handleShare
-  addEventListener domcontentloaded domListener false (toEventTarget w)
+  addEventListener domcontentloaded domListener false $ toEventTarget w

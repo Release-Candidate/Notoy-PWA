@@ -27,7 +27,7 @@ import Web.URL.URLSearchParams (get)
 {-
 | The field names of the share target GET URL.
 |
-| * text :: String - Text field. Holding the URL on Android too.
+| * text :: String - Text field. The URL on Android.
 | * title :: String - The title field.
 | * url :: String - The URL field. NOT used on Android.
 -}
@@ -42,6 +42,11 @@ shareTargetFields = { title: "title", url: "url", text: "text" }
 | Event handler for the share event (`domcontentloaded`).
 |
 | Called, when a website has been shared with this app.
+|
+| On Android, the data of the shared URL is as follows:
+| Title: Hacker News
+| Text: https://news.ycombinator.com/news
+| URL is empty.
 -}
 handleShare :: Event -> Effect Unit
 handleShare _ = do
@@ -57,7 +62,7 @@ handleShare _ = do
 
         sharedText = get shareTargetFields.text toSearch
 
-        note = Note { title: sharedTitle, url: sharedUrl, shortDesc: sharedText, longDesc: Just "" }
+        note = Note { title: sharedTitle, url: sharedUrl, shortDesc: sharedText, longDesc: Nothing }
       in
         log $ show note
     Nothing -> pure unit

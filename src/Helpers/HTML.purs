@@ -5,7 +5,7 @@
 -- File:     HTML.purs
 -- Date:     23.Dec.2021
 --
--- ==============================================================================
+-- =============================================================================
 -- | Module Helpers.HTML, helper functions for HTML app stuff.
 module Helpers.HTML
   ( getCurrentUrl
@@ -20,7 +20,7 @@ import Web.HTML.Location (href)
 import Web.HTML.Window (location)
 import Web.URL (URL, fromAbsolute)
 
-{-
+{-------------------------------------------------------------------------------
 | Return the current URL in the browser's address bar as a `String`.
 |
 | Needs an `Effect` to get the information from the address bar.
@@ -29,7 +29,7 @@ getCurrentUrlString :: Unit -> Effect String
 getCurrentUrlString _ = do
   window >>= location >>= href
 
-{-
+{-------------------------------------------------------------------------------
 | Return the current URL in the browser's address bar as a `Maybe URL`.
 |
 | Needs an `Effect` to get the information from the address bar.

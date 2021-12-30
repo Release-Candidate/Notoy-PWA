@@ -5,7 +5,7 @@
 -- File:     Options.purs
 -- Date:     23.Dec.2021
 --
--- ==============================================================================
+-- =============================================================================
 -- | Module Data.Options, the record holding the app's options and related
 -- | functions.
 module Data.Options
@@ -17,7 +17,7 @@ import Prelude
 import Data.Generic.Rep (class Generic)
 import Data.Show.Generic (genericShow)
 
-{-
+{-------------------------------------------------------------------------------
 | The format of the note.
 |
 | One of
@@ -39,7 +39,7 @@ derive instance genericFormat :: Generic Format _
 instance showFormat :: Show Format where
   show = genericShow
 
-{-
+{-------------------------------------------------------------------------------
 | The apps options.
 |
 | * `format` - the note format to use. Markdown, Emacs Org-Mode or plain text.

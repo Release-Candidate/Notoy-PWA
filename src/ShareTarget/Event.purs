@@ -5,14 +5,14 @@
 -- File:     Event.purs
 -- Date:     23.Dec.2021
 --
--- ==============================================================================
+-- =============================================================================
 module ShareTarget.Event
   ( registerShareEvent
   ) where
 
 import Prelude
 import Data.Maybe (Maybe(..))
-import Data.Note (Note(..))
+import Data.Note (fromShared)
 import Effect (Effect)
 import Effect.Console (log)
 import Helpers.HTML (getCurrentUrl)
@@ -24,7 +24,7 @@ import Web.HTML.Window (toEventTarget)
 import Web.URL (searchParams)
 import Web.URL.URLSearchParams (get)
 
-{-
+{-------------------------------------------------------------------------------
 | The field names of the share target GET URL.
 |
 | * text :: String - Text field. The URL on Android.
@@ -38,15 +38,15 @@ shareTargetFields ::
   }
 shareTargetFields = { title: "title", url: "url", text: "text" }
 
-{-
+{-------------------------------------------------------------------------------
 | Event handler for the share event (`domcontentloaded`).
 |
 | Called, when a website has been shared with this app.
 |
 | On Android, the data of the shared URL is as follows:
 | Title: Hacker News
-| Text: https://news.ycombinator.com/news
 | URL is empty.
+| Text: https://news.ycombinator.com/news
 -}
 handleShare :: Event -> Effect Unit
 handleShare _ = do
@@ -62,12 +62,12 @@ handleShare _ = do
 
         sharedText = get shareTargetFields.text toSearch
 
-        note = Note { title: sharedTitle, url: sharedUrl, shortDesc: sharedText, longDesc: Nothing }
+        note = fromShared sharedTitle sharedUrl sharedText
       in
         log $ show note
     Nothing -> pure unit
 
-{-
+{-------------------------------------------------------------------------------
 | Register the handler for the share event.
 |
 | * w :: Window - The event target.

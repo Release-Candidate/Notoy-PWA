@@ -12,13 +12,19 @@ module Test.Helpers.GeneralSpec
   ) where
 
 import Prelude
+import Control.Monad.Error.Class (class MonadThrow)
+import Data.Foldable (for_)
+import Data.Interpolate (interp)
 import Data.Maybe (Maybe(..))
 import Data.String.Regex (Regex)
 import Data.String.Regex.Flags (unicode)
 import Data.String.Regex.Unsafe (unsafeRegex)
+import Effect.Exception (Error)
 import Helpers.General (getFirstMatch, getURL)
-import Test.Spec (Spec, describe, it)
+import Test.QuickCheck ((===))
+import Test.Spec (Spec, SpecT, describe, it)
 import Test.Spec.Assertions (shouldEqual)
+import Test.Spec.QuickCheck (quickCheck)
 
 {-------------------------------------------------------------------------------
 | The tests to run.
@@ -37,18 +43,23 @@ spec =
 getFirstMatchSpecs :: Spec Unit
 getFirstMatchSpecs =
   describe "getFirstMatch" do
-    it "testRegex1: No match -> Nothing" do
-      getFirstMatch testRegex1 "Hugo" `shouldEqual` Nothing
-    it "testRegex1: Match AFooda -> Foo" do
-      getFirstMatch testRegex1 "AFooda" `shouldEqual` Just "Foo"
-    it "testRegex1: Match AFoodFooa -> Foo" do
-      getFirstMatch testRegex1 "AFoodFooa" `shouldEqual` Just "Foo"
-    it "testRegex2: No match -> Nothing" do
-      getFirstMatch testRegex2 "Hugo" `shouldEqual` Nothing
-    it "testRegex2: Match AFooda -> Foo" do
-      getFirstMatch testRegex2 "A Foo da" `shouldEqual` Just "Foo"
-    it "testRegex2: Match Unicode -> FoodFoo习近平讲党史故事" do
-      getFirstMatch testRegex2 "重温习主席这些新年贺词，我们豪情万丈FoodFoo习近平讲党史故事 出版发行 拼出我要的未来" `shouldEqual` Just "FoodFoo习近平讲党史故事"
+    getFirstMatchHelper testRegex1 "Hugo" Nothing
+    getFirstMatchHelper testRegex1 "AFooda" $ Just "Foo"
+    getFirstMatchHelper testRegex1 "AFoodFooa" $ Just "Foo"
+    getFirstMatchHelper testRegex2 "Hugo" Nothing
+    getFirstMatchHelper testRegex2 "A Foo da" $ Just "Foo"
+    getFirstMatchHelper testRegex2
+      "重温习主席这些新年贺词，我们豪情万丈FoodFoo习近平讲党史故事 出版发行 拼出我要的未来"
+      $ Just "FoodFoo习近平讲党史故事"
+
+getFirstMatchHelper ::
+  forall m a.
+  Monad m =>
+  MonadThrow Error a =>
+  Regex -> String -> Maybe String -> SpecT a Unit m Unit
+getFirstMatchHelper rex txt result =
+  it (interp "Regex '" (show rex) "' String '" txt "' -> " $ show result) do
+    getFirstMatch rex txt `shouldEqual` result
 
 testRegex1 ∷ Regex
 testRegex1 = unsafeRegex "Foo" unicode
@@ -62,17 +73,104 @@ testRegex2 = unsafeRegex "F\\p{L}+" unicode
 getURLSpecs :: Spec Unit
 getURLSpecs =
   describe "getURL" do
-    it "No Url -> Nothing" do
-      getURL "This is not an URL!" `shouldEqual` Nothing
-    it "URL 1 https://pursuit.purescript.org/search?q=spec+dsf+hfgh++gfh -> URL" do
-      let
-        u = "https://pursuit.purescript.org/search?q=spec+dsf+hfgh++gfh"
-      getURL u `shouldEqual` Just u
-    it "URL 2 https://pursuit.purescript.org/search?q=spec+dsf+hfgh++gfh -> URL" do
-      let
-        u = "https://pursuit.purescript.org/search?q=spec+dsf+hfgh++gfh"
-      getURL (" " <> u <> " ") `shouldEqual` Just u
-    it "URL 3 https://pursuit.purescript.org/search?q=spec+dsf+hfgh++gfh -> URL" do
-      let
-        u = "https://pursuit.purescript.org/search?q=spec+dsf+hfgh++gfh"
-      getURL (" fasdf" <> u <> " fdah fdh") `shouldEqual` Just u
+    getURLHelper "This is" "not" " an URL" Nothing
+    getURLHelper "" url1 "" $ Just url1
+    getURLHelper " " url1 " " $ Just url1
+    getURLHelper " fasdf" url1 " fdah fdh" $ Just url1
+    it (interp "Quickcheck URLs " url1 " -> URL")
+      $ quickCheck \s1 s2 -> getURL (s1 <> url1 <> " " <> s2) === Just url1
+    for_ urlsValid \u -> getURLHelper " " u " " $ Just u
+    for_ urlsInvalid \u -> getURLHelper " " u " " Nothing
+
+getURLHelper ::
+  forall m a.
+  Monad m =>
+  MonadThrow Error a =>
+  String -> String -> String -> Maybe String -> SpecT a Unit m Unit
+getURLHelper p1 url p2 result =
+  it (interp "Text '" p1 url p2 "' -> " $ show result) do
+    getURL (p1 <> url <> p2) `shouldEqual` result
+
+url1 ∷ String
+url1 = "https://pursuit.purescript.org/search?q=spec+dsf+hfgh++gfh"
+
+{-------------------------------------------------------------------------------
+| This is a list of valid URLs by Alexey Zapparov from
+| https://gist.github.com/dperini/729294#gistcomment-972393
+| licensed under the MIT
+-}
+urlsValid :: Array String
+urlsValid =
+  [ "http://✪df.ws/123"
+  , "http://userid:password@example.com:8080"
+  , "http://userid:password@example.com:8080/"
+  , "http://userid@example.com"
+  , "http://userid@example.com/"
+  , "http://userid@example.com:8080"
+  , "http://userid@example.com:8080/"
+  , "http://userid:password@example.com"
+  , "http://userid:password@example.com/"
+  , "http://142.42.1.1/"
+  , "http://142.42.1.1:8080/"
+  , "http://➡.ws/䨹"
+  , "http://⌘.ws"
+  , "http://⌘.ws/"
+  , "http://foo.com/blah_(wikipedia)#cite-1"
+  , "http://foo.com/blah_(wikipedia)_blah#cite-1"
+  , "http://foo.com/unicode_(✪)_in_parens"
+  , "http://foo.com/(something)?after=parens"
+  , "http://☺.damowmow.com/"
+  , "http://code.google.com/events/#&product=browser"
+  , "http://j.mp"
+  , "ftp://foo.bar/baz"
+  , "http://foo.bar/?q=Test%20URL-encoded%20stuff"
+  , "http://مثال.إختبار"
+  , "http://例子.测试"
+  ]
+
+{-------------------------------------------------------------------------------
+| This is a list of invalid URLs by Alexey Zapparov from
+| https://gist.github.com/dperini/729294#gistcomment-972393
+| licensed under the MIT
+-}
+urlsInvalid :: Array String
+urlsInvalid =
+  [ "http://"
+  , "http://."
+  , "http://.."
+  , "http://../"
+  , "http://?"
+  , "http://??"
+  , "http://??/"
+  , "http://#"
+  , "http://##"
+  , "http://##/"
+  , "//"
+  , "//a"
+  , "///a"
+  , "///"
+  , "http:///a"
+  , "foo.com"
+  , "rdar://1234"
+  , "h://test"
+  , "http:// shouldfail.com"
+  , ":// should fail"
+  , "http://foo.bar/foo(bar)baz quux"
+  , "ftps://foo.bar/"
+  , "http://-error-.invalid/"
+  , "http://a.b--c.de/"
+  , "http://-a.b.co"
+  , "http://a.b-.co"
+  , "http://0.0.0.0"
+  , "http://10.1.1.0"
+  , "http://10.1.1.255"
+  , "http://224.1.1.1"
+  , "http://1.1.1.1.1"
+  , "http://123.123.123"
+  , "http://3628126748"
+  , "http://.www.foo.bar/"
+  , "http://www.foo.bar./"
+  , "http://.www.foo.bar./"
+  , "http://10.1.1.1"
+  , "http://10.1.1.254"
+  ]

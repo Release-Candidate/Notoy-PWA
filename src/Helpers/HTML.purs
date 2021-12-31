@@ -26,8 +26,7 @@ import Web.URL (URL, fromAbsolute)
 | Needs an `Effect` to get the information from the address bar.
 -}
 getCurrentUrlString :: Unit -> Effect String
-getCurrentUrlString _ = do
-  window >>= location >>= href
+getCurrentUrlString _ = window >>= location >>= href
 
 {-------------------------------------------------------------------------------
 | Return the current URL in the browser's address bar as a `Maybe URL`.

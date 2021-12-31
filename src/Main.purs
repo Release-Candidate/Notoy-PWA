@@ -20,4 +20,4 @@ import Web.HTML (window)
 
 -- | Main entry point of the app.
 main :: Effect Unit
-main = registerShareEvent =<< window
+main = window >>= registerShareEvent

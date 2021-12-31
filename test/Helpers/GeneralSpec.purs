@@ -25,6 +25,7 @@ import Test.QuickCheck ((===))
 import Test.Spec (Spec, SpecT, describe, it)
 import Test.Spec.Assertions (shouldEqual)
 import Test.Spec.QuickCheck (quickCheck)
+import Web.URL (fromAbsolute)
 
 {-------------------------------------------------------------------------------
 | The tests to run.
@@ -74,13 +75,15 @@ getURLSpecs :: Spec Unit
 getURLSpecs =
   describe "getURL" do
     getURLHelper "This is" "not" " an URL" Nothing
-    getURLHelper "" url1 "" $ Just url1
-    getURLHelper " " url1 " " $ Just url1
-    getURLHelper " fasdf" url1 " fdah fdh" $ Just url1
     it (interp "Quickcheck URLs " url1 " -> URL")
-      $ quickCheck \s1 s2 -> getURL (s1 <> url1 <> " " <> s2) === Just url1
+      $ quickCheck \s1 s2 -> getURL (s1 <> url1 <> " " <> s2) === fromAbsolute url1
+    for_ urlsValid \u -> getURLHelper "" u "" $ Just u
     for_ urlsValid \u -> getURLHelper " " u " " $ Just u
-    for_ urlsInvalid \u -> getURLHelper " " u " " Nothing
+    for_ urlsValid \u -> getURLHelper "gfdgds" u " hgdfg" $ Just u
+    for_ urlsInvalid \u -> getURLHelper "" u "" Nothing
+
+url1 :: String
+url1 = "https://pursuit.purescript.org/search?q=spec+dsf+hfgh++gfh"
 
 getURLHelper ::
   forall m a.
@@ -89,19 +92,20 @@ getURLHelper ::
   String -> String -> String -> Maybe String -> SpecT a Unit m Unit
 getURLHelper p1 url p2 result =
   it (interp "Text '" p1 url p2 "' -> " $ show result) do
-    getURL (p1 <> url <> p2) `shouldEqual` result
-
-url1 ∷ String
-url1 = "https://pursuit.purescript.org/search?q=spec+dsf+hfgh++gfh"
+    getURL (p1 <> url <> p2) `shouldEqual` (fromAbsolute =<< result)
 
 {-------------------------------------------------------------------------------
-| This is a list of valid URLs by Alexey Zapparov from
+| This is a list of valid and invalid URLs by Alexey Zapparov from
 | https://gist.github.com/dperini/729294#gistcomment-972393
-| licensed under the MIT
+| licensed under the MIT license.
+| Changed by me to get a list of strings that are almost a valid URL.
 -}
 urlsValid :: Array String
 urlsValid =
-  [ "http://✪df.ws/123"
+  [ "https://pursuit.purescript.org/search?q=spec+dsf+hfgh++gfh"
+  , "http://✪df.ws/123"
+  , "https://localhost:1234"
+  , "https://localhost"
   , "http://userid:password@example.com:8080"
   , "http://userid:password@example.com:8080/"
   , "http://userid@example.com"
@@ -123,15 +127,22 @@ urlsValid =
   , "http://code.google.com/events/#&product=browser"
   , "http://j.mp"
   , "ftp://foo.bar/baz"
+  , "http://www.foo.bar./"
   , "http://foo.bar/?q=Test%20URL-encoded%20stuff"
   , "http://مثال.إختبار"
   , "http://例子.测试"
+  , "http://10.1.1.0"
+  , "http://10.1.1.255"
+  , "http://224.1.1.1"
+  , "http://1.1.1.1.1"
+  , "http://123.123.123"
   ]
 
 {-------------------------------------------------------------------------------
-| This is a list of invalid URLs by Alexey Zapparov from
+| This is a list of valid and invalid URLs by Alexey Zapparov from
 | https://gist.github.com/dperini/729294#gistcomment-972393
-| licensed under the MIT
+| licensed under the MIT license.
+| Changed by me to get a list of strings that are almost a valid URL.
 -}
 urlsInvalid :: Array String
 urlsInvalid =
@@ -153,24 +164,7 @@ urlsInvalid =
   , "foo.com"
   , "rdar://1234"
   , "h://test"
-  , "http:// shouldfail.com"
-  , ":// should fail"
-  , "http://foo.bar/foo(bar)baz quux"
   , "ftps://foo.bar/"
-  , "http://-error-.invalid/"
-  , "http://a.b--c.de/"
-  , "http://-a.b.co"
-  , "http://a.b-.co"
-  , "http://0.0.0.0"
-  , "http://10.1.1.0"
-  , "http://10.1.1.255"
-  , "http://224.1.1.1"
-  , "http://1.1.1.1.1"
-  , "http://123.123.123"
-  , "http://3628126748"
   , "http://.www.foo.bar/"
-  , "http://www.foo.bar./"
   , "http://.www.foo.bar./"
-  , "http://10.1.1.1"
-  , "http://10.1.1.254"
   ]

@@ -26,16 +26,18 @@ import Prelude
 import Data.Array.NonEmpty (take)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.String.Regex (Regex, match, test)
-import Data.String.Regex.Flags (ignoreCase, unicode)
+import Data.String.Regex.Flags (ignoreCase)
 import Data.String.Regex.Unsafe (unsafeRegex)
 import JSURI (decodeFormURLComponent, decodeURIComponent, encodeFormURLComponent, encodeURIComponent)
+import Web.URL (URL, fromAbsolute)
 
 {-------------------------------------------------------------------------------
 | Regex to parse an URL.
+|
+| That is used to find an URL in text, not for validation.
 -}
 regexURL :: Regex
---regexURL = unsafeRegex "((ht|f)tps?|chrome):\\/\\/[^\\s$.?#].[^\\s]*" unicode
-regexURL = unsafeRegex "(?:(?:https?|ftp):\\/\\/)(?:\\S+(?::\\S*)?@)?(?:(?!(?:10|127)(?:\\.\\d{1,3}){3})(?!(?:169\\.254|192\\.168)(?:\\.\\d{1,3}){2})(?!172\\.(?:1[6-9]|2\\d|3[0-1])(?:\\.\\d{1,3}){2})(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}(?:\\.(?:[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))|(?:(?:[a-z\\u00a1-\\uffff0-9]-*)*[a-z\\u00a1-\\uffff0-9]+)(?:\\.(?:[a-z\\u00a1-\\uffff0-9]-*)*[a-z\\u00a1-\\uffff0-9]+)*(?:\\.(?:[a-z\\u00a1-\\uffff]{2,}))\\.?)(?::\\d{2,5})?(?:[/?#]\\S*)?" ignoreCase
+regexURL = unsafeRegex "(file|ftp|https?):\\/\\/[^\\s$.?#].[\\S]*[^\\s.]+" ignoreCase
 
 {-------------------------------------------------------------------------------
 | Return the first match of a regex in the given String, or `Nothing` if there
@@ -60,10 +62,10 @@ getFirstMatch rex text = firstMatch
 |
 | * `text` - The String to parse for an URL.
 -}
-getURL :: String -> Maybe String
+getURL :: String -> Maybe URL
 getURL text = case test regexURL text of
   false -> Nothing
-  true -> getFirstMatch regexURL text
+  true -> fromAbsolute =<< getFirstMatch regexURL text
 
 {-------------------------------------------------------------------------------
 | Decode a String according to `application/x-www-form-urlencoded`.
@@ -73,9 +75,7 @@ getURL text = case test regexURL text of
 | * `text` - The URL-encoded String to decode.
 -}
 decodeURLString :: String -> String
-decodeURLString text = case decodeFormURLComponent text of
-  Nothing -> ""
-  Just txt -> txt
+decodeURLString = fromMaybe "" <<< decodeFormURLComponent
 
 {-------------------------------------------------------------------------------
 | Decode a String according to `RFC3896`.
@@ -85,33 +85,27 @@ decodeURLString text = case decodeFormURLComponent text of
 | * `text` - The URI-encoded String to decode.
 -}
 decodeURIString :: String -> String
-decodeURIString text = case decodeURIComponent text of
-  Nothing -> ""
-  Just txt -> txt
+decodeURIString = fromMaybe "" <<< decodeURIComponent
 
 {-------------------------------------------------------------------------------
 | Encode a String accoring to `application/x-www-form-urlencoded`.
 |
 |  Returns the empty String `""` on errors.
 |
-| * `text` - The URL to encode.
+| * `url` - The URL to encode.
 -}
 encodeURLString :: String -> String
-encodeURLString uri = case encodeFormURLComponent uri of
-  Nothing -> ""
-  Just txt -> txt
+encodeURLString = fromMaybe "" <<< encodeFormURLComponent
 
 {-------------------------------------------------------------------------------
 | Encode a String accoring to `RFC3896`.
 |
 |  Returns the empty String `""` on errors.
 |
-| * `text` - The URL to encode.
+| * `uri` - The URL to encode.
 -}
 encodeURIString :: String -> String
-encodeURIString uri = case encodeURIComponent uri of
-  Nothing -> ""
-  Just txt -> txt
+encodeURIString = fromMaybe "" <<< encodeURIComponent
 
 {-------------------------------------------------------------------------------
 | Decode a String according to `application/x-www-form-urlencoded`.
@@ -121,9 +115,7 @@ encodeURIString uri = case encodeURIComponent uri of
 | * `text` - The URL-encoded String to decode.
 -}
 decodeURLStringMaybe :: Maybe String -> Maybe String
-decodeURLStringMaybe text = do
-  justTxt <- text
-  decodeFormURLComponent justTxt
+decodeURLStringMaybe text = decodeFormURLComponent =<< text
 
 {-------------------------------------------------------------------------------
 | Decode a String according to `RFC3896`.
@@ -133,9 +125,7 @@ decodeURLStringMaybe text = do
 | * `text` - The URI-encoded String to decode.
 -}
 decodeURIStringMaybe :: Maybe String -> Maybe String
-decodeURIStringMaybe text = do
-  justTxt <- text
-  decodeURIComponent justTxt
+decodeURIStringMaybe text = decodeURIComponent =<< text
 
 {-------------------------------------------------------------------------------
 | Encode a String according to `application/x-www-form-urlencoded`.
@@ -145,9 +135,7 @@ decodeURIStringMaybe text = do
 | * `text` - The URL-encoded String to decode.
 -}
 encodeURLStringMaybe :: Maybe String -> Maybe String
-encodeURLStringMaybe text = do
-  justTxt <- text
-  encodeFormURLComponent justTxt
+encodeURLStringMaybe text = encodeFormURLComponent =<< text
 
 {-------------------------------------------------------------------------------
 | Encode a String according to `RFC3896`.
@@ -157,9 +145,7 @@ encodeURLStringMaybe text = do
 | * `text` - The URI String to encode.
 -}
 encodeURIStringMaybe :: Maybe String -> Maybe String
-encodeURIStringMaybe uri = do
-  justUri <- uri
-  encodeURIComponent justUri
+encodeURIStringMaybe uri = encodeURIComponent =<< uri
 
 {-------------------------------------------------------------------------------
 | Return an empty String `""` if the parameter is `Nothing`, the string else.

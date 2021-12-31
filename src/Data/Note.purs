@@ -18,6 +18,7 @@ import Data.Maybe (Maybe(..))
 import Data.String (trim)
 import Data.Tuple (Tuple(..))
 import Helpers.General (getURL)
+import Web.URL (URL, toString)
 
 {-------------------------------------------------------------------------------
 | The actual data and text of the note.
@@ -32,14 +33,12 @@ import Helpers.General (getURL)
 data Note
   = Note
     { title :: Maybe String
-    , url :: Maybe String
+    , url :: Maybe URL
     , shortDesc :: Maybe String
     , longDesc :: Maybe String
     }
 
 derive instance eqNote :: Eq Note
-
-derive instance ordNote :: Ord Note
 
 derive instance genericNote :: Generic Note _
 
@@ -59,7 +58,7 @@ instance showNote :: Show Note where
 
       titleString = showField "Title" title
 
-      urlString = showField "URL" url
+      urlString = showField "URL" $ map toString url
 
       shortString = showField "Short Description" shortDesc
 
@@ -78,7 +77,7 @@ instance showNote :: Show Note where
 |           passed in `text`.
 | * `text` - The description of the link. This holds the link's URL on Android.
 -}
-fromShared :: Maybe String -> Maybe String -> Maybe String -> Note
+fromShared :: Maybe String -> Maybe URL -> Maybe String -> Note
 fromShared (Just title) Nothing Nothing =
   Note
     { title: txt
@@ -132,16 +131,18 @@ fromShared title url text =
 | The text is `Nothing`, if it only consisted of the URL (and whitespace).
 -}
 newtype UrlString
-  = UrlString (Tuple (Maybe String) (Maybe String))
+  = UrlString (Tuple (Maybe URL) (Maybe String))
 
 {-------------------------------------------------------------------------------
 | Helper:
 -}
 getURLAndText :: String -> UrlString
-getURLAndText text = UrlString (Tuple urlSt txt)
+getURLAndText text = UrlString (Tuple url txt)
   where
   trimmed = Just $ trim text
 
-  urlSt = getURL text
+  url = getURL text
+
+  urlSt = map toString url
 
   txt = if trimmed == urlSt then Nothing else trimmed

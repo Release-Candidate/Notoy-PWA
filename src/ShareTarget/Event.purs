@@ -21,7 +21,7 @@ import Web.Event.Internal.Types (Event)
 import Web.HTML (Window)
 import Web.HTML.Event.EventTypes (domcontentloaded)
 import Web.HTML.Window (toEventTarget)
-import Web.URL (searchParams)
+import Web.URL (fromAbsolute, searchParams)
 import Web.URL.URLSearchParams (get)
 
 {-------------------------------------------------------------------------------
@@ -60,9 +60,11 @@ handleShare _ = do
 
         sharedUrl = get shareTargetFields.url toSearch
 
+        maybeURL = fromAbsolute =<< sharedUrl
+
         sharedText = get shareTargetFields.text toSearch
 
-        note = fromShared sharedTitle sharedUrl sharedText
+        note = fromShared sharedTitle maybeURL sharedText
       in
         log $ show note
     Nothing -> pure unit

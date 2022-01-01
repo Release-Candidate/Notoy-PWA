@@ -52,7 +52,7 @@ handleShare :: Event -> Effect Unit
 handleShare _ = do
   url <- getCurrentUrl unit
   case url of
-    Just u ->
+    Just u -> do
       let
         toSearch = searchParams u
 
@@ -65,8 +65,7 @@ handleShare _ = do
         sharedText = get shareTargetFields.text toSearch
 
         note = fromShared sharedTitle maybeURL sharedText
-      in
-        log $ show note
+      log $ show note
     Nothing -> pure unit
 
 {-------------------------------------------------------------------------------

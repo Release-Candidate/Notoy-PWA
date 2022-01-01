@@ -30,6 +30,8 @@ newtype KeyWordArray
 
 derive instance eqKeywordArray :: Eq KeyWordArray
 
+derive instance ordKeyWordArray :: Ord KeyWordArray
+
 instance showKeyWordArray :: Show KeyWordArray where
   show (KeyWordArray keys) =
     foldl
@@ -80,7 +82,7 @@ instance showNote :: Show Note where
         Just s -> name <> ": " <> s <> " "
         Nothing -> ""
 
-      showFieldKeyWds keywords = case keywords of
+      showFieldKeyWds keywds = case keywds of
         Just (KeyWordArray keys) -> "Keywords: " <> show keys
         Nothing -> ""
 
@@ -94,7 +96,7 @@ instance showNote :: Show Note where
 
       longString = showField "Detailed Description" longDesc
     in
-      titleString <> urlString <> shortString <> longString
+      titleString <> urlString <> keywordString <> shortString <> longString
 
 {-------------------------------------------------------------------------------
 | Construct a `Note` from the given title, url and text.

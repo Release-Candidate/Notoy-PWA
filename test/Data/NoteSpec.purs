@@ -17,13 +17,14 @@ import Data.Foldable (for_)
 import Data.Interpolate (interp)
 import Data.Maybe (Maybe(..))
 import Data.Note (Note(..), fromShared)
+import Data.String (trim)
 import Data.Tuple (Tuple(..))
 import Effect.Exception (Error)
 import Test.QuickCheck ((===))
 import Test.Spec (Spec, SpecT, describe, it)
 import Test.Spec.Assertions (shouldEqual)
 import Test.Spec.QuickCheck (quickCheck)
-import Web.URL (fromAbsolute, unsafeFromAbsolute)
+import Web.URL (fromAbsolute)
 
 {-------------------------------------------------------------------------------
 | The tests to run.
@@ -50,6 +51,7 @@ fromSharedSpecs =
               Note
                 { title: Just s1
                 , url: fromAbsolute "http://url"
+                , keywords: Nothing
                 , shortDesc: Just s2
                 , longDesc: Nothing
                 }
@@ -66,6 +68,7 @@ fromSharedSpecs =
               Note
                 { title: urlSt
                 , url: fromAbsolute "http://url"
+                , keywords: Nothing
                 , shortDesc: Just s2
                 , longDesc: Nothing
                 }
@@ -82,11 +85,46 @@ fromSharedSpecs =
               Note
                 { title: Just s2
                 , url: fromAbsolute "http://url"
+                , keywords: Nothing
                 , shortDesc: urlSt
                 , longDesc: Nothing
                 }
           in
             fromShared (Just s2) Nothing (Just $ s1 <> "http://url") === note
+    it "Quickcheck double Strings + URL in Title"
+      $ quickCheck \s1 s2 s3 ->
+          let
+            urlSt = case s1 <> s3 of
+              "" -> Nothing
+              _ -> Just $ trim $ s1 <> "http://url" <> " " <> s3
+
+            note =
+              Note
+                { title: urlSt
+                , url: fromAbsolute "http://url"
+                , keywords: Nothing
+                , shortDesc: Just s2
+                , longDesc: Nothing
+                }
+          in
+            fromShared (Just $ s1 <> "http://url" <> " " <> s3) Nothing (Just s2) === note
+    it "Quickcheck Strings + URL in Desc"
+      $ quickCheck \s1 s2 s3 ->
+          let
+            urlSt = case s1 <> s3 of
+              "" -> Nothing
+              _ -> Just $ trim $ s1 <> "http://url" <> " " <> s3
+
+            note =
+              Note
+                { title: Just s2
+                , url: fromAbsolute "http://url"
+                , keywords: Nothing
+                , shortDesc: urlSt
+                , longDesc: Nothing
+                }
+          in
+            fromShared (Just s2) Nothing (Just $ s1 <> "http://url" <> " " <> s3) === note
 
 fromSharedHelper ::
   forall m a.
@@ -110,6 +148,7 @@ fromSharedNotes =
       ( Note
           { title: Just "Title 1"
           , url: fromAbsolute "https://url.com:12354/index.html"
+          , keywords: Nothing
           , shortDesc: Just "Short text"
           , longDesc: Nothing
           }
@@ -117,6 +156,7 @@ fromSharedNotes =
       ( Note
           { title: Just "Title 1"
           , url: fromAbsolute "https://url.com:12354/index.html"
+          , keywords: Nothing
           , shortDesc: Just "Short text"
           , longDesc: Nothing
           }
@@ -125,6 +165,7 @@ fromSharedNotes =
       ( Note
           { title: Just "Title 2"
           , url: Nothing
+          , keywords: Nothing
           , shortDesc: Just "Short text 2"
           , longDesc: Nothing
           }
@@ -132,6 +173,7 @@ fromSharedNotes =
       ( Note
           { title: Just "Title 2"
           , url: Nothing
+          , keywords: Nothing
           , shortDesc: Just "Short text 2"
           , longDesc: Nothing
           }
@@ -140,6 +182,7 @@ fromSharedNotes =
       ( Note
           { title: Just "Title 3"
           , url: Nothing
+          , keywords: Nothing
           , shortDesc: Nothing
           , longDesc: Nothing
           }
@@ -147,6 +190,7 @@ fromSharedNotes =
       ( Note
           { title: Just "Title 3"
           , url: Nothing
+          , keywords: Nothing
           , shortDesc: Nothing
           , longDesc: Nothing
           }
@@ -155,6 +199,7 @@ fromSharedNotes =
       ( Note
           { title: Nothing
           , url: Nothing
+          , keywords: Nothing
           , shortDesc: Just "Short text 4"
           , longDesc: Nothing
           }
@@ -162,6 +207,7 @@ fromSharedNotes =
       ( Note
           { title: Nothing
           , url: Nothing
+          , keywords: Nothing
           , shortDesc: Just "Short text 4"
           , longDesc: Nothing
           }
@@ -170,6 +216,7 @@ fromSharedNotes =
       ( Note
           { title: Nothing
           , url: Nothing
+          , keywords: Nothing
           , shortDesc: Nothing
           , longDesc: Nothing
           }
@@ -177,6 +224,7 @@ fromSharedNotes =
       ( Note
           { title: Nothing
           , url: Nothing
+          , keywords: Nothing
           , shortDesc: Nothing
           , longDesc: Nothing
           }
@@ -185,6 +233,7 @@ fromSharedNotes =
       ( Note
           { title: Just "http://url"
           , url: Nothing
+          , keywords: Nothing
           , shortDesc: Nothing
           , longDesc: Nothing
           }
@@ -192,6 +241,7 @@ fromSharedNotes =
       ( Note
           { title: Nothing
           , url: fromAbsolute "http://url"
+          , keywords: Nothing
           , shortDesc: Nothing
           , longDesc: Nothing
           }
@@ -200,6 +250,7 @@ fromSharedNotes =
       ( Note
           { title: Nothing
           , url: Nothing
+          , keywords: Nothing
           , shortDesc: Just "http://url"
           , longDesc: Nothing
           }
@@ -207,6 +258,7 @@ fromSharedNotes =
       ( Note
           { title: Nothing
           , url: fromAbsolute "http://url"
+          , keywords: Nothing
           , shortDesc: Nothing
           , longDesc: Nothing
           }
@@ -215,6 +267,7 @@ fromSharedNotes =
       ( Note
           { title: Just " http://url "
           , url: Nothing
+          , keywords: Nothing
           , shortDesc: Nothing
           , longDesc: Nothing
           }
@@ -222,6 +275,7 @@ fromSharedNotes =
       ( Note
           { title: Nothing
           , url: fromAbsolute "http://url"
+          , keywords: Nothing
           , shortDesc: Nothing
           , longDesc: Nothing
           }
@@ -230,6 +284,7 @@ fromSharedNotes =
       ( Note
           { title: Nothing
           , url: Nothing
+          , keywords: Nothing
           , shortDesc: Just " http://url "
           , longDesc: Nothing
           }
@@ -237,6 +292,7 @@ fromSharedNotes =
       ( Note
           { title: Nothing
           , url: fromAbsolute "http://url"
+          , keywords: Nothing
           , shortDesc: Nothing
           , longDesc: Nothing
           }
@@ -245,6 +301,7 @@ fromSharedNotes =
       ( Note
           { title: Just "http://url fgsdf"
           , url: Nothing
+          , keywords: Nothing
           , shortDesc: Nothing
           , longDesc: Nothing
           }
@@ -252,6 +309,7 @@ fromSharedNotes =
       ( Note
           { title: Just "http://url fgsdf"
           , url: fromAbsolute "http://url"
+          , keywords: Nothing
           , shortDesc: Nothing
           , longDesc: Nothing
           }
@@ -260,6 +318,7 @@ fromSharedNotes =
       ( Note
           { title: Nothing
           , url: Nothing
+          , keywords: Nothing
           , shortDesc: Just " http://url ghgfdgh "
           , longDesc: Nothing
           }
@@ -267,6 +326,7 @@ fromSharedNotes =
       ( Note
           { title: Nothing
           , url: fromAbsolute "http://url"
+          , keywords: Nothing
           , shortDesc: Just "http://url ghgfdgh"
           , longDesc: Nothing
           }

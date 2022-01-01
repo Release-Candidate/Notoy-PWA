@@ -23,4 +23,4 @@ spec :: Spec Unit
 spec =
   describe "ShareTarget.Event - Tests" do
     describe "Group 1" do
-      it "No Tests" $ pure unit
+      it "Does not work without a browser!" $ pure unit

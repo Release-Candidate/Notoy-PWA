@@ -86,6 +86,8 @@ getURLSpecs =
     for_ urlsValid \u -> getURLHelper "" u "" $ Just u
     for_ urlsValid \u -> getURLHelper " " u " " $ Just u
     for_ urlsValid \u -> getURLHelper "gfdgds" u " hgdfg" $ Just u
+    for_ decodedEncodedURLs \(Tuple _ e) -> getURLHelper "gfdgds" e " hgdfg" $ Just e
+    for_ decodedEncodedURIs \(Tuple _ e) -> getURLHelper "gfdgds" e " hgdfg" $ Just e
     for_ urlsInvalid \u -> getURLHelper "" u "" Nothing
 
 getURLHelper ::

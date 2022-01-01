@@ -8,17 +8,39 @@
 -- =============================================================================
 -- | Module Data.Note, module holding functions and records about the note data.
 module Data.Note
-  ( Note(..)
+  ( KeyWordArray(..)
+  , Note(..)
   , fromShared
   ) where
 
 import Prelude
+import Data.Array (foldl)
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Data.String (trim)
 import Data.Tuple (Tuple(..))
 import Helpers.General (getURL, getURLString)
 import Web.URL (URL, toString)
+
+{-------------------------------------------------------------------------------
+| Type for holding an array of keywords.
+-}
+newtype KeyWordArray
+  = KeyWordArray (Array String)
+
+derive instance eqKeywordArray :: Eq KeyWordArray
+
+instance showKeyWordArray :: Show KeyWordArray where
+  show (KeyWordArray keys) =
+    foldl
+      ( \acc e ->
+          if acc == "" then
+            acc <> e
+          else
+            acc <> ", " <> e
+      )
+      ""
+      keys
 
 {-------------------------------------------------------------------------------
 | The actual data and text of the note.
@@ -34,6 +56,7 @@ data Note
   = Note
     { title :: Maybe String
     , url :: Maybe URL
+    , keywords :: Maybe KeyWordArray
     , shortDesc :: Maybe String
     , longDesc :: Maybe String
     }
@@ -46,6 +69,7 @@ instance showNote :: Show Note where
   show ( Note
       { title: title
     , url: url
+    , keywords: keywords
     , shortDesc: shortDesc
     , longDesc: longDesc
     }
@@ -56,9 +80,15 @@ instance showNote :: Show Note where
         Just s -> name <> ": " <> s <> " "
         Nothing -> ""
 
+      showFieldKeyWds keywords = case keywords of
+        Just (KeyWordArray keys) -> "Keywords: " <> show keys
+        Nothing -> ""
+
       titleString = showField "Title" title
 
       urlString = showField "URL" $ map toString url
+
+      keywordString = showFieldKeyWds keywords
 
       shortString = showField "Short Description" shortDesc
 
@@ -82,6 +112,7 @@ fromShared (Just title) Nothing Nothing =
   Note
     { title: txt
     , url: urlSt
+    , keywords: Nothing
     , shortDesc: Nothing
     , longDesc: Nothing
     }
@@ -92,6 +123,7 @@ fromShared Nothing Nothing (Just text) =
   Note
     { title: Nothing
     , url: urlSt
+    , keywords: Nothing
     , shortDesc: txt
     , longDesc: Nothing
     }
@@ -102,6 +134,7 @@ fromShared (Just title) Nothing (Just text) =
   Note
     { title: tl
     , url: foundURL
+    , keywords: Nothing
     , shortDesc: txt
     , longDesc: Nothing
     }
@@ -118,6 +151,7 @@ fromShared title url text =
   Note
     { title: title
     , url: url
+    , keywords: Nothing
     , shortDesc: text
     , longDesc: Nothing
     }

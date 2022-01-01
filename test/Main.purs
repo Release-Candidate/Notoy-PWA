@@ -21,7 +21,8 @@ import Test.Spec.Runner (runSpec)
 {-------------------------------------------------------------------------------
 | Main entry point of the tests.
 |
-| Uses autodiscovery to run all tests.
+| Uses autodiscovery to run all tests. Searches for Specs names `spec` in all
+| modules whichs names match "Test\..*Spec".
 -}
 main :: Effect Unit
 main =

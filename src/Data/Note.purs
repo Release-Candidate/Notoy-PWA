@@ -17,7 +17,7 @@ import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Data.String (trim)
 import Data.Tuple (Tuple(..))
-import Helpers.General (getURL)
+import Helpers.General (getURL, getURLString)
 import Web.URL (URL, toString)
 
 {-------------------------------------------------------------------------------
@@ -143,6 +143,8 @@ getURLAndText text = UrlString (Tuple url txt)
 
   url = getURL text
 
-  urlSt = map toString url
+  urlSt = getURLString text
 
-  txt = if trimmed == urlSt then Nothing else trimmed
+  txt = case trimmed == urlSt of
+    true -> Nothing
+    _ -> trimmed

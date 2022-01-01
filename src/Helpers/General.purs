@@ -18,6 +18,7 @@ module Helpers.General
   , encodeURLStringMaybe
   , getFirstMatch
   , getURL
+  , getURLString
   , regexURL
   , showM
   ) where
@@ -66,6 +67,18 @@ getURL :: String -> Maybe URL
 getURL text = case test regexURL text of
   false -> Nothing
   true -> fromAbsolute =<< getFirstMatch regexURL text
+
+{-------------------------------------------------------------------------------
+| Search for an URL in the given String and return that.
+|
+| If no URL has been found, `Nothing` is returned.
+|
+| * `text` - The String to parse for an URL.
+-}
+getURLString :: String -> Maybe String
+getURLString text = case test regexURL text of
+  false -> Nothing
+  true -> getFirstMatch regexURL text
 
 {-------------------------------------------------------------------------------
 | Decode a String according to `application/x-www-form-urlencoded`.

@@ -133,7 +133,8 @@ decodeEncodeURISpecs =
 decodedEncodeURIHelper ::
   forall m a.
   Monad m =>
-  MonadThrow Error a => String -> (String -> String) -> String -> String -> SpecT a Unit m Unit
+  MonadThrow Error a =>
+  String -> (String -> String) -> String -> String -> SpecT a Unit m Unit
 decodedEncodeURIHelper title f argument result =
   it (interp title " URI: " argument) do
     f argument `shouldEqual` result

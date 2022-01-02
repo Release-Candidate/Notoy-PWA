@@ -21,13 +21,13 @@ import Data.String.Regex (Regex)
 import Data.String.Regex.Flags (unicode)
 import Data.String.Regex.Unsafe (unsafeRegex)
 import Data.Tuple (Tuple(..))
+import Data.URL (urlFromString)
 import Effect.Exception (Error)
 import Helpers.General (decodeURIString, decodeURIStringMaybe, decodeURLString, decodeURLStringMaybe, encodeURIString, encodeURIStringMaybe, encodeURLString, encodeURLStringMaybe, getFirstMatch, getURL)
 import Test.QuickCheck ((===))
 import Test.Spec (Spec, SpecT, describe, it)
 import Test.Spec.Assertions (shouldEqual)
 import Test.Spec.QuickCheck (quickCheck)
-import Web.URL (fromAbsolute)
 
 {-------------------------------------------------------------------------------
 | The tests to run.
@@ -82,7 +82,7 @@ getURLSpecs =
   describe "getURL" do
     getURLHelper "This is" "not" " an URL" Nothing
     it (interp "Quickcheck URLs " url1 " -> URL")
-      $ quickCheck \s1 s2 -> getURL (s1 <> url1 <> " " <> s2) === fromAbsolute url1
+      $ quickCheck \s1 s2 -> getURL (s1 <> url1 <> " " <> s2) === urlFromString url1
     for_ urlsValid \u -> getURLHelper "" u "" $ Just u
     for_ urlsValid \u -> getURLHelper " " u " " $ Just u
     for_ urlsValid \u -> getURLHelper "gfdgds" u " hgdfg" $ Just u
@@ -97,7 +97,7 @@ getURLHelper ::
   String -> String -> String -> Maybe String -> SpecT a Unit m Unit
 getURLHelper p1 url p2 result =
   it (interp "Text '" p1 url p2 "' -> " $ show result) do
-    getURL (p1 <> url <> p2) `shouldEqual` (fromAbsolute =<< result)
+    getURL (p1 <> url <> p2) `shouldEqual` (urlFromString =<< result)
 
 url1 :: String
 url1 = "https://pursuit.purescript.org/search?q=spec+dsf+hfgh++gfh"

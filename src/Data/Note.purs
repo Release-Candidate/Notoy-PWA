@@ -14,13 +14,16 @@ module Data.Note
   ) where
 
 import Prelude
+import Data.Argonaut (class DecodeJson, class EncodeJson)
+import Data.Argonaut.Decode.Generic (genericDecodeJson)
+import Data.Argonaut.Encode.Generic (genericEncodeJson)
 import Data.Array (foldl)
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Data.String (trim)
 import Data.Tuple (Tuple(..))
+import Data.URL (NoteURL, urlToString)
 import Helpers.General (getURL, getURLString)
-import Web.URL (URL, toString)
 
 {-------------------------------------------------------------------------------
 | Type for holding an array of keywords.
@@ -31,6 +34,14 @@ newtype KeyWordArray
 derive instance eqKeywordArray :: Eq KeyWordArray
 
 derive instance ordKeyWordArray :: Ord KeyWordArray
+
+derive instance genericKeyWordArray :: Generic KeyWordArray _
+
+instance encodeJSONKeyWordArray :: EncodeJson KeyWordArray where
+  encodeJson = genericEncodeJson
+
+instance decodeJSONKeyWordArray :: DecodeJson KeyWordArray where
+  decodeJson = genericDecodeJson
 
 instance showKeyWordArray :: Show KeyWordArray where
   show (KeyWordArray keys) =
@@ -57,7 +68,7 @@ instance showKeyWordArray :: Show KeyWordArray where
 data Note
   = Note
     { title :: Maybe String
-    , url :: Maybe URL
+    , url :: Maybe NoteURL
     , keywords :: Maybe KeyWordArray
     , shortDesc :: Maybe String
     , longDesc :: Maybe String
@@ -66,6 +77,12 @@ data Note
 derive instance eqNote :: Eq Note
 
 derive instance genericNote :: Generic Note _
+
+instance encodeJSONNote :: EncodeJson Note where
+  encodeJson = genericEncodeJson
+
+instance decodeJSONNote :: DecodeJson Note where
+  decodeJson = genericDecodeJson
 
 instance showNote :: Show Note where
   show ( Note
@@ -88,7 +105,7 @@ instance showNote :: Show Note where
 
       titleString = showField "Title" title
 
-      urlString = showField "URL" $ map toString url
+      urlString = showField "URL" $ map urlToString url
 
       keywordString = showFieldKeyWds keywords
 
@@ -109,7 +126,7 @@ instance showNote :: Show Note where
 |           passed in `text`.
 | * `text` - The description of the link. This holds the link's URL on Android.
 -}
-fromShared :: Maybe String -> Maybe URL -> Maybe String -> Note
+fromShared :: Maybe String -> Maybe NoteURL -> Maybe String -> Note
 fromShared (Just title) Nothing Nothing =
   Note
     { title: txt
@@ -167,7 +184,7 @@ fromShared title url text =
 | The text is `Nothing`, if it only consisted of the URL (and whitespace).
 -}
 newtype UrlString
-  = UrlString (Tuple (Maybe URL) (Maybe String))
+  = UrlString (Tuple (Maybe NoteURL) (Maybe String))
 
 {-------------------------------------------------------------------------------
 | Helper:

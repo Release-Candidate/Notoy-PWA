@@ -13,14 +13,18 @@ to generate this file without the comments in this block.
 { name = "notoy"
 , dependencies =
   [ "aff"
+  , "argonaut"
+  , "argonaut-generic"
   , "arrays"
   , "console"
   , "effect"
+  , "either"
   , "exceptions"
   , "foldable-traversable"
   , "interpolate"
   , "js-uri"
   , "maybe"
+  , "newtype"
   , "prelude"
   , "psci-support"
   , "quickcheck"
@@ -32,6 +36,7 @@ to generate this file without the comments in this block.
   , "tuples"
   , "web-events"
   , "web-html"
+  , "web-storage"
   , "web-url"
   ]
 , packages = ./packages.dhall

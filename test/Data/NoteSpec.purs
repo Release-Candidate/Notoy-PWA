@@ -13,18 +13,22 @@ module Test.Data.NoteSpec
 
 import Prelude
 import Control.Monad.Error.Class (class MonadThrow)
+import Data.Argonaut (decodeJson, encodeJson, stringify)
+import Data.Either (Either(..))
 import Data.Foldable (for_)
 import Data.Interpolate (interp)
 import Data.Maybe (Maybe(..))
-import Data.Note (Note(..), fromShared)
+import Data.Note (KeyWordArray(..), Note(..), fromShared)
 import Data.String (trim)
 import Data.Tuple (Tuple(..))
+import Data.URL (urlFromString)
+import Effect.Console (log)
 import Effect.Exception (Error)
+import Effect.Unsafe (unsafePerformEffect)
 import Test.QuickCheck ((===))
 import Test.Spec (Spec, SpecT, describe, it)
 import Test.Spec.Assertions (shouldEqual)
 import Test.Spec.QuickCheck (quickCheck)
-import Web.URL (fromAbsolute)
 
 {-------------------------------------------------------------------------------
 | The tests to run.
@@ -35,6 +39,7 @@ spec :: Spec Unit
 spec =
   describe "Data.Note - Tests" do
     fromSharedSpecs
+    jsonEncodeDecodeSpecs
 
 {-------------------------------------------------------------------------------
 | Tests for the function `fromShared`.
@@ -50,26 +55,26 @@ fromSharedSpecs =
             note =
               Note
                 { title: Just s1
-                , url: fromAbsolute "http://url"
+                , url: urlFromString "http://url"
                 , keywords: Nothing
-                , shortDesc: Just s2
+                , shortDesc: Just $ trim $ s2
                 , longDesc: Nothing
                 }
           in
-            fromShared (Just s1) (fromAbsolute "http://url") (Just s2) === note
+            fromShared (Just s1) (urlFromString "http://url") (Just s2) === note
     it "Quickcheck Strings + URL in Title"
       $ quickCheck \s1 s2 ->
           let
             urlSt = case s1 of
               "" -> Nothing
-              _ -> Just $ s1 <> "http://url"
+              _ -> Just $ trim $ s1 <> "http://url"
 
             note =
               Note
                 { title: urlSt
-                , url: fromAbsolute "http://url"
+                , url: urlFromString "http://url"
                 , keywords: Nothing
-                , shortDesc: Just s2
+                , shortDesc: Just $ trim $ s2
                 , longDesc: Nothing
                 }
           in
@@ -79,12 +84,12 @@ fromSharedSpecs =
           let
             urlSt = case s1 of
               "" -> Nothing
-              _ -> Just $ s1 <> "http://url"
+              _ -> Just $ trim $ s1 <> "http://url"
 
             note =
               Note
-                { title: Just s2
-                , url: fromAbsolute "http://url"
+                { title: Just $ trim $ s2
+                , url: urlFromString "http://url"
                 , keywords: Nothing
                 , shortDesc: urlSt
                 , longDesc: Nothing
@@ -101,9 +106,9 @@ fromSharedSpecs =
             note =
               Note
                 { title: urlSt
-                , url: fromAbsolute "http://url"
+                , url: urlFromString "http://url"
                 , keywords: Nothing
-                , shortDesc: Just s2
+                , shortDesc: Just $ trim $ s2
                 , longDesc: Nothing
                 }
           in
@@ -117,8 +122,8 @@ fromSharedSpecs =
 
             note =
               Note
-                { title: Just s2
-                , url: fromAbsolute "http://url"
+                { title: Just $ trim $ s2
+                , url: urlFromString "http://url"
                 , keywords: Nothing
                 , shortDesc: urlSt
                 , longDesc: Nothing
@@ -142,12 +147,35 @@ fromSharedHelper note result =
       } = note
     fromShared title url shortDesc `shouldEqual` result
 
+{-------------------------------------------------------------------------------
+| Tests for the JSON de- and encoding.
+-}
+jsonEncodeDecodeSpecs :: Spec Unit
+jsonEncodeDecodeSpecs =
+  describe "JSON decoding and encoding" do
+    for_ fromSharedNotes \(Tuple note _) ->
+      it (interp "decodeJson ° encodeJson of " (stringify $ encodeJson note)) do
+        (decodeJson $ encodeJson note) `shouldEqual` Right note
+    it "Quickcheck decodeJson ° encodeJson"
+      $ quickCheck \s1 s2 s3 s4 ->
+          let
+            note =
+              Note
+                { title: Just s1
+                , url: urlFromString "https://www.url.com"
+                , keywords: Just $ KeyWordArray [ s1, s2, s3, s4 ]
+                , shortDesc: Just s3
+                , longDesc: Just s4
+                }
+          in
+            (decodeJson $ encodeJson note) === Right note
+
 fromSharedNotes :: Array (Tuple Note Note)
 fromSharedNotes =
   [ Tuple
       ( Note
           { title: Just "Title 1"
-          , url: fromAbsolute "https://url.com:12354/index.html"
+          , url: urlFromString "https://url.com:12354/index.html"
           , keywords: Nothing
           , shortDesc: Just "Short text"
           , longDesc: Nothing
@@ -155,7 +183,7 @@ fromSharedNotes =
       )
       ( Note
           { title: Just "Title 1"
-          , url: fromAbsolute "https://url.com:12354/index.html"
+          , url: urlFromString "https://url.com:12354/index.html"
           , keywords: Nothing
           , shortDesc: Just "Short text"
           , longDesc: Nothing
@@ -240,7 +268,7 @@ fromSharedNotes =
       )
       ( Note
           { title: Nothing
-          , url: fromAbsolute "http://url"
+          , url: urlFromString "http://url"
           , keywords: Nothing
           , shortDesc: Nothing
           , longDesc: Nothing
@@ -257,7 +285,7 @@ fromSharedNotes =
       )
       ( Note
           { title: Nothing
-          , url: fromAbsolute "http://url"
+          , url: urlFromString "http://url"
           , keywords: Nothing
           , shortDesc: Nothing
           , longDesc: Nothing
@@ -274,7 +302,7 @@ fromSharedNotes =
       )
       ( Note
           { title: Nothing
-          , url: fromAbsolute "http://url"
+          , url: urlFromString "http://url"
           , keywords: Nothing
           , shortDesc: Nothing
           , longDesc: Nothing
@@ -291,7 +319,7 @@ fromSharedNotes =
       )
       ( Note
           { title: Nothing
-          , url: fromAbsolute "http://url"
+          , url: urlFromString "http://url"
           , keywords: Nothing
           , shortDesc: Nothing
           , longDesc: Nothing
@@ -308,7 +336,7 @@ fromSharedNotes =
       )
       ( Note
           { title: Just "http://url fgsdf"
-          , url: fromAbsolute "http://url"
+          , url: urlFromString "http://url"
           , keywords: Nothing
           , shortDesc: Nothing
           , longDesc: Nothing
@@ -325,7 +353,7 @@ fromSharedNotes =
       )
       ( Note
           { title: Nothing
-          , url: fromAbsolute "http://url"
+          , url: urlFromString "http://url"
           , keywords: Nothing
           , shortDesc: Just "http://url ghgfdgh"
           , longDesc: Nothing

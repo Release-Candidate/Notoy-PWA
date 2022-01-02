@@ -13,15 +13,16 @@ module ShareTarget.Event
 import Prelude
 import Data.Maybe (Maybe(..))
 import Data.Note (fromShared)
+import Data.URL (urlFromString)
 import Effect (Effect)
 import Effect.Console (log)
-import Helpers.HTML (getCurrentUrl)
+import Helpers.HTML (getCurrentUrl, saveToLocalStorage)
 import Web.Event.EventTarget (addEventListener, eventListener)
 import Web.Event.Internal.Types (Event)
 import Web.HTML (Window)
 import Web.HTML.Event.EventTypes (domcontentloaded)
 import Web.HTML.Window (toEventTarget)
-import Web.URL (fromAbsolute, searchParams)
+import Web.URL (searchParams)
 import Web.URL.URLSearchParams (get)
 
 {-------------------------------------------------------------------------------
@@ -48,8 +49,8 @@ shareTargetFields = { title: "title", url: "url", text: "text" }
 | URL is empty.
 | Text: https://news.ycombinator.com/news
 -}
-handleShare :: Event -> Effect Unit
-handleShare _ = do
+handleShare :: Window -> Event -> Effect Unit
+handleShare win _ = do
   url <- getCurrentUrl unit
   case url of
     Just u -> do
@@ -60,11 +61,12 @@ handleShare _ = do
 
         sharedUrl = get shareTargetFields.url toSearch
 
-        maybeURL = fromAbsolute =<< sharedUrl
+        maybeURL = urlFromString =<< sharedUrl
 
         sharedText = get shareTargetFields.text toSearch
 
         note = fromShared sharedTitle maybeURL sharedText
+      saveToLocalStorage win "Note" note
       log $ show note
     Nothing -> pure unit
 
@@ -75,5 +77,5 @@ handleShare _ = do
 -}
 registerShareEvent ∷ Window → Effect Unit
 registerShareEvent w = do
-  domListener <- eventListener handleShare
+  domListener <- eventListener $ handleShare w
   addEventListener domcontentloaded domListener false $ toEventTarget w

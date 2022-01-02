@@ -10,14 +10,17 @@
 module Helpers.HTML
   ( getCurrentUrl
   , getCurrentUrlString
+  , saveToLocalStorage
   ) where
 
 import Prelude
+import Data.Argonaut (class EncodeJson, decodeJson, encodeJson, fromString, jsonParser, stringify)
 import Data.Maybe (Maybe)
 import Effect (Effect)
-import Web.HTML (window)
+import Web.HTML (Window, window)
 import Web.HTML.Location (href)
-import Web.HTML.Window (location)
+import Web.HTML.Window (localStorage, location)
+import Web.Storage.Storage (getItem, setItem)
 import Web.URL (URL, fromAbsolute)
 
 {-------------------------------------------------------------------------------
@@ -37,3 +40,13 @@ getCurrentUrl :: Unit -> Effect (Maybe URL)
 getCurrentUrl _ = do
   urlString <- getCurrentUrlString unit
   pure $ fromAbsolute urlString
+
+saveToLocalStorage :: forall a. EncodeJson a => Window -> String -> a -> Effect Unit
+saveToLocalStorage win key note = do
+  s <- localStorage win
+  setItem key (stringify $ encodeJson note) s
+
+loadFromLocalStorage win key = do
+  s <- localStorage win
+  jsonStr <- getItem key s
+  pure $ map fromString jsonStr

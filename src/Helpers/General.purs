@@ -29,8 +29,8 @@ import Data.Maybe (Maybe(..), fromMaybe)
 import Data.String.Regex (Regex, match, test)
 import Data.String.Regex.Flags (ignoreCase)
 import Data.String.Regex.Unsafe (unsafeRegex)
+import Data.URL (NoteURL, urlFromString)
 import JSURI (decodeFormURLComponent, decodeURIComponent, encodeFormURLComponent, encodeURIComponent)
-import Web.URL (URL, fromAbsolute)
 
 {-------------------------------------------------------------------------------
 | Regex to parse an URL.
@@ -63,10 +63,10 @@ getFirstMatch rex text = firstMatch
 |
 | * `text` - The String to parse for an URL.
 -}
-getURL :: String -> Maybe URL
+getURL :: String -> Maybe NoteURL
 getURL text = case test regexURL text of
   false -> Nothing
-  true -> fromAbsolute =<< getFirstMatch regexURL text
+  true -> urlFromString =<< getFirstMatch regexURL text
 
 {-------------------------------------------------------------------------------
 | Search for an URL in the given String and return that.

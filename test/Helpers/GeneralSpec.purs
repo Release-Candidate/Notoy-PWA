@@ -13,6 +13,7 @@ module Test.Helpers.GeneralSpec
   ) where
 
 import Prelude
+
 import Control.Monad.Error.Class (class MonadThrow)
 import Data.Foldable (for_)
 import Data.Interpolate (interp)
@@ -21,9 +22,9 @@ import Data.String.Regex (Regex)
 import Data.String.Regex.Flags (unicode)
 import Data.String.Regex.Unsafe (unsafeRegex)
 import Data.Tuple (Tuple(..))
-import Data.URL (urlFromString)
+import Data.URL (noteUrlFromString)
 import Effect.Exception (Error)
-import Helpers.General (decodeURIString, decodeURIStringMaybe, decodeURLString, decodeURLStringMaybe, encodeURIString, encodeURIStringMaybe, encodeURLString, encodeURLStringMaybe, getFirstMatch, getURL)
+import Helpers.General (decodeURIString, decodeURIStringMaybe, decodeURLString, decodeURLStringMaybe, encodeURIString, encodeURIStringMaybe, encodeURLString, encodeURLStringMaybe, getFirstMatch, getNoteURL)
 import Test.QuickCheck ((===))
 import Test.Spec (Spec, SpecT, describe, it)
 import Test.Spec.Assertions (shouldEqual)
@@ -82,7 +83,7 @@ getURLSpecs =
   describe "getURL" do
     getURLHelper "This is" "not" " an URL" Nothing
     it (interp "Quickcheck URLs " url1 " -> URL")
-      $ quickCheck \s1 s2 -> getURL (s1 <> url1 <> " " <> s2) === urlFromString url1
+      $ quickCheck \s1 s2 -> getNoteURL (s1 <> url1 <> " " <> s2) === noteUrlFromString url1
     for_ urlsValid \u -> getURLHelper "" u "" $ Just u
     for_ urlsValid \u -> getURLHelper " " u " " $ Just u
     for_ urlsValid \u -> getURLHelper "gfdgds" u " hgdfg" $ Just u
@@ -97,7 +98,7 @@ getURLHelper ::
   String -> String -> String -> Maybe String -> SpecT a Unit m Unit
 getURLHelper p1 url p2 result =
   it (interp "Text '" p1 url p2 "' -> " $ show result) do
-    getURL (p1 <> url <> p2) `shouldEqual` (urlFromString =<< result)
+    getNoteURL (p1 <> url <> p2) `shouldEqual` (noteUrlFromString =<< result)
 
 url1 :: String
 url1 = "https://pursuit.purescript.org/search?q=spec+dsf+hfgh++gfh"

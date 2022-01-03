@@ -13,10 +13,10 @@ module ShareTarget.Event
 import Prelude
 import Data.Maybe (Maybe(..))
 import Data.Note (fromShared)
-import Data.URL (urlFromString)
+import Data.URL (noteUrlFromString)
 import Effect (Effect)
 import Effect.Console (log)
-import Helpers.HTML (getCurrentUrl, saveToLocalStorage)
+import Helpers.Browser (getCurrentUrl, saveToLocalStorage)
 import Web.Event.EventTarget (addEventListener, eventListener)
 import Web.Event.Internal.Types (Event)
 import Web.HTML (Window)
@@ -61,12 +61,12 @@ handleShare win _ = do
 
         sharedUrl = get shareTargetFields.url toSearch
 
-        maybeURL = urlFromString =<< sharedUrl
+        maybeURL = noteUrlFromString =<< sharedUrl
 
         sharedText = get shareTargetFields.text toSearch
 
         note = fromShared sharedTitle maybeURL sharedText
-      saveToLocalStorage win "Note" note
+      saveToLocalStorage win note
       log $ show note
     Nothing -> pure unit
 

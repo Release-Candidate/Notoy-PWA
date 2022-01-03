@@ -11,6 +11,7 @@ module Data.Note
   ( KeyWordArray(..)
   , Note(..)
   , fromShared
+  , noteKeyId
   ) where
 
 import Prelude
@@ -20,40 +21,19 @@ import Data.Argonaut.Encode.Generic (genericEncodeJson)
 import Data.Array (foldl)
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
+import Data.StoreKey (class StoreKey, StoreKeyId(..))
 import Data.String (trim)
 import Data.Tuple (Tuple(..))
-import Data.URL (NoteURL, urlToString)
-import Helpers.General (getURL, getURLString)
+import Data.URL (NoteURL, noteUrlToString)
+import Helpers.General (getNoteURL, getURLString)
+import Test.QuickCheck (class Arbitrary)
+import Test.QuickCheck.Arbitrary (genericArbitrary)
 
 {-------------------------------------------------------------------------------
-| Type for holding an array of keywords.
+| The `StoreKeyId` of a `Note`.
 -}
-newtype KeyWordArray
-  = KeyWordArray (Array String)
-
-derive instance eqKeywordArray :: Eq KeyWordArray
-
-derive instance ordKeyWordArray :: Ord KeyWordArray
-
-derive instance genericKeyWordArray :: Generic KeyWordArray _
-
-instance encodeJSONKeyWordArray :: EncodeJson KeyWordArray where
-  encodeJson = genericEncodeJson
-
-instance decodeJSONKeyWordArray :: DecodeJson KeyWordArray where
-  decodeJson = genericDecodeJson
-
-instance showKeyWordArray :: Show KeyWordArray where
-  show (KeyWordArray keys) =
-    foldl
-      ( \acc e ->
-          if acc == "" then
-            acc <> e
-          else
-            acc <> ", " <> e
-      )
-      ""
-      keys
+noteKeyId :: StoreKeyId
+noteKeyId = StoreKeyId "Note"
 
 {-------------------------------------------------------------------------------
 | The actual data and text of the note.
@@ -62,7 +42,7 @@ instance showKeyWordArray :: Show KeyWordArray where
 | * `title` - the title of the note.
 | * `url` - the URL of the website the note is about.
 |           ATTENTION: has to be encoded to work as a link!
-| * `shrtDesc` - the short description text.
+| * `shortDesc` - the short description text.
 | * `longDesc` - the longer, detailed description.
 -}
 data Note
@@ -83,6 +63,12 @@ instance encodeJSONNote :: EncodeJson Note where
 
 instance decodeJSONNote :: DecodeJson Note where
   decodeJson = genericDecodeJson
+
+instance arbitraryNote :: Arbitrary Note where
+  arbitrary = genericArbitrary
+
+instance storeKeyNote :: StoreKey Note where
+  key _ = noteKeyId
 
 instance showNote :: Show Note where
   show ( Note
@@ -105,7 +91,7 @@ instance showNote :: Show Note where
 
       titleString = showField "Title" title
 
-      urlString = showField "URL" $ map urlToString url
+      urlString = showField "URL" $ map noteUrlToString url
 
       keywordString = showFieldKeyWds keywords
 
@@ -176,6 +162,39 @@ fromShared title url text =
     }
 
 {-------------------------------------------------------------------------------
+| Type for holding an array of keywords.
+-}
+newtype KeyWordArray
+  = KeyWordArray (Array String)
+
+derive instance eqKeywordArray :: Eq KeyWordArray
+
+derive instance ordKeyWordArray :: Ord KeyWordArray
+
+derive instance genericKeyWordArray :: Generic KeyWordArray _
+
+instance encodeJSONKeyWordArray :: EncodeJson KeyWordArray where
+  encodeJson = genericEncodeJson
+
+instance decodeJSONKeyWordArray :: DecodeJson KeyWordArray where
+  decodeJson = genericDecodeJson
+
+instance arbitraryKeyWordArray :: Arbitrary KeyWordArray where
+  arbitrary = genericArbitrary
+
+instance showKeyWordArray :: Show KeyWordArray where
+  show (KeyWordArray keys) =
+    foldl
+      ( \acc e ->
+          if acc == "" then
+            acc <> e
+          else
+            acc <> ", " <> e
+      )
+      ""
+      keys
+
+{-------------------------------------------------------------------------------
 | Helper: Type to hold a Tuple of the parsed URL and text (URL, text), both as a
 | `Maybe String`.
 |
@@ -194,7 +213,7 @@ getURLAndText text = UrlString (Tuple url txt)
   where
   trimmed = Just $ trim text
 
-  url = getURL text
+  url = getNoteURL text
 
   urlSt = getURLString text
 

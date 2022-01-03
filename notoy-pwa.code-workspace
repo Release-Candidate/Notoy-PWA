@@ -4,5 +4,14 @@
       "path": "."
     }
   ],
-  "settings": {}
+  "settings": {
+    "cSpell.words": [
+      "domcontentloaded",
+      "interp",
+      "JSURI",
+      "keywds",
+      "notoy",
+      "WURL"
+    ]
+  }
 }

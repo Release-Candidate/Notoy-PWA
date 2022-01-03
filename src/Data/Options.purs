@@ -9,13 +9,60 @@
 -- | Module Data.Options, the record holding the app's options and related
 -- | functions.
 module Data.Options
-  ( Format(..)
+  ( AddDate(..)
+  , AddYamlHeader(..)
+  , Format(..)
   , Options(..)
+  , optionsKeyId
   ) where
 
 import Prelude
+import Data.Argonaut (class DecodeJson, class EncodeJson)
+import Data.Argonaut.Decode.Generic (genericDecodeJson)
+import Data.Argonaut.Encode.Generic (genericEncodeJson)
 import Data.Generic.Rep (class Generic)
 import Data.Show.Generic (genericShow)
+import Data.StoreKey (StoreKeyId(..))
+import Test.QuickCheck (class Arbitrary, arbitrary)
+import Test.QuickCheck.Arbitrary (genericArbitrary)
+
+{-------------------------------------------------------------------------------
+| The `StoreKeyId` of `Options`.
+-}
+optionsKeyId :: StoreKeyId
+optionsKeyId = StoreKeyId "Options"
+
+{-------------------------------------------------------------------------------
+| The apps options.
+|
+| * `format` - the note format to use. Markdown, Emacs Org-Mode or plain text.
+| * `addDate` - add the current date to the note?
+| * `addYaml` - add a YAML front matter header to the note?
+-}
+data Options
+  = Options
+    { format :: Format
+    , addDate :: AddDate
+    , addYaml :: AddYamlHeader
+    }
+
+derive instance eqOptions :: Eq Options
+
+derive instance ordOptions :: Ord Options
+
+derive instance genericOptions :: Generic Options _
+
+instance decodeJsonOptions :: DecodeJson Options where
+  decodeJson = genericDecodeJson
+
+instance encodeJsonOptions :: EncodeJson Options where
+  encodeJson = genericEncodeJson
+
+instance showOptions :: Show Options where
+  show = genericShow
+
+instance arbitraryOptions :: Arbitrary Options where
+  arbitrary = genericArbitrary
 
 {-------------------------------------------------------------------------------
 | The format of the note.
@@ -36,28 +83,95 @@ derive instance ordFormat :: Ord Format
 
 derive instance genericFormat :: Generic Format _
 
+instance decodeJsonFormat :: DecodeJson Format where
+  decodeJson = genericDecodeJson
+
+instance encodeJsonFormat :: EncodeJson Format where
+  encodeJson = genericEncodeJson
+
 instance showFormat :: Show Format where
   show = genericShow
 
 {-------------------------------------------------------------------------------
-| The apps options.
-|
-| * `format` - the note format to use. Markdown, Emacs Org-Mode or plain text.
-| * `addDate` - add the current date to the note?
-| * `addYaml` - add a YAML front matter header to the note?
+| ATTENTION: 3 is the number of values of `Format`.
 -}
-data Options
-  = Options
-    { format :: Format
-    , addDate :: Boolean
-    , addYaml :: Boolean
-    }
+instance arbitraryFormat :: Arbitrary Format where
+  arbitrary = map intToFormat arbitrary
+    where
+    intToFormat :: Int -> Format
+    intToFormat n
+      | n >= 0 = case n `mod` 3 of
+        0 -> Markdown
+        1 -> OrgMode
+        _ -> Text
+      | otherwise = intToFormat (-n)
 
-derive instance eqOptions :: Eq Options
+{-------------------------------------------------------------------------------
+| Whether to automatically add the current date as timestamp to the note.
+-}
+data AddDate
+  = NoDate
+  | AddDate
 
-derive instance ordOptions :: Ord Options
+derive instance eqAddDate :: Eq AddDate
 
-derive instance genericOptions :: Generic Options _
+derive instance ordAddDate :: Ord AddDate
 
-instance showOptions :: Show Options where
+derive instance genericAddDate :: Generic AddDate _
+
+instance decodeJsonAddDate :: DecodeJson AddDate where
+  decodeJson = genericDecodeJson
+
+instance encodeJsonAddDate :: EncodeJson AddDate where
+  encodeJson = genericEncodeJson
+
+instance showAddDate :: Show AddDate where
   show = genericShow
+
+{-------------------------------------------------------------------------------
+| ATTENTION: 2 is the number of values of `AddDate`!
+-}
+instance arbitraryAddDate :: Arbitrary AddDate where
+  arbitrary = map intToAddDate arbitrary
+    where
+    intToAddDate :: Int -> AddDate
+    intToAddDate n
+      | n >= 0 = case n `mod` 2 of
+        0 -> NoDate
+        _ -> AddDate
+      | otherwise = intToAddDate (-n)
+
+{-------------------------------------------------------------------------------
+| Whether to automatically add a YAML front matter header to the note.
+-}
+data AddYamlHeader
+  = NoYamlHeader
+  | AddYamlHeader
+
+derive instance eqAddYamlHeader :: Eq AddYamlHeader
+
+derive instance ordAddYamlHeader :: Ord AddYamlHeader
+
+derive instance genericAddYamlHeader :: Generic AddYamlHeader _
+
+instance decodeJsonAddYamlHeader :: DecodeJson AddYamlHeader where
+  decodeJson = genericDecodeJson
+
+instance encodeJsonAddYamlHeader :: EncodeJson AddYamlHeader where
+  encodeJson = genericEncodeJson
+
+instance showAddYamlHeader :: Show AddYamlHeader where
+  show = genericShow
+
+{-------------------------------------------------------------------------------
+| ATTENTION: 2 is the number of values of `AddYamlHeader`!
+-}
+instance arbitraryAddYamlHeader :: Arbitrary AddYamlHeader where
+  arbitrary = map intToAddYamlHeader arbitrary
+    where
+    intToAddYamlHeader :: Int -> AddYamlHeader
+    intToAddYamlHeader n
+      | n >= 0 = case n `mod` 2 of
+        0 -> NoYamlHeader
+        _ -> AddYamlHeader
+      | otherwise = intToAddYamlHeader (-n)

@@ -12,7 +12,12 @@ module Test.Data.OptionsSpec
   ) where
 
 import Prelude
+import Data.Argonaut (decodeJson, encodeJson)
+import Data.Either (Either(..))
+import Data.Options (Options)
+import Test.QuickCheck ((===))
 import Test.Spec (Spec, describe, it)
+import Test.Spec.QuickCheck (quickCheck)
 
 {-------------------------------------------------------------------------------
 | The tests to run.
@@ -22,5 +27,14 @@ import Test.Spec (Spec, describe, it)
 spec :: Spec Unit
 spec =
   describe "Data.Options - Tests" do
-    describe "Group 1" do
-      it "No Tests" $ pure unit
+    encodeDecodeSpecs
+
+{-------------------------------------------------------------------------------
+| Tests of the JSON de- and encoding.
+-}
+encodeDecodeSpecs :: Spec Unit
+encodeDecodeSpecs =
+  describe "Encode and decode to JSON" do
+    it "Quickcheck decodeJson ° encodeJson"
+      $ quickCheck \(option :: Options) ->
+          (decodeJson $ encodeJson option) === Right option

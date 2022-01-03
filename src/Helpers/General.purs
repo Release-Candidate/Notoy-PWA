@@ -17,7 +17,7 @@ module Helpers.General
   , encodeURLString
   , encodeURLStringMaybe
   , getFirstMatch
-  , getURL
+  , getNoteURL
   , getURLString
   , regexURL
   , showM
@@ -29,8 +29,13 @@ import Data.Maybe (Maybe(..), fromMaybe)
 import Data.String.Regex (Regex, match, test)
 import Data.String.Regex.Flags (ignoreCase)
 import Data.String.Regex.Unsafe (unsafeRegex)
-import Data.URL (NoteURL, urlFromString)
-import JSURI (decodeFormURLComponent, decodeURIComponent, encodeFormURLComponent, encodeURIComponent)
+import Data.URL (NoteURL, noteUrlFromString)
+import JSURI
+  ( decodeFormURLComponent
+  , decodeURIComponent
+  , encodeFormURLComponent
+  , encodeURIComponent
+  )
 
 {-------------------------------------------------------------------------------
 | Regex to parse an URL.
@@ -57,16 +62,16 @@ getFirstMatch rex text = firstMatch
       _ -> Nothing
 
 {-------------------------------------------------------------------------------
-| Search for an URL in the given String and return that.
+| Search for a URL in the given String and return that.
 |
 | If no URL has been found, `Nothing` is returned.
 |
 | * `text` - The String to parse for an URL.
 -}
-getURL :: String -> Maybe NoteURL
-getURL text = case test regexURL text of
+getNoteURL :: String -> Maybe NoteURL
+getNoteURL text = case test regexURL text of
   false -> Nothing
-  true -> urlFromString =<< getFirstMatch regexURL text
+  true -> noteUrlFromString =<< getFirstMatch regexURL text
 
 {-------------------------------------------------------------------------------
 | Search for an URL in the given String and return that.

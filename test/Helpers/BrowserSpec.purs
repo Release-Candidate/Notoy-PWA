@@ -1,13 +1,13 @@
 -- SPDX-License-Identifier: GPL-3.0-or-later
--- Copyright (C) 2021 Roland Csaszar
+-- Copyright (C) 2022 Roland Csaszar
 --
 -- Project:  notoy-pwa
--- File:     HTMLSpec.purs
+-- File:     BrowserSpec.purs
 -- Date:     30.Dec.2021
 --
 -- ==============================================================================
--- | Module Helpers.HTMLSpec, tests for the module `Helpers.HTML`.
-module Test.Helpers.HTMLSpec
+-- | Module Test.Helpers.BrowserSpec, tests for the module `Helpers.HTML`.
+module Test.Helpers.BrowserSpec
   ( spec
   ) where
 
@@ -21,7 +21,7 @@ import Test.Spec (Spec, describe, it, parallel)
 -}
 spec :: Spec Unit
 spec =
-  describe "Helpers.HTML - Tests"
+  describe "Helpers.Browser - Tests"
     $ parallel do
         describe "Group 1" do
           it "Does not work without a browser!" $ pure unit

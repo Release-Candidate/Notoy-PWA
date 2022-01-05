@@ -110,7 +110,7 @@ handleAction = case _ of
         (\e -> Just $ ShareEvent e)
   ShareEvent e -> do
     win <- H.liftEffect $ window
-    H.liftEffect $ handleShare win e
+    handleShare win e
 
 shareTargetFields ::
   { text :: String
@@ -129,7 +129,10 @@ shareTargetFields = { title: "title", url: "url", text: "text" }
 | URL is empty.
 | Text: https://news.ycombinator.com/news
 -}
-handleShare :: Window -> Event -> Effect Unit
+handleShare ::
+  forall output m.
+  MonadAff m =>
+  Window -> Event -> H.HalogenM State Action () output m Unit
 handleShare win _ = do
   url <- H.liftEffect $ getCurrentUrl unit
   case url of
@@ -146,8 +149,9 @@ handleShare win _ = do
         sharedText = get shareTargetFields.text toSearch
 
         note = fromShared sharedTitle maybeURL sharedText
-      saveToLocalStorage win note
-      log $ show note
+      H.liftEffect $ saveToLocalStorage win note
+      H.liftEffect $ log $ show note
+      pure unit
     Nothing -> pure unit
 
 -- | Main entry point of the app.

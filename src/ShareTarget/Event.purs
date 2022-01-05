@@ -7,7 +7,8 @@
 --
 -- =============================================================================
 module ShareTarget.Event
-  ( registerShareEvent
+  ( handleShare
+  , registerShareEvent
   ) where
 
 import Prelude
@@ -15,6 +16,7 @@ import Data.Maybe (Maybe(..))
 import Data.Note (fromShared)
 import Data.URL (noteUrlFromString)
 import Effect (Effect)
+import Halogen as H
 import Effect.Console (log)
 import Helpers.Browser (getCurrentUrl, saveToLocalStorage)
 import Web.Event.EventTarget (addEventListener, eventListener)

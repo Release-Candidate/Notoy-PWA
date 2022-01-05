@@ -116,7 +116,7 @@ encodeURLString :: String -> String
 encodeURLString = fromMaybe "" <<< encodeFormURLComponent
 
 {-------------------------------------------------------------------------------
-| Encode a String accoring to `RFC3896`.
+| Encode a String according to `RFC3896`.
 |
 |  Returns the empty String `""` on errors.
 |

@@ -14,20 +14,21 @@ module Main
   ) where
 
 import Prelude
-import Data.Maybe (Maybe(..))
-import Data.Note (Note(..), fromShared)
-import Data.Options (AddDate(..), AddYamlHeader(..), Format(..), Options(..))
+import App.Constants (appElementId)
+import Data.Maybe (Maybe(..), fromJust)
+import Data.Note (Note(..), defaultNote, fromShared, noteKeyId)
+import Data.Options (Options, defaultOptions)
 import Data.URL (noteUrlFromString)
 import Effect (Effect)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Console (log)
 import Halogen as H
 import Halogen.Aff as HA
-import Halogen.VDom.Driver (runUI)
 import Halogen.HTML as HH
 import Halogen.Query.Event (eventListener)
-import Helpers.Browser (getCurrentUrl, saveToLocalStorage)
-import Web.DOM.Node (nodeName)
+import Halogen.VDom.Driver (runUI)
+import Helpers.Browser (getCurrentUrl, loadFromLocalStorage, saveToLocalStorage)
+import Partial.Unsafe (unsafePartial)
 import Web.DOM.ParentNode (QuerySelector(..))
 import Web.Event.Internal.Types (Event)
 import Web.HTML (Window, window)
@@ -36,13 +37,15 @@ import Web.HTML.Window (toEventTarget)
 import Web.URL (searchParams)
 import Web.URL.URLSearchParams (get)
 
-{-------------------------------------------------------------------------------
-| The id of the HTML div to render the app to.
-|
-| "#app"
--}
-appElementId :: String
-appElementId = "#app"
+-- | Main entry point of the app.
+main :: Effect Unit
+main =
+  HA.runHalogenAff do
+    HA.awaitLoad
+    appEl <- HA.selectElement (QuerySelector appElementId)
+    let
+      app = unsafePartial $ fromJust appEl
+    runUI component unit app
 
 {-------------------------------------------------------------------------------
 | The App's state.
@@ -54,20 +57,8 @@ type State
 
 initialState :: forall input. input -> State
 initialState _ =
-  { options:
-      Options
-        { format: Markdown
-        , addDate: AddDate
-        , addYaml: AddYamlHeader
-        }
-  , note:
-      Note
-        { title: Nothing
-        , url: Nothing
-        , keywords: Nothing
-        , shortDesc: Nothing
-        , longDesc: Nothing
-        }
+  { options: defaultOptions
+  , note: defaultNote
   }
 
 {-------------------------------------------------------------------------------
@@ -77,9 +68,9 @@ data Action
   = Initialize
   | ShareEvent Event
 
-component1 ::
+component ::
   forall query input output m. MonadAff m => H.Component query input output m
-component1 =
+component =
   H.mkComponent
     { initialState
     , render
@@ -103,6 +94,16 @@ handleAction ::
 handleAction = case _ of
   Initialize -> do
     win <- H.liftEffect $ window
+    (loadedNote :: Maybe Note) <- H.liftEffect $ loadFromLocalStorage win noteKeyId
+    case loadedNote of
+      Nothing -> H.liftEffect $ log $ "No Note loaded!"
+      Just savedNote -> do
+        currState <-
+          H.modify \state ->
+            { note: savedNote
+            , options: state.options
+            }
+        H.liftEffect $ log $ "Loaded Note: " <> show currState.note
     H.subscribe' \_ ->
       eventListener
         domcontentloaded
@@ -149,19 +150,13 @@ handleShare win _ = do
         sharedText = get shareTargetFields.text toSearch
 
         note = fromShared sharedTitle maybeURL sharedText
-      H.liftEffect $ saveToLocalStorage win note
-      H.liftEffect $ log $ show note
-      pure unit
+      case note of
+        Note { title: Nothing, url: Nothing, keywords: Nothing, shortDesc: Nothing, longDesc: Nothing } -> pure unit
+        _ -> do
+          H.liftEffect $ saveToLocalStorage win note
+          H.modify_ \state ->
+            { note: note
+            , options: state.options
+            }
+          H.liftEffect $ log $ "Got shared note: " <> show note
     Nothing -> pure unit
-
--- | Main entry point of the app.
-main :: Effect Unit
-main =
-  HA.runHalogenAff do
-    HA.awaitLoad
-    appEl <- HA.selectElement (QuerySelector appElementId)
-    case appEl of
-      Nothing -> do
-        body <- HA.awaitBody
-        runUI component1 unit body
-      Just app -> runUI component1 unit app

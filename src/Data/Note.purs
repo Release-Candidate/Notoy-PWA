@@ -10,6 +10,7 @@
 module Data.Note
   ( KeyWordArray(..)
   , Note(..)
+  , defaultNote
   , fromShared
   , noteKeyId
   ) where
@@ -24,7 +25,7 @@ import Data.Maybe (Maybe(..))
 import Data.StoreKey (class StoreKey, StoreKeyId(..))
 import Data.String (trim)
 import Data.Tuple (Tuple(..))
-import Data.URL (NoteURL, noteUrlToString)
+import Data.URL (NoteURL, noteUrlToString, trimQuotes)
 import Helpers.General (getNoteURL, getURLString)
 import Test.QuickCheck (class Arbitrary)
 import Test.QuickCheck.Arbitrary (genericArbitrary)
@@ -52,6 +53,19 @@ data Note
     , keywords :: Maybe KeyWordArray
     , shortDesc :: Maybe String
     , longDesc :: Maybe String
+    }
+
+{-------------------------------------------------------------------------------
+| The default, empty note.
+-}
+defaultNote :: Note
+defaultNote =
+  Note
+    { title: Nothing
+    , url: Nothing
+    , keywords: Nothing
+    , shortDesc: Nothing
+    , longDesc: Nothing
     }
 
 derive instance eqNote :: Eq Note
@@ -211,11 +225,11 @@ newtype UrlString
 getURLAndText :: String -> UrlString
 getURLAndText text = UrlString (Tuple url txt)
   where
-  trimmed = Just $ trim text
+  trimmed = Just $ trimQuotes $ trim text
 
   url = getNoteURL text
 
-  urlSt = getURLString text
+  urlSt = getURLString $ trimQuotes text
 
   txt = case trimmed == urlSt of
     true -> Nothing

@@ -13,6 +13,7 @@ module Data.Options
   , AddYamlHeader(..)
   , Format(..)
   , Options(..)
+  , defaultOptions
   , optionsKeyId
   ) where
 
@@ -44,6 +45,18 @@ data Options
     { format :: Format
     , addDate :: AddDate
     , addYaml :: AddYamlHeader
+    }
+
+{-------------------------------------------------------------------------------
+| The default `Options`, markdown format with the current date as timestamp,
+| but no YAML front matter.
+-}
+defaultOptions ∷ Options
+defaultOptions =
+  Options
+    { format: Markdown
+    , addDate: AddDate
+    , addYaml: NoYamlHeader
     }
 
 derive instance eqOptions :: Eq Options

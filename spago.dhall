@@ -26,6 +26,7 @@ to generate this file without the comments in this block.
   , "js-uri"
   , "maybe"
   , "newtype"
+  , "partial"
   , "prelude"
   , "psci-support"
   , "quickcheck"

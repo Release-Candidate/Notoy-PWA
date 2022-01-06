@@ -15,18 +15,13 @@ module Helpers.Browser
   ) where
 
 import Prelude
-import Data.Argonaut
-  ( class DecodeJson
-  , class EncodeJson
-  , decodeJson
-  , encodeJson
-  , fromString
-  , stringify
-  )
-import Data.Either (hush)
+import Data.Argonaut (class DecodeJson, class EncodeJson)
+import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
-import Data.StoreKey (class StoreKey, StoreKeyId, key, storeKeyIdToString)
+import Data.StoreKey (class StoreKey, StoreKeyId, storeKeyIdFromObject, storeKeyIdToString)
 import Effect (Effect)
+import Effect.Console (log)
+import Helpers.General (decodeJsonFromString, encodeToJsonString)
 import Web.HTML (Window, window)
 import Web.HTML.Location (href)
 import Web.HTML.Window (localStorage, location)
@@ -63,7 +58,7 @@ saveToLocalStorage ::
   EncodeJson a => Window -> a -> Effect Unit
 saveToLocalStorage win object = do
   s <- localStorage win
-  setItem (storeKeyIdToString $ key object) (stringify $ encodeJson object) s
+  setItem (storeKeyIdFromObject object) (encodeToJsonString object) s
 
 {-------------------------------------------------------------------------------
 | Deserialize the given object as JSON from the local storage, using `key` as
@@ -79,6 +74,12 @@ loadFromLocalStorage ::
 loadFromLocalStorage win key = do
   s <- localStorage win
   jsonStr <- getItem (storeKeyIdToString key) s
-  case map fromString jsonStr of
-    Nothing -> pure Nothing
-    Just j -> pure $ hush $ decodeJson j
+  case jsonStr of
+    Nothing -> do
+      log $ "Error loading item for key " <> storeKeyIdToString key
+      pure Nothing
+    Just str -> case decodeJsonFromString str of
+      Left e -> do
+        log e
+        pure Nothing
+      Right obj -> pure obj

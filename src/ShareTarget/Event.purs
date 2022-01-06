@@ -13,10 +13,9 @@ module ShareTarget.Event
 
 import Prelude
 import Data.Maybe (Maybe(..))
-import Data.Note (fromShared)
+import Data.Note (Note(..), fromShared)
 import Data.URL (noteUrlFromString)
 import Effect (Effect)
-import Halogen as H
 import Effect.Console (log)
 import Helpers.Browser (getCurrentUrl, saveToLocalStorage)
 import Web.Event.EventTarget (addEventListener, eventListener)
@@ -68,7 +67,9 @@ handleShare win _ = do
         sharedText = get shareTargetFields.text toSearch
 
         note = fromShared sharedTitle maybeURL sharedText
-      saveToLocalStorage win note
+      case note of
+        Note { title: Nothing, url: Nothing, keywords: Nothing, shortDesc: Nothing, longDesc: Nothing } -> pure unit
+        _ -> saveToLocalStorage win note
       log $ show note
     Nothing -> pure unit
 

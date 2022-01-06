@@ -23,6 +23,7 @@ import Data.String (trim)
 import Data.Tuple (Tuple(..))
 import Data.URL (noteUrlFromString)
 import Effect.Exception (Error)
+import Helpers.General (decodeJsonFromString, encodeToJsonString)
 import Test.QuickCheck ((===))
 import Test.Spec (Spec, SpecT, describe, it)
 import Test.Spec.Assertions (shouldEqual)
@@ -55,7 +56,7 @@ fromSharedSpecs =
                 { title: Just s1
                 , url: noteUrlFromString "http://url"
                 , keywords: Nothing
-                , shortDesc: Just $ trim $ s2
+                , shortDesc: Just s2
                 , longDesc: Nothing
                 }
           in
@@ -178,6 +179,9 @@ jsonEncodeDecodeSpecs =
     it "Quickcheck decodeJson ° encodeJson"
       $ quickCheck \(note :: Note) ->
           (decodeJson $ encodeJson note) === Right note
+    it "Quickcheck decodeJsonFromString ° encodeToJsonString"
+      $ quickCheck \(note :: Note) ->
+          (decodeJsonFromString $ encodeToJsonString note) === Right note
 
 fromSharedNotes :: Array (Tuple Note Note)
 fromSharedNotes =
@@ -185,6 +189,23 @@ fromSharedNotes =
       ( Note
           { title: Just "Title 1"
           , url: noteUrlFromString "https://url.com:12354/index.html"
+          , keywords: Nothing
+          , shortDesc: Just "Short text"
+          , longDesc: Nothing
+          }
+      )
+      ( Note
+          { title: Just "Title 1"
+          , url: noteUrlFromString "https://url.com:12354/index.html"
+          , keywords: Nothing
+          , shortDesc: Just "Short text"
+          , longDesc: Nothing
+          }
+      )
+  , Tuple
+      ( Note
+          { title: Just "Title 1"
+          , url: noteUrlFromString "\"https://url.com:12354/index.html\""
           , keywords: Nothing
           , shortDesc: Just "Short text"
           , longDesc: Nothing
@@ -269,6 +290,57 @@ fromSharedNotes =
   , Tuple
       ( Note
           { title: Just "http://url"
+          , url: Nothing
+          , keywords: Nothing
+          , shortDesc: Nothing
+          , longDesc: Nothing
+          }
+      )
+      ( Note
+          { title: Nothing
+          , url: noteUrlFromString "http://url"
+          , keywords: Nothing
+          , shortDesc: Nothing
+          , longDesc: Nothing
+          }
+      )
+  , Tuple
+      ( Note
+          { title: Just "\"http://url"
+          , url: Nothing
+          , keywords: Nothing
+          , shortDesc: Nothing
+          , longDesc: Nothing
+          }
+      )
+      ( Note
+          { title: Nothing
+          , url: noteUrlFromString "http://url"
+          , keywords: Nothing
+          , shortDesc: Nothing
+          , longDesc: Nothing
+          }
+      )
+  , Tuple
+      ( Note
+          { title: Just "\"http://url\""
+          , url: Nothing
+          , keywords: Nothing
+          , shortDesc: Nothing
+          , longDesc: Nothing
+          }
+      )
+      ( Note
+          { title: Nothing
+          , url: noteUrlFromString "http://url"
+          , keywords: Nothing
+          , shortDesc: Nothing
+          , longDesc: Nothing
+          }
+      )
+  , Tuple
+      ( Note
+          { title: Just "http://url\""
           , url: Nothing
           , keywords: Nothing
           , shortDesc: Nothing

@@ -8,10 +8,12 @@
 -- =============================================================================
 -- | Module Helpers.General, contains general helper functions.
 module Helpers.General
-  ( decodeURIString
+  ( decodeJsonFromString
+  , decodeURIString
   , decodeURIStringMaybe
   , decodeURLString
   , decodeURLStringMaybe
+  , encodeToJsonString
   , encodeURIString
   , encodeURIStringMaybe
   , encodeURLString
@@ -24,18 +26,15 @@ module Helpers.General
   ) where
 
 import Prelude
+import Data.Argonaut (class DecodeJson, class EncodeJson, decodeJson, encodeJson, jsonParser, printJsonDecodeError, stringify)
 import Data.Array.NonEmpty (take)
+import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.String.Regex (Regex, match, test)
 import Data.String.Regex.Flags (ignoreCase)
 import Data.String.Regex.Unsafe (unsafeRegex)
 import Data.URL (NoteURL, noteUrlFromString)
-import JSURI
-  ( decodeFormURLComponent
-  , decodeURIComponent
-  , encodeFormURLComponent
-  , encodeURIComponent
-  )
+import JSURI (decodeFormURLComponent, decodeURIComponent, encodeFormURLComponent, encodeURIComponent)
 
 {-------------------------------------------------------------------------------
 | Regex to parse an URL.
@@ -106,7 +105,7 @@ decodeURIString :: String -> String
 decodeURIString = fromMaybe "" <<< decodeURIComponent
 
 {-------------------------------------------------------------------------------
-| Encode a String accoring to `application/x-www-form-urlencoded`.
+| Encode a String according to `application/x-www-form-urlencoded`.
 |
 |  Returns the empty String `""` on errors.
 |
@@ -173,3 +172,33 @@ encodeURIStringMaybe uri = encodeURIComponent =<< uri
 -}
 showM :: Maybe String -> String
 showM = show <<< fromMaybe ""
+
+{-------------------------------------------------------------------------------
+| Convert the given object to JSON, as a String.
+|
+| * `obj` - The object to encode to JSON.
+-}
+encodeToJsonString ::
+  forall a.
+  EncodeJson a =>
+  a -> String
+encodeToJsonString = stringify <<< encodeJson
+
+{-------------------------------------------------------------------------------
+| Convert the given JSON as string to an object.
+|
+| * `str` - The JSON as string to convert to an object.
+-}
+decodeJsonFromString ::
+  forall a.
+  DecodeJson a =>
+  String -> Either String a
+decodeJsonFromString str =
+  let
+    parsed = jsonParser str
+  in
+    case parsed of
+      Left e -> Left e
+      Right j -> case decodeJson j of
+        Left er -> Left $ "JSON decode error: " <> printJsonDecodeError er <> stringify j
+        Right a -> Right a

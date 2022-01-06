@@ -12,20 +12,18 @@ module Data.URL
   ( NoteURL(..)
   , noteUrlFromString
   , noteUrlToString
+  , trimQuotes
   ) where
 
 import Prelude
-import Data.Argonaut
-  ( class DecodeJson
-  , class EncodeJson
-  , JsonDecodeError(..)
-  , decodeJson
-  , encodeJson
-  )
+import Data.Argonaut (class DecodeJson, class EncodeJson, JsonDecodeError(..), decodeJson, encodeJson)
 import Data.Either (note)
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, unwrap, wrap)
+import Data.String.Regex (Regex, replace)
+import Data.String.Regex.Flags (global, unicode)
+import Data.String.Regex.Unsafe (unsafeRegex)
 import Test.QuickCheck (class Arbitrary, arbitrary)
 import Web.URL (unsafeFromAbsolute)
 import Web.URL as WURL
@@ -58,7 +56,7 @@ instance arbitraryNoteURL :: Arbitrary NoteURL where
 | * `s` - The String of the URL to convert to a `NoteURL`.
 -}
 noteUrlFromString :: String -> Maybe NoteURL
-noteUrlFromString s = case (WURL.fromAbsolute s) of
+noteUrlFromString s = case (WURL.fromAbsolute $ trimQuotes s) of
   Nothing -> Nothing
   Just url -> Just $ wrap url
 
@@ -77,3 +75,19 @@ instance decodeJSONURL :: DecodeJson NoteURL where
 
 instance encodeJSONURL :: EncodeJson NoteURL where
   encodeJson url = encodeJson $ noteUrlToString url
+
+{-------------------------------------------------------------------------------
+| Helper to trim double quotes from a string.
+|
+| Removes quotes at the beginning and end of a string.
+|
+| * `str` - The string to remove the quotes at the start and end of.
+-}
+trimQuotes :: String -> String
+trimQuotes = replace quoteRegex ""
+
+{-------------------------------------------------------------------------------
+| Regex to match double quotes at the beginning and end of a string.
+-}
+quoteRegex :: Regex
+quoteRegex = unsafeRegex "(^\")|(\"$)" global

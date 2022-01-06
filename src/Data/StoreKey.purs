@@ -12,6 +12,7 @@ module Data.StoreKey
   ( StoreKeyId(..)
   , class StoreKey
   , key
+  , storeKeyIdFromObject
   , storeKeyIdToString
   ) where
 
@@ -52,6 +53,9 @@ derive newtype instance arbitraryStoreKeyId :: Arbitrary StoreKeyId
 -}
 storeKeyIdToString :: StoreKeyId -> String
 storeKeyIdToString = unwrap
+
+storeKeyIdFromObject :: forall a. StoreKey a => a -> String
+storeKeyIdFromObject = storeKeyIdToString <<< key
 
 {-------------------------------------------------------------------------------
 | The type class of a key to use to save and load object from local storage.

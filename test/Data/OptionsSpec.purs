@@ -15,6 +15,7 @@ import Prelude
 import Data.Argonaut (decodeJson, encodeJson)
 import Data.Either (Either(..))
 import Data.Options (Options)
+import Helpers.General (decodeJsonFromString, encodeToJsonString)
 import Test.QuickCheck ((===))
 import Test.Spec (Spec, describe, it)
 import Test.Spec.QuickCheck (quickCheck)
@@ -38,3 +39,6 @@ encodeDecodeSpecs =
     it "Quickcheck decodeJson ° encodeJson"
       $ quickCheck \(option :: Options) ->
           (decodeJson $ encodeJson option) === Right option
+    it "Quickcheck decodeJsonFromString ° encodeToJsonString"
+      $ quickCheck \(option :: Options) ->
+          (decodeJsonFromString $ encodeToJsonString option) === Right option

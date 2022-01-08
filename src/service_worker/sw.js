@@ -9,9 +9,12 @@
 /* eslint-disable function-paren-newline */
 /* eslint-disable implicit-arrow-linebreak */
 
-// `version` is the name of the cache, a hash.
+// `version` is the name of the cache, including a timestamp.
+// eslint-disable-next-line no-undef
+const version = TIMESTAMP
 // `manifest` is an array holding the paths to all files to cache.
-import { manifest, version } from "@parcel/service-worker"
+// eslint-disable-next-line no-undef
+const manifest = [LIST_OF_FILES]
 
 //==============================================================================
 // Installation

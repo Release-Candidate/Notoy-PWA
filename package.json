@@ -19,11 +19,13 @@
     },
     "devDependencies": {
         "delete": "^1.1.0",
+        "esbuild": "^0.14.11",
         "eslint": "^8.3.0",
         "filelist": "^1.0.2",
         "gulp": "^4.0.2",
         "gulp-cli": "^2.3.0",
         "gulp-connect": "^5.7.0",
+        "gulp-esbuild": "^0.10.0",
         "gulp-string-replace": "^1.1.2",
         "spago": "^0.20.3"
     }

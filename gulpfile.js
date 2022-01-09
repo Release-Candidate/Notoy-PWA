@@ -62,6 +62,9 @@ const replace = require("gulp-string-replace")
 const connect = require("gulp-connect")
 
 // eslint-disable-next-line no-undef
+const gulpEsbuild = require("gulp-esbuild")
+
+// eslint-disable-next-line no-undef
 const fs = require("fs")
 
 // eslint-disable-next-line no-undef
@@ -162,10 +165,8 @@ function getListOfFiles() {
 
     return listOfFiles
         .toArray()
-        .map(function (e) {
-            return '"' + e.toString().replace(outdirNoSlashes, "") + '"\n'
-        })
-        .concat(['"/"'])
+        .map((e) => '"' + e.toString().replace(outdirNoSlashes, "") + '"\n')
+        .concat(['"/"\n', '"/sw.js.map"\n', '"/app.js.map"\n'])
 }
 
 //==============================================================================
@@ -186,6 +187,34 @@ function copyServiceWorker() {
             )
         )
         .pipe(dest(outDir))
+}
+
+function processJS(file) {
+    return src(outDir + "/" + file)
+        .pipe(
+            gulpEsbuild({
+                outfile: file,
+                bundle: true,
+                sourcemap: "external",
+                minify: true,
+                target: "es2015",
+                treeShaking: true,
+                platform: "browser",
+                resolveExtensions: [".js"],
+                define: {
+                    "process.env.NODE_ENV": "production",
+                },
+            })
+        )
+        .pipe(dest(outDir))
+}
+
+function processSW() {
+    return processJS("sw.js")
+}
+
+function processApp() {
+    return processJS("app.js")
 }
 
 //==============================================================================
@@ -216,7 +245,11 @@ exports.clean = parallel(cleanOutput, cleanHTTP)
 // eslint-disable-next-line no-undef
 exports.bundle = series(
     parallel(runSpago, copyAssets),
-    parallel(replaceVersionOutdir, copyServiceWorker)
+    parallel(
+        replaceVersionOutdir,
+        processApp,
+        series(copyServiceWorker, processSW)
+    )
 )
 
 // eslint-disable-next-line no-undef

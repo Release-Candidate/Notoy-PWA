@@ -33,8 +33,8 @@ async function install() {
     console.log(`[Service Worker] installed files to ${version}`)
 }
 
-addEventListener("install", function (event) {
-    return event.waitUntil(install())
+addEventListener("install", (event) => {
+    event.waitUntil(install())
 })
 
 //==============================================================================
@@ -51,9 +51,7 @@ async function activate() {
     console.log(`[Service Worker] activated`)
 }
 
-addEventListener("activate", function (event) {
-    return event.waitUntil(activate())
-})
+addEventListener("activate", (event) => event.waitUntil(activate()))
 
 //==============================================================================
 // Fetching
@@ -78,6 +76,6 @@ async function fetchFromCache(request) {
     return response
 }
 
-addEventListener("fetch", function (event) {
-    return event.respondWith(fetchFromCache(event.request))
-})
+addEventListener("fetch", (event) =>
+    event.respondWith(fetchFromCache(event.request))
+)

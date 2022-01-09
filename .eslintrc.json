@@ -68,7 +68,7 @@
         "eqeqeq": "error",
         "func-call-spacing": "error",
         "func-name-matching": "error",
-        "func-names": "off",
+        "func-names": "error",
         "func-style": [
             "error",
             "declaration"
@@ -227,7 +227,7 @@
         "operator-linebreak": "error",
         "padded-blocks": "off",
         "padding-line-between-statements": "error",
-        "prefer-arrow-callback": "off",
+        "prefer-arrow-callback": "error",
         "prefer-const": "off",
         "prefer-destructuring": "error",
         "prefer-exponentiation-operator": "error",

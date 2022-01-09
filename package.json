@@ -11,24 +11,20 @@
         "list": "gulp --tasks",
         "clean": "gulp clean",
         "install": "spago install",
-        "build": "spago bundle-app --main Main --to ./http/app.js",
+        "build": "gulp bundle",
         "test": "spago test",
         "repl": "spago repl",
         "bundle": "gulp bundle",
-        "serve": "parcel",
         "https": "gulp serve"
     },
     "devDependencies": {
-        "@parcel/packager-raw-url": "^2.0.1",
-        "@parcel/service-worker": "^2.0.1",
-        "@parcel/transformer-webmanifest": "^2.0.1",
         "delete": "^1.1.0",
         "eslint": "^8.3.0",
+        "filelist": "^1.0.2",
         "gulp": "^4.0.2",
         "gulp-cli": "^2.3.0",
         "gulp-connect": "^5.7.0",
         "gulp-string-replace": "^1.1.2",
-        "parcel": "^2.0.1",
         "spago": "^0.20.3"
     }
 }

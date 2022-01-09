@@ -63,15 +63,6 @@
             "problemMatcher": [],
             "label": "npm: https",
             "detail": "gulp serve"
-        },
-        {
-            "type": "npm",
-            "script": "serve",
-            "problemMatcher": [
-                "$gulp-tsc"
-            ],
-            "label": "npm: serve",
-            "detail": "parcel"
         }
     ]
 }

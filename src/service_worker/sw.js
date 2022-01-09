@@ -10,9 +10,12 @@
 /* eslint-disable implicit-arrow-linebreak */
 
 // `version` is the name of the cache, including a timestamp.
+// This is filled by `gulp bundle` when copying `sw.js` to the directory `http`.
 // eslint-disable-next-line no-undef
 const version = TIMESTAMP
 // `manifest` is an array holding the paths to all files to cache.
+// This is changed against the real list of files by `gulp bundle` when copying
+//`sw.js` to the directory `http`.
 // eslint-disable-next-line no-undef
 const manifest = [LIST_OF_FILES]
 
@@ -30,7 +33,9 @@ async function install() {
     console.log(`[Service Worker] installed files to ${version}`)
 }
 
-addEventListener("install", (event) => event.waitUntil(install()))
+addEventListener("install", function (event) {
+    return event.waitUntil(install())
+})
 
 //==============================================================================
 // Activation
@@ -46,7 +51,9 @@ async function activate() {
     console.log(`[Service Worker] activated`)
 }
 
-addEventListener("activate", (event) => event.waitUntil(activate()))
+addEventListener("activate", function (event) {
+    return event.waitUntil(activate())
+})
 
 //==============================================================================
 // Fetching
@@ -71,6 +78,6 @@ async function fetchFromCache(request) {
     return response
 }
 
-addEventListener("fetch", (event) =>
-    event.respondWith(fetchFromCache(event.request))
-)
+addEventListener("fetch", function (event) {
+    return event.respondWith(fetchFromCache(event.request))
+})

@@ -41,7 +41,7 @@ const spagoOutdir = "./output"
 
 // Destination directory of the bundler, the source directory for the HTTPS
 // Server.
-const serveDir = "./dist"
+const serveDir = outDir
 
 //==============================================================================
 // JS requires
@@ -63,6 +63,9 @@ const connect = require("gulp-connect")
 
 // eslint-disable-next-line no-undef
 const fs = require("fs")
+
+// eslint-disable-next-line no-undef
+const filelist = require("filelist")
 
 //==============================================================================
 // Generate a timestamp of the current date and time
@@ -150,27 +153,19 @@ function runHTTPS() {
 }
 
 //==============================================================================
-// Run parcel-bundle on `index.html`.
-function runParcel() {
-    return exec(
-        //`parcel build ${outDir}/index.html --public-url ./`,
-        "parcel",
-        (error, stdout, stderr) => {
-            if (error) {
-                console.error(`exec error: ${error}`)
-                return
-            }
-            console.log(`Parcel stdout: ${stdout}`)
-            console.log(`Parcel stderr: ${stderr}`)
-        }
-    )
-}
-
-//==============================================================================
 // Return a list of all files in the directory `.http`, as a comma and newline
 // Separated list.
 function getListOfFiles() {
-    return "Hugo, \n Bla"
+    let listOfFiles = new filelist.FileList()
+    listOfFiles.include(outDir + "/**")
+    const outdirNoSlashes = outDir.replace(/^[./\\]*/gu, "")
+
+    return listOfFiles
+        .toArray()
+        .map(function (e) {
+            return '"' + e.toString().replace(outdirNoSlashes, "") + '"\n'
+        })
+        .concat(['"/"'])
 }
 
 //==============================================================================
@@ -205,11 +200,6 @@ function delDirectory(dirName, cb) {
     del([dirName], cb)
 }
 
-function cleanDist(cb) {
-    delDirectory(serveDir, cb)
-    cb()
-}
-
 function cleanHTTP(cb) {
     delDirectory(outDir, cb)
     cb()
@@ -221,12 +211,12 @@ function cleanOutput(cb) {
 }
 
 // eslint-disable-next-line no-undef
-exports.clean = parallel(cleanDist, cleanOutput, cleanHTTP)
+exports.clean = parallel(cleanOutput, cleanHTTP)
 
 // eslint-disable-next-line no-undef
-exports.bundle = parallel(
-    series(runSpago, runParcel),
-    series(copyAssets, parallel(replaceVersionOutdir, copyServiceWorker))
+exports.bundle = series(
+    parallel(runSpago, copyAssets),
+    parallel(replaceVersionOutdir, copyServiceWorker)
 )
 
 // eslint-disable-next-line no-undef

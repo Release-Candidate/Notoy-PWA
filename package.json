@@ -15,7 +15,8 @@
         "test": "spago test",
         "repl": "spago repl",
         "bundle": "gulp bundle",
-        "https": "gulp serve"
+        "https": "gulp serve",
+        "watch": "gulp watch"
     },
     "devDependencies": {
         "delete": "^1.1.0",

@@ -47,7 +47,7 @@ const serveDir = outDir
 // JS requires
 
 // eslint-disable-next-line no-undef
-const { series, parallel, src, dest } = require("gulp")
+const { series, parallel, src, dest, watch } = require("gulp")
 
 // eslint-disable-next-line no-undef
 const { exec } = require("child_process")
@@ -163,10 +163,11 @@ function getListOfFiles() {
     listOfFiles.include(outDir + "/**")
     const outdirNoSlashes = outDir.replace(/^[./\\]*/gu, "")
 
-    return listOfFiles
+    const addedFiles = listOfFiles
         .toArray()
-        .map((e) => '"' + e.toString().replace(outdirNoSlashes, "") + '"\n')
-        .concat(['"/"\n', '"/sw.js.map"\n', '"/app.js.map"\n'])
+        .map((e) => '"' + e.toString().replace(outdirNoSlashes, "") + '"')
+        .concat(['"/"', '"/sw.js.map"', '"/app.js.map"'])
+    return [...new Set(addedFiles)]
 }
 
 //==============================================================================
@@ -189,6 +190,8 @@ function copyServiceWorker() {
         .pipe(dest(outDir))
 }
 
+//==============================================================================
+// Run Esbuild von JS files.
 function processJS(file) {
     return src(outDir + "/" + file)
         .pipe(
@@ -207,6 +210,7 @@ function processJS(file) {
             })
         )
         .pipe(dest(outDir))
+        .pipe(connect.reload())
 }
 
 function processSW() {
@@ -215,6 +219,12 @@ function processSW() {
 
 function processApp() {
     return processJS("app.js")
+}
+
+//==============================================================================
+// Watch for changes
+function watchSource() {
+    watch("./src/**", { ignoreInitial: false }, bundleTarget)
 }
 
 //==============================================================================
@@ -239,11 +249,9 @@ function cleanOutput(cb) {
     cb()
 }
 
-// eslint-disable-next-line no-undef
-exports.clean = parallel(cleanOutput, cleanHTTP)
+const cleanTarget = parallel(cleanOutput, cleanHTTP)
 
-// eslint-disable-next-line no-undef
-exports.bundle = series(
+const bundleTarget = series(
     parallel(runSpago, copyAssets),
     parallel(
         replaceVersionOutdir,
@@ -252,5 +260,15 @@ exports.bundle = series(
     )
 )
 
+const serveTarget = series(runHTTPS)
+
 // eslint-disable-next-line no-undef
-exports.serve = series(runHTTPS)
+exports.clean = cleanTarget
+
+// eslint-disable-next-line no-undef
+exports.bundle = bundleTarget
+// eslint-disable-next-line no-undef
+exports.serve = serveTarget
+
+// eslint-disable-next-line no-undef
+exports.watch = parallel(watchSource, serveTarget)

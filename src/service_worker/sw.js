@@ -72,15 +72,24 @@ async function fetchFromCache(request) {
     }
     // eslint-disable-next-line no-console
     console.log(`[Service Worker] fetching ${request.url}`)
-    const response = await fetch(request)
+
+    const response = await fetch(request).catch(return404)
     if (response.ok) {
         return response
     }
     // eslint-disable-next-line no-console
     console.log(`[Service Worker] haven't found ${request.url}`)
-    return caches.match("/404.html")
+    return return404("URL not found")
 }
 
 addEventListener("fetch", (event) =>
     event.respondWith(fetchFromCache(event.request))
 )
+
+//==============================================================================
+// Return the 404 error page.
+async function return404(err) {
+    // eslint-disable-next-line no-console
+    console.log(`[Service Worker] Error: "${err}"`)
+    return caches.match("/404.html")
+}

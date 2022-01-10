@@ -64,7 +64,7 @@ addEventListener("activate", (event) => event.waitUntil(activate()))
  * @returns {Response} The fetched URL as `Response`.
  */
 async function fetchFromCache(request) {
-    const cachedResponse = await caches.match(request)
+    const cachedResponse = await caches.match(request, { ignoreSearch: true })
     if (cachedResponse) {
         // eslint-disable-next-line no-console
         console.log(`[Service Worker] cache hit: ${request.url}`)
@@ -73,7 +73,12 @@ async function fetchFromCache(request) {
     // eslint-disable-next-line no-console
     console.log(`[Service Worker] fetching ${request.url}`)
     const response = await fetch(request)
-    return response
+    if (response.ok) {
+        return response
+    }
+    // eslint-disable-next-line no-console
+    console.log(`[Service Worker] haven't found ${request.url}`)
+    return caches.match("/404.html")
 }
 
 addEventListener("fetch", (event) =>

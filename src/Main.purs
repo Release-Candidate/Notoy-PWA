@@ -19,6 +19,9 @@ import Data.Maybe (Maybe(..), fromJust, fromMaybe)
 import Data.Note (KeyWordArray(..), Note(..), defaultNote, fromShared, noteKeyId)
 import Data.Options (Options, defaultOptions)
 import Data.String (Pattern(..), split, trim)
+import Data.String.Regex (replace)
+import Data.String.Regex.Flags (unicode)
+import Data.String.Regex.Unsafe (unsafeRegex)
 import Data.URL (noteUrlFromString, noteUrlToString)
 import Effect (Effect)
 import Effect.Aff.Class (class MonadAff)
@@ -94,6 +97,8 @@ component =
 render :: forall m. State -> H.ComponentHTML Action () m
 render state =
   let
+    urlSuffixRegex = unsafeRegex "[/]+$" unicode
+
     Note
       { title: noteTitle
     , url: noteURL
@@ -124,7 +129,7 @@ render state =
                   [ HP.id "pageURL"
                   , HP.type_ HP.InputUrl
                   , HP.min 50.0
-                  , HP.value $ fromMaybe "" $ map noteUrlToString noteURL
+                  , HP.value $ replace urlSuffixRegex "" $ fromMaybe "" $ map noteUrlToString noteURL
                   , HE.onValueInput \st -> URLChanged st
                   ]
               ]

@@ -101,7 +101,7 @@ instance showNote :: Show Note where
         Nothing -> ""
 
       showFieldKeyWds keywds = case keywds of
-        Just (KeyWordArray keys) -> "Keywords: " <> show keys
+        Just keys -> "Keywords: " <> show keys <> " "
         Nothing -> ""
 
       titleString = showField "Title" title

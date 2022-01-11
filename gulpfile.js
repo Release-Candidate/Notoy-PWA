@@ -142,7 +142,7 @@ function runSpago() {
 
 //==============================================================================
 // Start HTTPS server.
-function runHTTPS() {
+function runHTTPS(cb) {
     connect.server({
         root: serveDir,
         https: {
@@ -153,6 +153,7 @@ function runHTTPS() {
         livereload: true,
         port: httpsPort,
     })
+    cb()
 }
 
 //==============================================================================
@@ -223,8 +224,9 @@ function processApp() {
 
 //==============================================================================
 // Watch for changes
-function watchSource() {
+function watchSource(cb) {
     watch("./src/**", { ignoreInitial: false }, bundleTarget)
+    cb()
 }
 
 //==============================================================================

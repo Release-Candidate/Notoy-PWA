@@ -43,6 +43,7 @@ noteKeyId = StoreKeyId "Note"
 | * `title` - the title of the note.
 | * `url` - the URL of the website the note is about.
 |           ATTENTION: has to be encoded to work as a link!
+| * `keywords` - the array of keywords that describe the note
 | * `shortDesc` - the short description text.
 | * `longDesc` - the longer, detailed description.
 -}

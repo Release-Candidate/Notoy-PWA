@@ -9,14 +9,19 @@
 -- | Module App.ShareTarget, code to implement a share target and share notes
 -- | with other apps.
 module App.ShareTarget
-  ( handleShare
+  ( canShare
+  , handleShare
+  , shareNote
   ) where
 
 import Prelude
-import App.State (State)
-import Data.Maybe (Maybe(..))
+import App.State (State, newNoteState_)
+import Control.Promise (Promise, toAffE)
+import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Note (Note(..), fromShared)
-import Data.URL (noteUrlFromString)
+import Data.URL (noteUrlFromString, noteUrlToString)
+import Effect (Effect)
+import Effect.Aff (Aff)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Console (log)
 import Halogen as H
@@ -27,18 +32,37 @@ import Web.URL (searchParams)
 import Web.URL.URLSearchParams (get)
 
 {-------------------------------------------------------------------------------
-| The field names of the share target GET URL.
-|
-| * text :: String - Text field. The URL on Android.
-| * title :: String - The title field.
-| * url :: String - The URL field. NOT used on Android.
+| Return `true`, if the platform supports sharing the current note to other
+| apps, `false` if not.
 -}
-shareTargetFields ::
-  { text :: String
-  , title :: String
-  , url :: String
-  }
-shareTargetFields = { title: "title", url: "url", text: "text" }
+canShare :: Unit -> Boolean
+canShare = canShareJS
+
+{-------------------------------------------------------------------------------
+| Share the given Note `note` with other apps.
+|
+| * `note` - The Note to share.
+-}
+shareNote :: Note -> Aff Unit
+shareNote note =
+  if canShare unit then
+    toAffE $ shareNoteJS noteRecord
+  else
+    pure unit
+  where
+  Note
+    { title: title
+  , url: url
+  , keywords: keywords
+  , shortDesc: shortDesc
+  , longDesc: longDesc
+  } = note
+
+  noteRecord =
+    { title: fromMaybe "" title
+    , url: fromMaybe "" $ map noteUrlToString url
+    , text: fromMaybe "" shortDesc <> fromMaybe "" longDesc
+    }
 
 {-------------------------------------------------------------------------------
 | Event handler for the share event (`domcontentloaded`).
@@ -79,10 +103,40 @@ handleShare win _ = do
         , longDesc: Nothing
         } -> pure unit
         _ -> do
+          newNoteState_ note
           H.liftEffect $ saveToLocalStorage win note
-          H.modify_ \state ->
-            { note: note
-            , options: state.options
-            }
           H.liftEffect $ log $ "Got shared note: " <> show note
     Nothing -> pure unit
+
+{-------------------------------------------------------------------------------
+| The field names of the share target GET URL.
+|
+| * text :: String - Text field. The URL on Android.
+| * title :: String - The title field.
+| * url :: String - The URL field. NOT used on Android.
+-}
+shareTargetFields ::
+  { text :: String
+  , title :: String
+  , url :: String
+  }
+shareTargetFields = { title: "title", url: "url", text: "text" }
+
+{-------------------------------------------------------------------------------
+| Record type for interop with Javascript, especially `shareNoteJS`.
+-}
+type ShareTargetRecord
+  = { title :: String
+    , text :: String
+    , url :: String
+    }
+
+{-------------------------------------------------------------------------------
+| Import of JS function `canShareJS` from `ShareTarget.js`.
+-}
+foreign import canShareJS :: Unit -> Boolean
+
+{-------------------------------------------------------------------------------
+| Import of JS function `shareNoteJS` from `ShareTarget.js`.
+-}
+foreign import shareNoteJS :: ShareTargetRecord -> Effect (Promise Unit)

@@ -16,6 +16,7 @@ module Main
 import Prelude
 import App.Action (Action(..), handleAction)
 import App.Constants (appElementId)
+import App.ShareTarget (canShare)
 import App.State (State, initialState)
 import Data.Maybe (Maybe(..), fromJust, fromMaybe)
 import Data.Note (Note(..))
@@ -146,10 +147,13 @@ render state =
               [ HH.text "Save" ]
           ]
       , HH.div [ HP.id "share" ]
-          [ HH.button
-              [ HP.id "shareButton"
-              , HE.onClick \_ -> ShareNote
-              ]
-              [ HH.text "Share" ]
-          ]
+          if canShare unit then
+            [ HH.button
+                [ HP.id "shareButton"
+                , HE.onClick \_ -> ShareNote
+                ]
+                [ HH.text "Share" ]
+            ]
+          else
+            []
       ]

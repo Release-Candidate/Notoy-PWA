@@ -34,15 +34,10 @@ module App.State
   ) where
 
 import Prelude
+import Data.Argonaut ((.!=))
 import Data.Maybe (Maybe(..))
 import Data.Note (KeyWordArray, Note(..), defaultNote)
-import Data.Options
-  ( AddDate
-  , AddYamlHeader
-  , Format
-  , Options(..)
-  , defaultOptions
-  )
+import Data.Options (AddDate, AddYamlHeader, Format, Options(..), defaultOptions)
 import Data.URL (NoteURL)
 import Effect.Aff.Class (class MonadAff)
 import Halogen as H
@@ -64,54 +59,113 @@ initialState _ =
   , note: defaultNote
   }
 
+{-------------------------------------------------------------------------------
+| Return the current state.
+-}
 getState ::
   forall action output m.
   MonadAff m =>
   H.HalogenM State action () output m State
 getState = H.get
 
+{-------------------------------------------------------------------------------
+| Set the Note in the State to the given Note `note`.
+|
+| Return the new state.
+|
+| * `note` - The note to set in the new State.
+-}
 newNoteState ::
   forall action output m.
   MonadAff m =>
   Note -> H.HalogenM State action () output m State
 newNoteState = newNoteStateGeneric H.modify
 
+{-------------------------------------------------------------------------------
+| Set the Note in the State to the given Note `note`.
+|
+| Does not return the new state.
+|
+| * `note` - The note to set in the new State.
+-}
 newNoteState_ ::
   forall action output m.
   MonadAff m =>
   Note -> H.HalogenM State action () output m Unit
 newNoteState_ = newNoteStateGeneric H.modify_
 
+{-------------------------------------------------------------------------------
+| Set the title of the note in the state to `title`.
+|
+| Return the new state.
+|
+| * `title` - The new title of the note to set in the state.
+-}
 newNoteStateTitle ::
   forall action output m.
   MonadAff m =>
   String -> H.HalogenM State action () output m State
 newNoteStateTitle = newNoteStateGenericTitle H.modify
 
+{-------------------------------------------------------------------------------
+| Set the title of the note in the state to `title`.
+|
+| Does not return the new state.
+|
+| * `title` - The new title of the note to set in the state.
+-}
 newNoteStateTitle_ ::
   forall action output m.
   MonadAff m =>
   String -> H.HalogenM State action () output m Unit
 newNoteStateTitle_ = newNoteStateGenericTitle H.modify_
 
+{-------------------------------------------------------------------------------
+| Set the URL of the note in the state to `url`.
+|
+| Return the new state.
+|
+| * `url` - The new url of the note to set in the state.
+-}
 newNoteStateUrl ::
   forall action output m.
   MonadAff m =>
   Maybe NoteURL -> H.HalogenM State action () output m State
 newNoteStateUrl = newNoteStateGenericUrl H.modify
 
+{-------------------------------------------------------------------------------
+| Set the URL of the note in the state to `url`.
+|
+| Does not return the new state.
+|
+| * `url` - The new url of the note to set in the state.
+-}
 newNoteStateUrl_ ::
   forall action output m.
   MonadAff m =>
   Maybe NoteURL -> H.HalogenM State action () output m Unit
 newNoteStateUrl_ = newNoteStateGenericUrl H.modify_
 
+{-------------------------------------------------------------------------------
+| Set the keywords of the note in the state to `keywords`.
+|
+| Return the new state.
+|
+| * `keywords` - The new keywords of the note to set in the state.
+-}
 newNoteStateKeyWords ::
   forall action output m.
   MonadAff m =>
   Maybe KeyWordArray -> H.HalogenM State action () output m State
 newNoteStateKeyWords = newNoteStateGenericKeyWords H.modify
 
+{-------------------------------------------------------------------------------
+| Set the keywords of the note in the state to `keywords`.
+|
+| Does not return the new state.
+|
+| * `keywords` - The new keywords of the note to set in the state.
+-}
 newNoteStateKeyWords_ ::
   forall action output m.
   MonadAff m =>

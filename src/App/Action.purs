@@ -13,19 +13,8 @@ module App.Action
   ) where
 
 import Prelude
-import App.ShareTarget (handleShare)
-import App.State
-  ( State
-  , newNoteState
-  , newNoteStateKeyWords
-  , newNoteStateLongDesc
-  , newNoteStateShortDesc
-  , newNoteStateTitle
-  , newNoteStateUrl
-  , newOptionsStateAddDate
-  , newOptionsStateAddYamlHeader
-  , newOptionsStateFormat
-  )
+import App.ShareTarget (handleShare, shareNote)
+import App.State (State, getState, newNoteState, newNoteStateKeyWords, newNoteStateLongDesc, newNoteStateShortDesc, newNoteStateTitle, newNoteStateUrl, newOptionsStateAddDate, newOptionsStateAddYamlHeader, newOptionsStateFormat)
 import Data.Maybe (Maybe(..))
 import Data.Note (Note, keyWordArrayFromString, noteKeyId)
 import Data.Options (addDateFromBool, formatFromString, yamlHeaderFromBool)
@@ -71,7 +60,7 @@ handleAction ::
 handleAction = case _ of
   Initialize -> appInit
   ShareTargetEvent e -> do
-    win <- H.liftEffect $ window
+    win <- H.liftEffect window
     handleShare win e
   TitleChanged st -> newStateAndSave newNoteStateTitle st
   URLChanged st -> newStateAndSave (newNoteStateUrl <<< noteUrlFromString) st
@@ -81,7 +70,9 @@ handleAction = case _ of
   FormatChanged st -> newStateAndSave (newOptionsStateFormat <<< formatFromString) st
   AddDateChanged b -> newStateAndSave (newOptionsStateAddDate <<< addDateFromBool) b
   AddYamlHeaderChanged b -> newStateAndSave (newOptionsStateAddYamlHeader <<< yamlHeaderFromBool) b
-  ShareNote -> pure unit
+  ShareNote -> do
+    state <- getState
+    H.liftAff $ shareNote state.note
   DownloadNote -> pure unit
 
 {-------------------------------------------------------------------------------
@@ -106,7 +97,7 @@ appInit = do
 
 {-------------------------------------------------------------------------------
 | Helper function: change the app's state using a function `f` with the new
-| value `newVal` to set it.
+| value `newVal` to set it (`f newVal` is called by newStateAndSave).
 |
 | The new state is saved to the local storage after setting the new state.
 |
@@ -120,7 +111,7 @@ newStateAndSave ::
   a ->
   H.HalogenM State Action () output m Unit
 newStateAndSave f newVal = do
-  win <- H.liftEffect $ window
   newState <- f newVal
+  win <- H.liftEffect $ window
   H.liftEffect $ saveToLocalStorage win newState.note
   H.liftEffect $ saveToLocalStorage win newState.options

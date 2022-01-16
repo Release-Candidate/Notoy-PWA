@@ -11,7 +11,7 @@
         "list": "gulp --tasks",
         "clean": "gulp clean",
         "install": "spago install",
-        "build": "gulp bundle",
+        "build": "spago build",
         "test": "spago test",
         "repl": "spago repl",
         "bundle": "gulp bundle",

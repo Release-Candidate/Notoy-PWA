@@ -13,8 +13,11 @@ module Data.Options
   , AddYamlHeader(..)
   , Format(..)
   , Options(..)
+  , addDateFromBool
   , defaultOptions
+  , formatFromString
   , optionsKeyId
+  , yamlHeaderFromBool
   ) where
 
 import Prelude
@@ -23,7 +26,7 @@ import Data.Argonaut.Decode.Generic (genericDecodeJson)
 import Data.Argonaut.Encode.Generic (genericEncodeJson)
 import Data.Generic.Rep (class Generic)
 import Data.Show.Generic (genericShow)
-import Data.StoreKey (StoreKeyId(..))
+import Data.StoreKey (class StoreKey, StoreKeyId(..))
 import Test.QuickCheck (class Arbitrary, arbitrary)
 import Test.QuickCheck.Arbitrary (genericArbitrary)
 
@@ -76,6 +79,9 @@ instance showOptions :: Show Options where
 
 instance arbitraryOptions :: Arbitrary Options where
   arbitrary = genericArbitrary
+
+instance storeKeyIdOptions :: StoreKey Options where
+  key _ = optionsKeyId
 
 {-------------------------------------------------------------------------------
 | The format of the note.
@@ -188,3 +194,34 @@ instance arbitraryAddYamlHeader :: Arbitrary AddYamlHeader where
         0 -> NoYamlHeader
         _ -> AddYamlHeader
       | otherwise = intToAddYamlHeader (-n)
+
+{-------------------------------------------------------------------------------
+| Convert a `String` to a `Format`.
+|
+| * `st` - If `b` is `true`, return `AddDate`. Else return `NoDate`.
+-}
+formatFromString :: String -> Format
+formatFromString st
+  | st == show Markdown = Markdown
+  | st == show OrgMode = OrgMode
+  | otherwise = Text
+
+{-------------------------------------------------------------------------------
+| Convert a `Boolean` to an `AddDate`.
+|
+| * `b` - If `b` is `true`, return `AddDate`. Else return `NoDate`.
+-}
+addDateFromBool :: Boolean -> AddDate
+addDateFromBool false = NoDate
+
+addDateFromBool true = AddDate
+
+{-------------------------------------------------------------------------------
+| Convert a `Boolean` to an `AddYamlHeader`.
+|
+| * `b` - If `b` is `true`, return `AddYamlHeader`. Else return `NoYamlHeader`.
+-}
+yamlHeaderFromBool :: Boolean -> AddYamlHeader
+yamlHeaderFromBool false = NoYamlHeader
+
+yamlHeaderFromBool true = AddYamlHeader

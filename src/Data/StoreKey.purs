@@ -13,6 +13,7 @@ module Data.StoreKey
   , class StoreKey
   , key
   , storeKeyIdFromObject
+  , storeKeyIdStringFromObject
   , storeKeyIdToString
   ) where
 
@@ -54,8 +55,21 @@ derive newtype instance arbitraryStoreKeyId :: Arbitrary StoreKeyId
 storeKeyIdToString :: StoreKeyId -> String
 storeKeyIdToString = unwrap
 
-storeKeyIdFromObject :: forall a. StoreKey a => a -> String
-storeKeyIdFromObject = storeKeyIdToString <<< key
+{-------------------------------------------------------------------------------
+| Return the `StoreKeyId` of the given object.
+|
+| * `object` - The object to get the `StoreKeyId` of.
+-}
+storeKeyIdFromObject :: forall a. StoreKey a => a -> StoreKeyId
+storeKeyIdFromObject = key
+
+{-------------------------------------------------------------------------------
+| Return the `StoreKeyId` as a String of the given object.
+|
+| * `object` - The object to get the `StoreKeyId` as a string of.
+-}
+storeKeyIdStringFromObject :: forall a. StoreKey a => a -> String
+storeKeyIdStringFromObject = storeKeyIdToString <<< key
 
 {-------------------------------------------------------------------------------
 | The type class of a key to use to save and load object from local storage.

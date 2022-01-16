@@ -18,7 +18,7 @@ import Prelude
 import Data.Argonaut (class DecodeJson, class EncodeJson)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
-import Data.StoreKey (class StoreKey, StoreKeyId, storeKeyIdFromObject, storeKeyIdToString)
+import Data.StoreKey (class StoreKey, StoreKeyId, storeKeyIdStringFromObject, storeKeyIdToString)
 import Effect (Effect)
 import Effect.Console (log)
 import Helpers.General (decodeJsonFromString, encodeToJsonString)
@@ -58,7 +58,7 @@ saveToLocalStorage ::
   EncodeJson a => Window -> a -> Effect Unit
 saveToLocalStorage win object = do
   s <- localStorage win
-  setItem (storeKeyIdFromObject object) (encodeToJsonString object) s
+  setItem (storeKeyIdStringFromObject object) (encodeToJsonString object) s
 
 {-------------------------------------------------------------------------------
 | Deserialize the given object as JSON from the local storage, using `key` as

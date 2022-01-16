@@ -22,7 +22,7 @@ import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, unwrap, wrap)
 import Data.String.Regex (Regex, replace)
-import Data.String.Regex.Flags (global, unicode)
+import Data.String.Regex.Flags (global)
 import Data.String.Regex.Unsafe (unsafeRegex)
 import Test.QuickCheck (class Arbitrary, arbitrary)
 import Web.URL (unsafeFromAbsolute)
@@ -38,6 +38,14 @@ derive instance genericUrl :: Generic NoteURL _
 derive newtype instance showUrl :: Show NoteURL
 
 derive instance newTypeURL :: Newtype NoteURL _
+
+instance decodeJSONURL :: DecodeJson NoteURL where
+  decodeJson json = do
+    st <- decodeJson json
+    note (TypeMismatch "URL") (noteUrlFromString st)
+
+instance encodeJSONURL :: EncodeJson NoteURL where
+  encodeJson url = encodeJson $ noteUrlToString url
 
 {-------------------------------------------------------------------------------
 | TODO: often returns "https://localhost:1234/"
@@ -67,14 +75,6 @@ noteUrlFromString s = case (WURL.fromAbsolute $ trimQuotes s) of
 -}
 noteUrlToString :: NoteURL -> String
 noteUrlToString url = WURL.toString $ unwrap url
-
-instance decodeJSONURL :: DecodeJson NoteURL where
-  decodeJson json = do
-    st <- decodeJson json
-    note (TypeMismatch "URL") (noteUrlFromString st)
-
-instance encodeJSONURL :: EncodeJson NoteURL where
-  encodeJson url = encodeJson $ noteUrlToString url
 
 {-------------------------------------------------------------------------------
 | Helper to trim double quotes from a string.

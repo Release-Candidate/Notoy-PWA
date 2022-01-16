@@ -12,6 +12,7 @@ module Data.Note
   , Note(..)
   , defaultNote
   , fromShared
+  , keyWordArrayFromString
   , noteKeyId
   ) where
 
@@ -23,7 +24,7 @@ import Data.Array (foldl)
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Data.StoreKey (class StoreKey, StoreKeyId(..))
-import Data.String (trim)
+import Data.String (Pattern(..), split, trim)
 import Data.Tuple (Tuple(..))
 import Data.URL (NoteURL, noteUrlToString, trimQuotes)
 import Helpers.General (getNoteURL, getURLString)
@@ -210,6 +211,20 @@ instance showKeyWordArray :: Show KeyWordArray where
       keys
 
 {-------------------------------------------------------------------------------
+| Convert a string of comma separated keywords to a `KeyWordArray`.
+|
+| Return `Nothing` if the string is empty or only whitespace.
+|
+| * `str` - The string of comma separated keywords.
+-}
+keyWordArrayFromString :: String -> Maybe KeyWordArray
+keyWordArrayFromString "" = Nothing
+
+keyWordArrayFromString str
+  | trim str == "" = Nothing
+  | otherwise = Just $ KeyWordArray $ map trim $ split (Pattern ",") str
+
+{-------------------------------------------------------------------------------
 | Helper: Type to hold a Tuple of the parsed URL and text (URL, text), both as a
 | `Maybe String`.
 |
@@ -221,7 +236,10 @@ newtype UrlString
   = UrlString (Tuple (Maybe NoteURL) (Maybe String))
 
 {-------------------------------------------------------------------------------
-| Helper:
+| Helper: try to find a URL in the given string.
+|
+| If an URL is found in the given string and the string is the URL with
+| whitespace added, the text part of the tuple is `Nothing`.
 -}
 getURLAndText :: String -> UrlString
 getURLAndText text = UrlString (Tuple url txt)

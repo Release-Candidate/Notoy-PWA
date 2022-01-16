@@ -84,9 +84,9 @@ function generateTimestamp() {
         // eslint-disable-next-line no-magic-numbers
         pad0s(nowDate.getMonth() + 1) +
         pad0s(nowDate.getDate()) +
-        nowDate.getHours() +
-        nowDate.getMinutes() +
-        nowDate.getSeconds()
+        pad0s(nowDate.getHours()) +
+        pad0s(nowDate.getMinutes()) +
+        pad0s(nowDate.getSeconds())
     )
 }
 

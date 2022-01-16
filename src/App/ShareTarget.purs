@@ -1,28 +1,28 @@
 -- SPDX-License-Identifier: GPL-3.0-or-later
--- Copyright (C) 2021 Roland Csaszar
+-- Copyright (C) 2022 Roland Csaszar
 --
 -- Project:  notoy-pwa
--- File:     Event.purs
+-- File:     ShareTarget.purs
 -- Date:     23.Dec.2021
 --
--- =============================================================================
-module ShareTarget.Event
+-- ==============================================================================
+-- | Module App.ShareTarget, code to implement a share target and share notes
+-- | with other apps.
+module App.ShareTarget
   ( handleShare
-  , registerShareEvent
   ) where
 
 import Prelude
+import App.State (State)
 import Data.Maybe (Maybe(..))
 import Data.Note (Note(..), fromShared)
 import Data.URL (noteUrlFromString)
-import Effect (Effect)
+import Effect.Aff.Class (class MonadAff)
 import Effect.Console (log)
+import Halogen as H
 import Helpers.Browser (getCurrentUrl, saveToLocalStorage)
-import Web.Event.EventTarget (addEventListener, eventListener)
 import Web.Event.Internal.Types (Event)
 import Web.HTML (Window)
-import Web.HTML.Event.EventTypes (domcontentloaded)
-import Web.HTML.Window (toEventTarget)
 import Web.URL (searchParams)
 import Web.URL.URLSearchParams (get)
 
@@ -50,9 +50,12 @@ shareTargetFields = { title: "title", url: "url", text: "text" }
 | URL is empty.
 | Text: https://news.ycombinator.com/news
 -}
-handleShare :: Window -> Event -> Effect Unit
+handleShare ::
+  forall action output m.
+  MonadAff m =>
+  Window -> Event -> H.HalogenM State action () output m Unit
 handleShare win _ = do
-  url <- getCurrentUrl unit
+  url <- H.liftEffect $ getCurrentUrl unit
   case url of
     Just u -> do
       let
@@ -68,17 +71,18 @@ handleShare win _ = do
 
         note = fromShared sharedTitle maybeURL sharedText
       case note of
-        Note { title: Nothing, url: Nothing, keywords: Nothing, shortDesc: Nothing, longDesc: Nothing } -> pure unit
-        _ -> saveToLocalStorage win note
-      log $ show note
+        Note
+          { title: Nothing
+        , url: Nothing
+        , keywords: Nothing
+        , shortDesc: Nothing
+        , longDesc: Nothing
+        } -> pure unit
+        _ -> do
+          H.liftEffect $ saveToLocalStorage win note
+          H.modify_ \state ->
+            { note: note
+            , options: state.options
+            }
+          H.liftEffect $ log $ "Got shared note: " <> show note
     Nothing -> pure unit
-
-{-------------------------------------------------------------------------------
-| Register the handler for the share event.
-|
-| * w :: Window - The event target.
--}
-registerShareEvent ∷ Window → Effect Unit
-registerShareEvent w = do
-  domListener <- eventListener $ handleShare w
-  addEventListener domcontentloaded domListener false $ toEventTarget w

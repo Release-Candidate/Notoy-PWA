@@ -41,7 +41,7 @@ main :: Effect Unit
 main =
   HA.runHalogenAff do
     HA.awaitLoad
-    appEl <- HA.selectElement (QuerySelector appElementId)
+    appEl <- HA.selectElement (QuerySelector $ "#" <> appElementId)
     let
       app = unsafePartial $ fromJust appEl
     runUI component unit app

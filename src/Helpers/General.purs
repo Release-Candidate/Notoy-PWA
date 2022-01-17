@@ -23,23 +23,16 @@ module Helpers.General
   , getURLString
   , regexNotAWord
   , regexURL
+  , sanitizeFileName
   , showM
   ) where
 
 import Prelude
-import Data.Argonaut
-  ( class DecodeJson
-  , class EncodeJson
-  , decodeJson
-  , encodeJson
-  , jsonParser
-  , printJsonDecodeError
-  , stringify
-  )
+import Data.Argonaut (class DecodeJson, class EncodeJson, decodeJson, encodeJson, jsonParser, printJsonDecodeError, stringify)
 import Data.Array.NonEmpty (take)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), fromMaybe)
-import Data.String.Regex (Regex, match, test)
+import Data.String.Regex (Regex, match, replace, test)
 import Data.String.Regex.Flags (RegexFlags(..), ignoreCase)
 import Data.String.Regex.Unsafe (unsafeRegex)
 import Data.URL (NoteURL, noteUrlFromString)
@@ -61,6 +54,16 @@ regexNotAWord =
         , multiline: false
         , sticky: false
         }
+
+{-------------------------------------------------------------------------------
+| Replace all non unicode letters from the given string with an underline `_`.
+|
+| Replaces whitespace characters, punctuation characters, ...
+|
+| * `st` - The string to replace the non unicode letters of.
+-}
+sanitizeFileName ∷ String → String
+sanitizeFileName = replace regexNotAWord "_"
 
 {-------------------------------------------------------------------------------
 | Regex to parse an URL.

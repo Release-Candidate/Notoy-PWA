@@ -16,6 +16,8 @@ module Data.Options
   , addDateFromBool
   , defaultOptions
   , formatFromString
+  , noteFileMime
+  , noteFileSuffix
   , optionsKeyId
   , yamlHeaderFromBool
   ) where
@@ -227,3 +229,63 @@ yamlHeaderFromBool :: Boolean -> AddYamlHeader
 yamlHeaderFromBool false = NoYamlHeader
 
 yamlHeaderFromBool true = AddYamlHeader
+
+{-------------------------------------------------------------------------------
+| Return the file suffix for the given `Format`.
+|
+| - Markdown: `.md`
+| - OrgMode: `.org`
+| - Text: `.txt`
+|
+| * `options` - The `Options` object with the format to use.
+-}
+noteFileSuffix :: Options -> String
+noteFileSuffix (Options { format: Markdown }) = fileSuffix.markdown
+
+noteFileSuffix (Options { format: OrgMode }) = fileSuffix.orgMode
+
+noteFileSuffix (Options { format: Text }) = fileSuffix.text
+
+{-------------------------------------------------------------------------------
+| Return the MIME type for the given `Format`.
+|
+| - Markdown: "text/markdown"
+| - OrgMode: "text/org"
+| - Text: "text/plain"
+|
+| * `options` - The `Options` object with the format to use.
+-}
+noteFileMime :: Options -> String
+noteFileMime (Options { format: Markdown }) = mimeTypes.markdown
+
+noteFileMime (Options { format: OrgMode }) = mimeTypes.orgMode
+
+noteFileMime (Options { format: Text }) = mimeTypes.text
+
+{-------------------------------------------------------------------------------
+| File suffixes of the document formats.
+-}
+fileSuffix ::
+  { markdown :: String
+  , orgMode :: String
+  , text :: String
+  }
+fileSuffix =
+  { markdown: ".md"
+  , orgMode: ".org"
+  , text: ".txt"
+  }
+
+{-------------------------------------------------------------------------------
+| MIME type of the various document formats.
+-}
+mimeTypes ::
+  { markdown :: String
+  , orgMode :: String
+  , text :: String
+  }
+mimeTypes =
+  { markdown: "text/markdown"
+  , orgMode: "text/org"
+  , text: "text/plain"
+  }

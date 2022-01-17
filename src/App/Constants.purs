@@ -9,16 +9,24 @@
 -- | Module App.Constants, various constants used in the app.
 module App.Constants
   ( appElementId
+  , downloadAttr
   , hiddenURLId
+  , hrefAttr
   ) where
+
+downloadAttr :: String
+downloadAttr = "download"
+
+hrefAttr :: String
+hrefAttr = "href"
 
 {-------------------------------------------------------------------------------
 | The id of the HTML div to render the app to.
 |
-| "#app"
+| "app"
 -}
 appElementId :: String
-appElementId = "#app"
+appElementId = "app"
 
 {-------------------------------------------------------------------------------
 | The id of the hidden `a` HTML element used to download the note.

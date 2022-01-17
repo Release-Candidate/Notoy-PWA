@@ -58,10 +58,18 @@ shareNote note =
   , longDesc: longDesc
   } = note
 
+  keywordString = case keywords of
+    Nothing -> ""
+    Just keywordArr -> "Keywords: " <> show keywordArr <> "\n\n"
+
+  shortDescString = case shortDesc of
+    Nothing -> ""
+    Just shortD -> shortD <> "\n"
+
   noteRecord =
     { title: fromMaybe "" title
     , url: fromMaybe "" $ map noteUrlToString url
-    , text: fromMaybe "" shortDesc <> fromMaybe "" longDesc
+    , text: keywordString <> shortDescString <> fromMaybe "" longDesc
     }
 
 {-------------------------------------------------------------------------------

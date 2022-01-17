@@ -9,8 +9,10 @@
 -- | Module App.State, the app's state.
 module App.State
   ( State
+  , filenameFromState
   , getState
   , initialState
+  , makeBlob
   , newNoteState
   , newNoteStateKeyWords
   , newNoteStateKeyWords_
@@ -34,12 +36,16 @@ module App.State
   ) where
 
 import Prelude
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), fromMaybe)
+import Data.MediaType (MediaType(..))
 import Data.Note (KeyWordArray, Note(..), defaultNote)
-import Data.Options (AddDate, AddYamlHeader, Format, Options(..), defaultOptions)
+import Data.NoteContent (noteContentString)
+import Data.Options (AddDate, AddYamlHeader, Format, Options(..), defaultOptions, noteFileMime, noteFileSuffix)
 import Data.URL (NoteURL)
 import Effect.Aff.Class (class MonadAff)
 import Halogen as H
+import Helpers.General (sanitizeFileName)
+import Web.File.Blob as Blob
 
 {-------------------------------------------------------------------------------
 | The App's state.
@@ -66,6 +72,32 @@ getState ::
   MonadAff m =>
   H.HalogenM State action () output m State
 getState = H.get
+
+{-------------------------------------------------------------------------------
+| Return the formatted note as a string.
+|
+| * `state` - The `State` holding the `Note` and `Options` needed.
+-}
+makeBlob :: State -> Blob.Blob
+makeBlob state = Blob.fromString content mediaType
+  where
+  content = noteContentString state.options state.note
+
+  mediaType = MediaType $ noteFileMime state.options
+
+{-------------------------------------------------------------------------------
+| Return a filename from a `State`.
+|
+| Use the title of the note as a filename, with the suffix of the `Format`.!=
+|
+| * `state` - The `State` holding the `Note` and `Options`.
+-}
+filenameFromState :: State -> String
+filenameFromState state = sanitizeFileName title <> noteFileSuffix state.options
+  where
+  Note { title: titleM } = state.note
+
+  title = fromMaybe "note" titleM
 
 {-------------------------------------------------------------------------------
 | Set the Note in the State to the given Note `note`.

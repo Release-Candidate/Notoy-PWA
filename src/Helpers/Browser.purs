@@ -8,13 +8,18 @@
 -- ==============================================================================
 -- | Module Helpers.Browser, helper functions for Browser stuff.
 module Helpers.Browser
-  ( getCurrentUrl
+  ( downloadFromAnchor
+  , downloadNote
+  , getCurrentUrl
   , getCurrentUrlString
+  , getElementFromId
   , loadFromLocalStorage
   , saveToLocalStorage
   ) where
 
 import Prelude
+import App.Constants (downloadAttr, hrefAttr)
+import App.State (State, filenameFromState, makeBlob)
 import Data.Argonaut (class DecodeJson, class EncodeJson)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
@@ -22,24 +27,91 @@ import Data.StoreKey (class StoreKey, StoreKeyId, storeKeyIdStringFromObject, st
 import Effect (Effect)
 import Effect.Console (log)
 import Helpers.General (decodeJsonFromString, encodeToJsonString)
+import Web.DOM (Element)
+import Web.DOM.Element (setAttribute)
+import Web.DOM.NonElementParentNode (getElementById)
+import Web.File.Blob (Blob)
+import Web.File.Url (createObjectURL)
 import Web.HTML (Window, window)
+import Web.HTML.HTMLAnchorElement as HTMLA
+import Web.HTML.HTMLDocument (toNonElementParentNode)
+import Web.HTML.HTMLElement (click)
 import Web.HTML.Location (href)
-import Web.HTML.Window (localStorage, location)
+import Web.HTML.Window (document, localStorage, location)
 import Web.Storage.Storage (getItem, setItem)
 import Web.URL (URL, fromAbsolute)
 
 {-------------------------------------------------------------------------------
-| Return the current URL in the browser's address bar as a `String`.
+| Download the given `Note` from the (hidden) anchor element with the given id.
 |
-| Needs an `Effect` to get the information from the address bar.
+| * `aId` - The id of the (hidden) anchor element to use to download.
+| * `state` - The state containing the `Options` and `Note` needed to generate
+|             the data of the note to download it.
+-}
+downloadNote :: String -> State -> Effect Unit
+downloadNote aId state = do
+  hiddenA <- getElementFromId aId
+  case hiddenA of
+    Nothing -> log $ "Error trying to download: hidden element not found: " <> aId
+    Just el -> case HTMLA.fromElement el of
+      Nothing ->
+        log $ "Error trying to download: the element with id "
+          <> aId
+          <> " is not an anchor"
+      Just anchorEl -> downloadNoteFromAnchor anchorEl state
+
+{-------------------------------------------------------------------------------
+| Download the given `Note` from the given (hidden) anchor element.
+|
+| * `anchorEl` - The (hidden) anchor element to use to download.
+| * `state` - The state containing the `Options` and `Note` needed to generate
+|             the data of the note to download it.
+-}
+downloadNoteFromAnchor :: HTMLA.HTMLAnchorElement -> State -> Effect Unit
+downloadNoteFromAnchor = downloadFromAnchor filenameFromState makeBlob
+
+{-------------------------------------------------------------------------------
+| Download
+|
+| * `filenameFromObj` -
+| * `makeBlobFromObj` -
+| * `anchorEl` -
+| * `obj` -
+-}
+downloadFromAnchor ::
+  forall a.
+  (a -> String) ->
+  (a -> Blob) ->
+  HTMLA.HTMLAnchorElement -> a -> Effect Unit
+downloadFromAnchor filenameFromObj makeBlobFromObj anchorEl obj = do
+  let
+    filename = filenameFromObj obj
+
+    element = HTMLA.toElement anchorEl
+  setAttribute downloadAttr filename element
+  HTMLA.setText filename anchorEl
+  blobUrl <- createObjectURL $ makeBlobFromObj obj
+  setAttribute hrefAttr blobUrl element
+  click $ HTMLA.toHTMLElement anchorEl
+
+{-------------------------------------------------------------------------------
+| Return the HTML element with the given id (if such an element exists).
+|
+| * `id` - The element id to search for.
+-}
+getElementFromId :: String -> Effect (Maybe Element)
+getElementFromId id = do
+  doc <- document =<< window
+  getElementById id $ toNonElementParentNode doc
+
+{-------------------------------------------------------------------------------
+| Return the current URL in the browser's address bar as a `String`.
 -}
 getCurrentUrlString :: Unit -> Effect String
 getCurrentUrlString _ = window >>= location >>= href
 
 {-------------------------------------------------------------------------------
 | Return the current URL in the browser's address bar as a `Maybe URL`.
-|
-| Needs an `Effect` to get the information from the address bar.
 -}
 getCurrentUrl :: Unit -> Effect (Maybe URL)
 getCurrentUrl _ = do

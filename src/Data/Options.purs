@@ -198,7 +198,9 @@ instance arbitraryAddYamlHeader :: Arbitrary AddYamlHeader where
 {-------------------------------------------------------------------------------
 | Convert a `String` to a `Format`.
 |
-| * `st` - If `b` is `true`, return `AddDate`. Else return `NoDate`.
+| If the given string is not one of the `Format` options, `Text` is returned.
+|
+| * `st` - The string representation of the `Format` to convert to a `Format`.
 -}
 formatFromString :: String -> Format
 formatFromString st

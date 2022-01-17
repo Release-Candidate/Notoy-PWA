@@ -14,10 +14,12 @@ module App.Action
 
 import Prelude
 import App.ShareTarget (handleShare, shareNote)
-import App.State (State, getState, newNoteState, newNoteStateKeyWords, newNoteStateLongDesc, newNoteStateShortDesc, newNoteStateTitle, newNoteStateUrl, newOptionsStateAddDate, newOptionsStateAddYamlHeader, newOptionsStateFormat)
+import App.State (State, getState, newNoteState, newNoteStateKeyWords, newNoteStateLongDesc, newNoteStateShortDesc, newNoteStateTitle, newNoteStateUrl, newOptionsState, newOptionsStateAddDate, newOptionsStateAddYamlHeader, newOptionsStateFormat)
+import Data.Argonaut (class DecodeJson)
 import Data.Maybe (Maybe(..))
 import Data.Note (Note, keyWordArrayFromString, noteKeyId)
-import Data.Options (addDateFromBool, formatFromString, yamlHeaderFromBool)
+import Data.Options (addDateFromBool, formatFromString, optionsKeyId, yamlHeaderFromBool)
+import Data.StoreKey (class StoreKey, StoreKeyId(..))
 import Data.URL (noteUrlFromString)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Console (log)
@@ -25,12 +27,12 @@ import Halogen as H
 import Halogen.Query.Event (eventListener)
 import Helpers.Browser (loadFromLocalStorage, saveToLocalStorage)
 import Web.Event.Internal.Types (Event)
-import Web.HTML (window)
+import Web.HTML (Window, window)
 import Web.HTML.Event.EventTypes (domcontentloaded)
 import Web.HTML.Window (toEventTarget)
 
 {-------------------------------------------------------------------------------
-| The app's actions, called if an event occurred.
+| The app's actions, emitted if an event has occurred.
 -}
 data Action
   = Initialize
@@ -83,17 +85,56 @@ handleAction = case _ of
 appInit :: forall output m. MonadAff m => H.HalogenM State Action () output m Unit
 appInit = do
   win <- H.liftEffect $ window
-  (loadedNote :: Maybe Note) <- H.liftEffect $ loadFromLocalStorage win noteKeyId
-  case loadedNote of
-    Nothing -> H.liftEffect $ log $ "No Note loaded!"
-    Just savedNote -> do
-      currState <- newNoteState savedNote
-      H.liftEffect $ log $ "Loaded Note: " <> show currState.note
+  loadOptions win
+  loadNote win
   H.subscribe' \_ ->
     eventListener
       domcontentloaded
       (toEventTarget win)
       (\e -> Just $ ShareTargetEvent e)
+
+{-------------------------------------------------------------------------------
+| Helper function to load the `Note` from the local storage and put it into the
+| `State`, the app's state.
+-}
+loadNote ::
+  forall output m.
+  MonadAff m =>
+  Window ->
+  H.HalogenM State Action () output m Unit
+loadNote = loadObject newNoteState noteKeyId "Note"
+
+{-------------------------------------------------------------------------------
+| Helper function to load the `Options` from the local storage and put it into
+| the `State`, the app's state.
+-}
+loadOptions ::
+  forall output m.
+  MonadAff m =>
+  Window ->
+  H.HalogenM State Action () output m Unit
+loadOptions = loadObject newOptionsState optionsKeyId "Options"
+
+{-------------------------------------------------------------------------------
+| Helper function to deserialize an object from local storage and save it to the
+| app's state of type `State`.
+-}
+loadObject ::
+  forall a output m.
+  StoreKey a =>
+  DecodeJson a =>
+  Show a =>
+  MonadAff m =>
+  (a -> H.HalogenM State Action () output m State) ->
+  StoreKeyId -> String -> Window -> H.HalogenM State Action () output m Unit
+loadObject storeToState keyId name win = do
+  (loaded :: Maybe a) <- H.liftEffect $ loadFromLocalStorage win keyId
+  case loaded of
+    Nothing -> H.liftEffect $ log $ "No " <> name <> " loaded!"
+    Just savedObj -> do
+      currState <- storeToState savedObj
+      H.liftEffect $ log $ "Loaded " <> name <> ": " <> show savedObj
+      H.liftEffect $ log $ "New state is: " <> show currState
 
 {-------------------------------------------------------------------------------
 | Helper function: change the app's state using a function `f` with the new

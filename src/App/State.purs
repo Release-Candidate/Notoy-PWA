@@ -34,7 +34,6 @@ module App.State
   ) where
 
 import Prelude
-import Data.Argonaut ((.!=))
 import Data.Maybe (Maybe(..))
 import Data.Note (KeyWordArray, Note(..), defaultNote)
 import Data.Options (AddDate, AddYamlHeader, Format, Options(..), defaultOptions)
@@ -172,42 +171,91 @@ newNoteStateKeyWords_ ::
   Maybe KeyWordArray -> H.HalogenM State action () output m Unit
 newNoteStateKeyWords_ = newNoteStateGenericKeyWords H.modify_
 
+{-------------------------------------------------------------------------------
+| Set the short description of the note in the state to `shortDesc`.
+|
+|  Return the new state.
+|
+| * `shortDesc` - The new short description of the note to set in the state.
+-}
 newNoteStateShortDesc ::
   forall action output m.
   MonadAff m =>
   String -> H.HalogenM State action () output m State
 newNoteStateShortDesc = newNoteStateGenericShort H.modify
 
+{-------------------------------------------------------------------------------
+| Set the short description of the note in the state to `shortDesc`.
+|
+|  Does not return the new state.
+|
+| * `shortDesc` - The new short description of the note to set in the state.
+-}
 newNoteStateShortDesc_ ::
   forall action output m.
   MonadAff m =>
   String -> H.HalogenM State action () output m Unit
 newNoteStateShortDesc_ = newNoteStateGenericShort H.modify_
 
+{-------------------------------------------------------------------------------
+| Set the detailed description of the note in the state to `longDesc`.
+|
+|  Return the new state.
+|
+| * `longDesc` - The new detailed description of the note to set in the state.
+-}
 newNoteStateLongDesc ::
   forall action output m.
   MonadAff m =>
   String -> H.HalogenM State action () output m State
 newNoteStateLongDesc = newNoteStateGenericLong H.modify
 
+{-------------------------------------------------------------------------------
+| Set the detailed description of the note in the state to `longDesc`.
+|
+|  Does not return the new state.
+|
+| * `longDesc` - The new detailed description of the note to set in the state.
+-}
 newNoteStateLongDesc_ ::
   forall action output m.
   MonadAff m =>
   String -> H.HalogenM State action () output m Unit
 newNoteStateLongDesc_ = newNoteStateGenericLong H.modify_
 
+{-------------------------------------------------------------------------------
+| Set the options of the state to the given object.
+|
+| Return the new state.
+|
+| * `options` - The new Options to set in the state.
+-}
 newOptionsState ::
   forall action output m.
   MonadAff m =>
   Options -> H.HalogenM State action () output m State
 newOptionsState = newOptionsStateGeneric H.modify
 
+{-------------------------------------------------------------------------------
+| Set the options of the state to the given object.
+|
+| Does not return the new state.
+|
+| * `options` - The new Options to set in the state.
+-}
 newOptionsState_ ::
   forall action output m.
   MonadAff m =>
   Options -> H.HalogenM State action () output m Unit
 newOptionsState_ = newOptionsStateGeneric H.modify_
 
+{-------------------------------------------------------------------------------
+| Set the Format in the options of the state.
+|
+| Return the new state.
+|
+| * `format` - The new Format to set in the state.
+-}
 newOptionsStateFormat ::
   ∀ action output m.
   MonadAff m =>
@@ -215,6 +263,13 @@ newOptionsStateFormat ::
   H.HalogenM State action () output m State
 newOptionsStateFormat = newOptionsStateGenericFormat H.modify
 
+{-------------------------------------------------------------------------------
+| Set the Format in the options of the state.
+|
+| Does not return the new state.
+|
+| * `format` - The new Format to set in the state.
+-}
 newOptionsStateFormat_ ::
   ∀ action output m.
   MonadAff m =>
@@ -222,6 +277,13 @@ newOptionsStateFormat_ ::
   H.HalogenM State action () output m Unit
 newOptionsStateFormat_ = newOptionsStateGenericFormat H.modify_
 
+{-------------------------------------------------------------------------------
+| Set whether to add the current date to the note in the Options of the state.
+|
+| Return the new state.
+|
+| * `addDate` - The `AddDate` to set the Options in the state to.
+-}
 newOptionsStateAddDate ::
   ∀ action output m.
   MonadAff m =>
@@ -229,6 +291,13 @@ newOptionsStateAddDate ::
   H.HalogenM State action () output m State
 newOptionsStateAddDate = newOptionsStateGenericAddDate H.modify
 
+{-------------------------------------------------------------------------------
+| Set whether to add the current date to the note in the Options of the state.
+|
+| Does not return the new state.
+|
+| * `addDate` - The `AddDate` to set the Options in the state to.
+-}
 newOptionsStateAddDate_ ::
   ∀ action output m.
   MonadAff m =>
@@ -236,6 +305,14 @@ newOptionsStateAddDate_ ::
   H.HalogenM State action () output m Unit
 newOptionsStateAddDate_ = newOptionsStateGenericAddDate H.modify_
 
+{-------------------------------------------------------------------------------
+| Set whether to add a YAML front matter header to the note in the Options of
+| the state.
+|
+| Return the new state.
+|
+| * `addYamlHeader` - The `AddYamlHeader` to set the Options in the state to.
+-}
 newOptionsStateAddYamlHeader ::
   ∀ action output m.
   MonadAff m =>
@@ -243,6 +320,14 @@ newOptionsStateAddYamlHeader ::
   H.HalogenM State action () output m State
 newOptionsStateAddYamlHeader = newOptionsStateGenericAddYaml H.modify
 
+{-------------------------------------------------------------------------------
+| Set whether to add a YAML front matter header to the note in the Options of
+| the state.
+|
+| Does not return the new state.
+|
+| * `addYamlHeader` - The `AddYamlHeader` to set the Options in the state to.
+-}
 newOptionsStateAddYamlHeader_ ::
   ∀ action output m.
   MonadAff m =>
@@ -250,6 +335,9 @@ newOptionsStateAddYamlHeader_ ::
   H.HalogenM State action () output m Unit
 newOptionsStateAddYamlHeader_ = newOptionsStateGenericAddYaml H.modify_
 
+{-------------------------------------------------------------------------------
+| Helper function: set the `Options` of the state.
+-}
 newOptionsStateGeneric ∷
   ∀ action output m a.
   MonadAff m =>
@@ -262,6 +350,9 @@ newOptionsStateGeneric f newOptions =
     , options: newOptions
     }
 
+{-------------------------------------------------------------------------------
+| Helper function: set the `Format` of the `Options` in the state.
+-}
 newOptionsStateGenericFormat ::
   ∀ action output m a.
   MonadAff m =>
@@ -285,6 +376,9 @@ newOptionsStateGenericFormat f newFormat =
             }
       }
 
+{-------------------------------------------------------------------------------
+| Helper function: set the `AddDate` of the `Options` in the state.
+-}
 newOptionsStateGenericAddDate ::
   ∀ action output m a.
   MonadAff m =>
@@ -308,6 +402,9 @@ newOptionsStateGenericAddDate f newAddDate =
             }
       }
 
+{-------------------------------------------------------------------------------
+| Helper function: set the `AddYamlHeader` of the `Options` in the state.
+-}
 newOptionsStateGenericAddYaml ::
   ∀ action output m a.
   MonadAff m =>
@@ -331,6 +428,9 @@ newOptionsStateGenericAddYaml f newAddYaml =
             }
       }
 
+{-------------------------------------------------------------------------------
+| Helper function: set the `Note` object of the state to a new one.
+-}
 newNoteStateGeneric ∷
   ∀ action output m a.
   MonadAff m =>
@@ -343,6 +443,9 @@ newNoteStateGeneric f newNote =
     , options: state.options
     }
 
+{-------------------------------------------------------------------------------
+| Helper function: set the title string of the `Note` in the state.
+-}
 newNoteStateGenericTitle ∷
   ∀ action output m a.
   MonadAff m =>
@@ -371,6 +474,9 @@ newNoteStateGenericTitle f newTitle =
       , options: state.options
       }
 
+{-------------------------------------------------------------------------------
+| Helper function: set the URL of the `Note` in the state.
+-}
 newNoteStateGenericUrl ∷
   ∀ action output m a.
   MonadAff m =>
@@ -398,6 +504,9 @@ newNoteStateGenericUrl f newUrl =
       , options: state.options
       }
 
+{-------------------------------------------------------------------------------
+| Helper function: set the keyword array of the `Note` in the state.
+-}
 newNoteStateGenericKeyWords ∷
   ∀ action output m a.
   MonadAff m =>
@@ -425,6 +534,9 @@ newNoteStateGenericKeyWords f newKeywords =
       , options: state.options
       }
 
+{-------------------------------------------------------------------------------
+| Helper function: set the short description string of the `Note` in the state.
+-}
 newNoteStateGenericShort ∷
   ∀ action output m a.
   MonadAff m =>
@@ -452,6 +564,10 @@ newNoteStateGenericShort f newShortDesc =
       , options: state.options
       }
 
+{-------------------------------------------------------------------------------
+| Helper function: set the detailed description string of the `Note` in the
+| state.
+-}
 newNoteStateGenericLong ∷
   ∀ action output m a.
   MonadAff m =>

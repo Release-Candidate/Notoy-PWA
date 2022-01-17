@@ -35,8 +35,8 @@ import Web.URL.URLSearchParams (get)
 | Return `true`, if the platform supports sharing the current note to other
 | apps, `false` if not.
 -}
-canShare :: Unit -> Boolean
-canShare = canShareJS
+canShare :: Boolean
+canShare = canShareJS unit
 
 {-------------------------------------------------------------------------------
 | Share the given Note `note` with other apps.
@@ -45,7 +45,7 @@ canShare = canShareJS
 -}
 shareNote :: Note -> Aff Unit
 shareNote note =
-  if canShare unit then
+  if canShare then
     toAffE $ shareNoteJS noteRecord
   else
     pure unit

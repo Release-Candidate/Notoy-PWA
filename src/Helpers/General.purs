@@ -21,20 +21,46 @@ module Helpers.General
   , getFirstMatch
   , getNoteURL
   , getURLString
+  , regexNotAWord
   , regexURL
   , showM
   ) where
 
 import Prelude
-import Data.Argonaut (class DecodeJson, class EncodeJson, decodeJson, encodeJson, jsonParser, printJsonDecodeError, stringify)
+import Data.Argonaut
+  ( class DecodeJson
+  , class EncodeJson
+  , decodeJson
+  , encodeJson
+  , jsonParser
+  , printJsonDecodeError
+  , stringify
+  )
 import Data.Array.NonEmpty (take)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.String.Regex (Regex, match, test)
-import Data.String.Regex.Flags (ignoreCase)
+import Data.String.Regex.Flags (RegexFlags(..), ignoreCase)
 import Data.String.Regex.Unsafe (unsafeRegex)
 import Data.URL (NoteURL, noteUrlFromString)
 import JSURI (decodeFormURLComponent, decodeURIComponent, encodeFormURLComponent, encodeURIComponent)
+
+{-------------------------------------------------------------------------------
+| Regex to match everything that is not a unicode letter.
+|
+| Like whitespace, punctuation characters, ...
+-}
+regexNotAWord ∷ Regex
+regexNotAWord =
+  unsafeRegex "(\\P{L})+"
+    $ RegexFlags
+        { global: true
+        , ignoreCase: true
+        , unicode: true
+        , dotAll: false
+        , multiline: false
+        , sticky: false
+        }
 
 {-------------------------------------------------------------------------------
 | Regex to parse an URL.

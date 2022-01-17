@@ -80,7 +80,11 @@ render state =
     } = state.options
   in
     HH.div [ HP.id "all" ]
-      [ HH.div [ HP.id "note" ]
+      [ HH.div [ HP.id "hiddenDiv" ]
+          [ HH.a [ HP.id "hiddenURL", hiddenP true ]
+              [ HH.text "download.md" ]
+          ]
+      , HH.div [ HP.id "note" ]
           [ HH.div [ HP.id "title" ]
               [ HH.label [ HP.for "titleText" ]
                   [ HH.span_ [ HH.text "Title:" ]
@@ -229,3 +233,9 @@ render state =
               ]
           ]
       ]
+
+{-------------------------------------------------------------------------------
+| HTML attribute `hidden`, to hide elements.
+-}
+hiddenP :: forall r i. Boolean -> HH.IProp ( hidden :: Boolean | r ) i
+hiddenP = HH.prop (HH.PropName "hidden")

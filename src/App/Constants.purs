@@ -9,6 +9,7 @@
 -- | Module App.Constants, various constants used in the app.
 module App.Constants
   ( appElementId
+  , hiddenURLId
   ) where
 
 {-------------------------------------------------------------------------------
@@ -18,3 +19,11 @@ module App.Constants
 -}
 appElementId :: String
 appElementId = "#app"
+
+{-------------------------------------------------------------------------------
+| The id of the hidden `a` HTML element used to download the note.
+|
+| "hiddenURL"
+-}
+hiddenURLId ∷ String
+hiddenURLId = "hiddenURL"

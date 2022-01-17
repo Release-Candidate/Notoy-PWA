@@ -13,23 +13,33 @@ module App.Action
   ) where
 
 import Prelude
+import App.Constants (hiddenURLId)
 import App.ShareTarget (handleShare, shareNote)
 import App.State (State, getState, newNoteState, newNoteStateKeyWords, newNoteStateLongDesc, newNoteStateShortDesc, newNoteStateTitle, newNoteStateUrl, newOptionsState, newOptionsStateAddDate, newOptionsStateAddYamlHeader, newOptionsStateFormat)
 import Data.Argonaut (class DecodeJson)
-import Data.Maybe (Maybe(..))
-import Data.Note (Note, keyWordArrayFromString, noteKeyId)
+import Data.Maybe (Maybe(..), fromJust)
+import Data.MediaType (MediaType(..))
+import Data.Note (keyWordArrayFromString, noteKeyId)
 import Data.Options (addDateFromBool, formatFromString, optionsKeyId, yamlHeaderFromBool)
-import Data.StoreKey (class StoreKey, StoreKeyId(..))
+import Data.StoreKey (class StoreKey, StoreKeyId)
 import Data.URL (noteUrlFromString)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Console (log)
 import Halogen as H
 import Halogen.Query.Event (eventListener)
 import Helpers.Browser (loadFromLocalStorage, saveToLocalStorage)
+import Partial.Unsafe (unsafePartial)
+import Web.DOM.Element (setAttribute)
+import Web.DOM.NonElementParentNode (getElementById)
 import Web.Event.Internal.Types (Event)
+import Web.File.Blob (fromString)
+import Web.File.Url (createObjectURL)
 import Web.HTML (Window, window)
 import Web.HTML.Event.EventTypes (domcontentloaded)
-import Web.HTML.Window (toEventTarget)
+import Web.HTML.HTMLAnchorElement as HTMLA
+import Web.HTML.HTMLDocument (toNonElementParentNode)
+import Web.HTML.HTMLElement (click, fromElement)
+import Web.HTML.Window (document, toEventTarget)
 
 {-------------------------------------------------------------------------------
 | The app's actions, emitted if an event has occurred.
@@ -75,7 +85,25 @@ handleAction = case _ of
   ShareNote -> do
     state <- getState
     H.liftAff $ shareNote state.note
-  DownloadNote -> pure unit
+  DownloadNote -> do
+    w <- H.liftEffect window
+    doc <- H.liftEffect $ document w
+    hiddenA <- H.liftEffect $ getElementById hiddenURLId $ toNonElementParentNode doc
+    case hiddenA of
+      Nothing -> H.liftEffect $ log "ERROR: hidden not found: "
+      Just el -> do
+        let
+          blob = fromString "My content" $ MediaType "text/markdown"
+        blobUrl <- H.liftEffect $ createObjectURL blob
+        H.liftEffect $ setAttribute "href" blobUrl el
+        H.liftEffect $ setAttribute "download" "downloadFile.md" el
+        let
+          anchEl = HTMLA.fromElement el
+        case anchEl of
+          Nothing -> H.liftEffect $ log "ERROR: anchEL not an anchor"
+          Just e -> do
+            H.liftEffect $ HTMLA.setText "downloadFile.md" e
+            H.liftEffect $ click $ unsafePartial $ fromJust $ fromElement el
 
 {-------------------------------------------------------------------------------
 | Initialization.

@@ -13,6 +13,10 @@ module Helpers.Browser
   , getCurrentUrl
   , getCurrentUrlString
   , getElementFromId
+  , getLanguage
+  , getLanguages
+  , getPlatform
+  , isOnline
   , loadFromLocalStorage
   , saveToLocalStorage
   ) where
@@ -37,7 +41,8 @@ import Web.HTML.HTMLAnchorElement as HTMLA
 import Web.HTML.HTMLDocument (toNonElementParentNode)
 import Web.HTML.HTMLElement (click)
 import Web.HTML.Location (href)
-import Web.HTML.Window (document, localStorage, location)
+import Web.HTML.Navigator (language, languages, onLine, platform)
+import Web.HTML.Window (document, localStorage, location, navigator)
 import Web.Storage.Storage (getItem, setItem)
 import Web.URL (URL, fromAbsolute)
 
@@ -93,6 +98,36 @@ downloadFromAnchor filenameFromObj makeBlobFromObj anchorEl obj = do
   blobUrl <- createObjectURL $ makeBlobFromObj obj
   setAttribute hrefAttr blobUrl element
   click $ HTMLA.toHTMLElement anchorEl
+
+{-------------------------------------------------------------------------------
+| Return the online status of the site.
+|
+| `true` if we are online, `false` else.
+-}
+isOnline :: Unit -> Effect Boolean
+isOnline _ = window >>= navigator >>= onLine
+
+{-------------------------------------------------------------------------------
+| Return the platform (OS) the browser is running on.
+-}
+getPlatform :: Unit -> Effect String
+getPlatform _ = window >>= navigator >>= platform
+
+{-------------------------------------------------------------------------------
+| Return the preferred language of the user / browser.
+|
+| This is the first element of the array `getLanguages`.
+-}
+getLanguage :: Unit -> Effect String
+getLanguage _ = window >>= navigator >>= language
+
+{-------------------------------------------------------------------------------
+| Return the array of preferred language of the user / browser.
+|
+| The first element of this array is `getLanguage`.
+-}
+getLanguages :: Unit -> Effect (Array String)
+getLanguages _ = window >>= navigator >>= languages
 
 {-------------------------------------------------------------------------------
 | Return the HTML element with the given id (if such an element exists).

@@ -41,6 +41,11 @@ function getDateStringJS() {
     }
 }
 
+/**
+ * Return the current local year using 4 digits.
+ *
+ * @return The current local year using 4 digits.
+ */
 function getYearStringJS() {
     return function () {
         const today = new Date()
@@ -49,6 +54,11 @@ function getYearStringJS() {
     }
 }
 
+/**
+ * Return the current local month using (at least) 2 digits.
+ *
+ * @returns The current local month using (at least) 2 digits.
+ */
 function getMonthStringJS() {
     return function () {
         const today = new Date()
@@ -57,6 +67,11 @@ function getMonthStringJS() {
     }
 }
 
+/**
+ * Return the current local day of the month using (at least) 2 digits.
+ *
+ * @returns The current local day of the month using (at least) 2 digits.
+ */
 function getDayStringJS() {
     return function () {
         const today = new Date()
@@ -64,6 +79,11 @@ function getDayStringJS() {
     }
 }
 
+/**
+ * Return the current local weekday as a number starting from 0 (sunday).
+ *
+ * @returns The current local weekday as a number starting from 0 (sunday).
+ */
 function getWeekDayStringJS() {
     return function () {
         const today = new Date()
@@ -90,6 +110,11 @@ function getTimeStringJS() {
     }
 }
 
+/**
+ * Return the local hour of the day in 24h format.
+ *
+ * @returns The local hour of the day in 24h format.
+ */
 function getHourStringJS() {
     return function () {
         const today = new Date()
@@ -97,6 +122,11 @@ function getHourStringJS() {
     }
 }
 
+/**
+ * Return the local minute of the hour in 24h format.
+ *
+ * @returns The local minute of the hour in 24h format.
+ */
 function getMinuteStringJS() {
     return function () {
         const today = new Date()
@@ -104,6 +134,11 @@ function getMinuteStringJS() {
     }
 }
 
+/**
+ * Return the local seconds of the minute in 24h format.
+ *
+ * @returns The local seconds of the minute in 24h format.
+ */
 function getSecondsStringJS() {
     return function () {
         const today = new Date()

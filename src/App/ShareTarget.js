@@ -30,7 +30,7 @@ function canShareJS() {
  *
  * Promise has to be wrapped in a function to work with `Control.Promise`.
  *
- * @param {record} note  the record `{ title, text, url }` of the note to share.
+ * @param {ShareTargetRecord} note  the record `{ title, text, url }` of the note to share.
  */
 function shareNoteJS({ title, text, url }) {
     return function () {

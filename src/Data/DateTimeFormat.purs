@@ -10,9 +10,20 @@
 module Data.DateTimeFormat
   ( DateStyle(..)
   , DateTimeFormat
+  , DateTimeFormatOptions(..)
+  , DayFormat(..)
+  , DayPeriod(..)
+  , EraFormat(..)
+  , FormatMatcher(..)
+  , HourCycle(..)
   , Locale(..)
+  , LocaleMatcher(..)
+  , MonthFormat(..)
   , TimeStyle(..)
   , TimeZoneNameStyle(..)
+  , WeekDayFormat(..)
+  , YearFormat(..)
+  , dateTimeFormat
   , defaultDateTimeFormat
   , formatDate
   , formatDateInts
@@ -36,7 +47,7 @@ import Data.Argonaut.Encode.Generic (genericEncodeJson)
 import Data.Date (Date, canonicalDate, day, month, year)
 import Data.DateTime (DateTime(..), Time(..), hour, minute, second)
 import Data.Enum (fromEnum, toEnum)
-import Data.Function.Uncurried (Fn4, Fn6, Fn7, runFn4, runFn6, runFn7)
+import Data.Function.Uncurried (Fn2, Fn4, Fn6, Fn7, runFn2, runFn4, runFn6, runFn7)
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe)
 import Data.Newtype (class Newtype, unwrap, wrap)
@@ -44,6 +55,8 @@ import Data.Show.Generic (genericShow)
 import Effect (Effect)
 import Test.QuickCheck (class Arbitrary, arbitrary)
 import Test.QuickCheck.Arbitrary (genericArbitrary)
+import Untagged.Castable (cast)
+import Untagged.Union (UndefinedOr)
 
 {-------------------------------------------------------------------------------
 | Type to hold the locale and formatting options of a date or a time.
@@ -75,12 +88,47 @@ derive instance newtypeLocale :: Newtype Locale _
 derive newtype instance arbitraryLocale :: Arbitrary Locale
 
 {-------------------------------------------------------------------------------
+| Convert a `Locale` to a `String`.
+|
+| * `locale` - The `Locale` to convert to a `String`.
+-}
+localeToString :: Locale -> String
+localeToString = unwrap
+
+{-------------------------------------------------------------------------------
+| Convert a BCP 47 language tag String to a `Locale`.
+|
+| The given String is not validated, every String returns a Locale!
+|
+| * `str` - The `String` to convert to a `Locale`.
+-}
+stringToLocale :: String -> Locale
+stringToLocale = wrap
+
+{-------------------------------------------------------------------------------
 | The options of a `DateTimeFormat`.
 -}
 data DateTimeFormatOptions
   = DateTimeFormatOptions
     { dateStyle :: Maybe DateStyle
     , timeStyle :: Maybe TimeStyle
+    , calendar :: Maybe String
+    , dayPeriod :: Maybe DayPeriod
+    , numberingSystem :: Maybe String
+    , localeMatcher :: Maybe LocaleMatcher
+    , timeZone :: Maybe String
+    , hour12 :: Maybe Boolean
+    , hourCycle :: Maybe HourCycle
+    , formatMatcher :: Maybe FormatMatcher
+    , weekDay :: Maybe WeekDayFormat
+    , era :: Maybe EraFormat
+    , year :: Maybe YearFormat
+    , month :: Maybe MonthFormat
+    , day :: Maybe DayFormat
+    -- , hour :: Maybe HourFormat
+    -- , minute :: Maybe MinuteFormat
+    -- , second :: Maybe SecondFormat
+    -- , fractionalSecondDigits :: Maybe FractionalSecondDigits
     , timeZoneNameStyle :: Maybe TimeZoneNameStyle
     }
 
@@ -106,6 +154,13 @@ instance arbitraryDateTimeFormatOptions :: Arbitrary DateTimeFormatOptions where
 | Return the default `DateTimeFormat` object of the current (browser) locale.
 -}
 foreign import defaultDateTimeFormat :: Unit -> Effect DateTimeFormat
+
+dateTimeFormat :: Locale -> DateTimeFormatOptions -> DateTimeFormat
+dateTimeFormat locale options = runFn2 getDateTimeFormatJS locale optionsJS
+  where
+  optionsJS = convertDateTimeOptions options
+
+foreign import getDateTimeFormatJS :: Fn2 Locale DateTimeFormatOptionsJS DateTimeFormat
 
 {-------------------------------------------------------------------------------
 | Return a string of the current date and time formatted using the given
@@ -460,6 +515,539 @@ instance arbitraryTimeStyle :: Arbitrary TimeStyle where
       | otherwise = intToTimeStyle (-n)
 
 {-------------------------------------------------------------------------------
+| The format of a day period - like `AM` and `PM`.
+|
+| 12 hour format must be enabled for this to have an effect.
+|
+| One of
+|   * Narrow
+|   * Short
+|   * Long
+-}
+data DayPeriod
+  = NarrowDP
+  | ShortDP
+  | LongDP
+
+{-------------------------------------------------------------------------------
+| The format of a day period, values for Javascript FFI.
+-}
+dayPeriodJS ::
+  { long :: String
+  , narrow :: String
+  , short :: String
+  }
+dayPeriodJS = { narrow: "narrow", short: "short", long: "long" }
+
+toDayPeriod :: DayPeriod -> String
+toDayPeriod NarrowDP = dayPeriodJS.narrow
+
+toDayPeriod ShortDP = dayPeriodJS.short
+
+toDayPeriod LongDP = dayPeriodJS.long
+
+derive instance eqDayPeriod :: Eq DayPeriod
+
+derive instance ordDayPeriod :: Ord DayPeriod
+
+derive instance genericDayPeriod :: Generic DayPeriod _
+
+instance decodeJsonDayPeriod :: DecodeJson DayPeriod where
+  decodeJson = genericDecodeJson
+
+instance encodeJsonDayPeriod :: EncodeJson DayPeriod where
+  encodeJson = genericEncodeJson
+
+instance showDayPeriod :: Show DayPeriod where
+  show = genericShow
+
+{-------------------------------------------------------------------------------
+| ATTENTION: 3 is the number of values of `DayPeriod`.
+-}
+instance arbitraryDayPeriod :: Arbitrary DayPeriod where
+  arbitrary = map intToDayPeriod arbitrary
+    where
+    intToDayPeriod :: Int -> DayPeriod
+    intToDayPeriod n
+      | n >= 0 = case n `mod` 3 of
+        0 -> NarrowDP
+        1 -> ShortDP
+        _ -> LongDP
+      | otherwise = intToDayPeriod (-n)
+
+{-------------------------------------------------------------------------------
+| The options to match the locale.
+|
+| One of
+|   * Lookup
+|   * BestFit
+-}
+data LocaleMatcher
+  = Lookup
+  | BestFit
+
+{-------------------------------------------------------------------------------
+| The values of a `LocaleMatcher` for the JS FFI.
+-}
+localeMatcherJS ::
+  { bestFit :: String
+  , lookup :: String
+  }
+localeMatcherJS = { lookup: "lookup", bestFit: "best fit" }
+
+toLocalMatcher :: LocaleMatcher -> String
+toLocalMatcher Lookup = localeMatcherJS.lookup
+
+toLocalMatcher BestFit = localeMatcherJS.bestFit
+
+derive instance eqLocaleMatcher :: Eq LocaleMatcher
+
+derive instance ordLocaleMatcher :: Ord LocaleMatcher
+
+derive instance genericLocaleMatcher :: Generic LocaleMatcher _
+
+instance decodeJsonLocaleMatcher :: DecodeJson LocaleMatcher where
+  decodeJson = genericDecodeJson
+
+instance encodeJsonLocaleMatcher :: EncodeJson LocaleMatcher where
+  encodeJson = genericEncodeJson
+
+instance showLocaleMatcher :: Show LocaleMatcher where
+  show = genericShow
+
+{-------------------------------------------------------------------------------
+| ATTENTION: 2 is the number of values of `LocaleMatcher`.
+-}
+instance arbitraryLocaleMatcher :: Arbitrary LocaleMatcher where
+  arbitrary = map intToLocaleMatcher arbitrary
+    where
+    intToLocaleMatcher :: Int -> LocaleMatcher
+    intToLocaleMatcher n
+      | n >= 0 = case n `mod` 2 of
+        0 -> Lookup
+        _ -> BestFit
+      | otherwise = intToLocaleMatcher (-n)
+
+{-------------------------------------------------------------------------------
+| The number of hours in a clock cycle of a day.
+|
+| One of
+|   * H11
+|   * H12
+|   * H23
+|   * H24
+-}
+data HourCycle
+  = H11
+  | H12
+  | H23
+  | H24
+
+{-------------------------------------------------------------------------------
+| The values of `HourCycle` fo teh JS FFI.
+-}
+hourCycleJS ::
+  { h11 :: String
+  , h12 :: String
+  , h23 :: String
+  , h24 :: String
+  }
+hourCycleJS = { h11: "h11", h12: "h12", h23: "h23", h24: "h24" }
+
+toHourCycle :: HourCycle -> String
+toHourCycle H11 = hourCycleJS.h11
+
+toHourCycle H12 = hourCycleJS.h12
+
+toHourCycle H23 = hourCycleJS.h23
+
+toHourCycle H24 = hourCycleJS.h24
+
+derive instance eqHourCycle :: Eq HourCycle
+
+derive instance ordHourCycle :: Ord HourCycle
+
+derive instance genericHourCycle :: Generic HourCycle _
+
+instance decodeJsonHourCycle :: DecodeJson HourCycle where
+  decodeJson = genericDecodeJson
+
+instance encodeJsonHourCycle :: EncodeJson HourCycle where
+  encodeJson = genericEncodeJson
+
+instance showHourCycle :: Show HourCycle where
+  show = genericShow
+
+{-------------------------------------------------------------------------------
+| ATTENTION: 4 is the number of values of `HourCycle`.
+-}
+instance arbitraryHourCycle :: Arbitrary HourCycle where
+  arbitrary = map intToHourCycle arbitrary
+    where
+    intToHourCycle :: Int -> HourCycle
+    intToHourCycle n
+      | n >= 0 = case n `mod` 4 of
+        0 -> H11
+        1 -> H12
+        2 -> H23
+        _ -> H24
+      | otherwise = intToHourCycle (-n)
+
+{-------------------------------------------------------------------------------
+| The possible values of a format matcher.
+|
+| One of
+|   * BasicFM
+|   * BestFitFM
+-}
+data FormatMatcher
+  = BasicFM
+  | BestFitFM
+
+{-------------------------------------------------------------------------------
+| The values for the formatMatcher in the DateTimeFormat options.
+-}
+formatMatcherJS ::
+  { basic :: String
+  , bestFit :: String
+  }
+formatMatcherJS = { basic: "basic", bestFit: "best fit" }
+
+toFormatMatcher :: FormatMatcher -> String
+toFormatMatcher BasicFM = formatMatcherJS.basic
+
+toFormatMatcher BestFitFM = formatMatcherJS.bestFit
+
+derive instance eqFormatMatcher :: Eq FormatMatcher
+
+derive instance ordFormatMatcher :: Ord FormatMatcher
+
+derive instance genericFormatMatcher :: Generic FormatMatcher _
+
+instance decodeJsonFormatMatcher :: DecodeJson FormatMatcher where
+  decodeJson = genericDecodeJson
+
+instance encodeJsonFormatMatcher :: EncodeJson FormatMatcher where
+  encodeJson = genericEncodeJson
+
+instance showFormatMatcher :: Show FormatMatcher where
+  show = genericShow
+
+{-------------------------------------------------------------------------------
+| ATTENTION: 2 is the number of values of `FormatMatcher`.
+-}
+instance arbitraryFormatMatcher :: Arbitrary FormatMatcher where
+  arbitrary = map intToFormatMatcher arbitrary
+    where
+    intToFormatMatcher :: Int -> FormatMatcher
+    intToFormatMatcher n
+      | n >= 0 = case n `mod` 2 of
+        0 -> BasicFM
+        _ -> BestFitFM
+      | otherwise = intToFormatMatcher (-n)
+
+{-------------------------------------------------------------------------------
+| The possible values of a `WeekDayFormat`
+|
+| One of
+|   * LongWD
+|   * ShortWD
+|   * NarrowWD
+-}
+data WeekDayFormat
+  = LongWD
+  | ShortWD
+  | NarrowWD
+
+{-------------------------------------------------------------------------------
+| JS values of `WeekDayFormat`.
+-}
+weekDayFormatJS ::
+  { long :: String
+  , narrow :: String
+  , short :: String
+  }
+weekDayFormatJS = { long: "long", short: "short", narrow: "narrow" }
+
+toWeekDayFormat :: WeekDayFormat -> String
+toWeekDayFormat LongWD = weekDayFormatJS.long
+
+toWeekDayFormat ShortWD = weekDayFormatJS.short
+
+toWeekDayFormat NarrowWD = weekDayFormatJS.narrow
+
+derive instance eqWeekDayFormat :: Eq WeekDayFormat
+
+derive instance ordWeekDayFormat :: Ord WeekDayFormat
+
+derive instance genericWeekDayFormat :: Generic WeekDayFormat _
+
+instance decodeJsonWeekDayFormat :: DecodeJson WeekDayFormat where
+  decodeJson = genericDecodeJson
+
+instance encodeJsonWeekDayFormat :: EncodeJson WeekDayFormat where
+  encodeJson = genericEncodeJson
+
+instance showWeekDayFormat :: Show WeekDayFormat where
+  show = genericShow
+
+{-------------------------------------------------------------------------------
+| ATTENTION: 3 is the number of values of `WeekDayFormat`.
+-}
+instance arbitraryWeekDayFormat :: Arbitrary WeekDayFormat where
+  arbitrary = map intToWeekDayFormat arbitrary
+    where
+    intToWeekDayFormat :: Int -> WeekDayFormat
+    intToWeekDayFormat n
+      | n >= 0 = case n `mod` 3 of
+        0 -> LongWD
+        1 -> ShortWD
+        _ -> NarrowWD
+      | otherwise = intToWeekDayFormat (-n)
+
+{-------------------------------------------------------------------------------
+| The format for the era of a date
+|
+| One of
+|   * LongE
+|   * ShortE
+|   * NarrowE
+-}
+data EraFormat
+  = LongE
+  | ShortE
+  | NarrowE
+
+{-------------------------------------------------------------------------------
+| Values of the era format for JS FFI.
+-}
+eraFormatJS ::
+  { long :: String
+  , narrow :: String
+  , short :: String
+  }
+eraFormatJS = { long: "long", short: "short", narrow: "narrow" }
+
+toEraFormat :: EraFormat -> String
+toEraFormat LongE = eraFormatJS.long
+
+toEraFormat ShortE = eraFormatJS.short
+
+toEraFormat NarrowE = eraFormatJS.narrow
+
+derive instance eqEraFormat :: Eq EraFormat
+
+derive instance ordEraFormat :: Ord EraFormat
+
+derive instance genericEraFormat :: Generic EraFormat _
+
+instance decodeJsonEraFormat :: DecodeJson EraFormat where
+  decodeJson = genericDecodeJson
+
+instance encodeJsonEraFormat :: EncodeJson EraFormat where
+  encodeJson = genericEncodeJson
+
+instance showEraFormat :: Show EraFormat where
+  show = genericShow
+
+{-------------------------------------------------------------------------------
+| ATTENTION: 3 is the number of values of `EraFormat`.
+-}
+instance arbitraryEraFormat :: Arbitrary EraFormat where
+  arbitrary = map intToEraFormat arbitrary
+    where
+    intToEraFormat :: Int -> EraFormat
+    intToEraFormat n
+      | n >= 0 = case n `mod` 3 of
+        0 -> LongE
+        1 -> ShortE
+        _ -> NarrowE
+      | otherwise = intToEraFormat (-n)
+
+{-------------------------------------------------------------------------------
+| The format of a year in a date.
+|
+| One of
+|   * NumericY
+|   * TwoDigitY
+-}
+data YearFormat
+  = NumericY
+  | TwoDigitY
+
+{-------------------------------------------------------------------------------
+| The format of a year, JS FFI version.
+-}
+yearFormatJS ::
+  { numeric :: String
+  , twoDigit :: String
+  }
+yearFormatJS = { numeric: "numeric", twoDigit: "2-digit" }
+
+toYearFormat :: YearFormat -> String
+toYearFormat NumericY = yearFormatJS.numeric
+
+toYearFormat TwoDigitY = yearFormatJS.twoDigit
+
+derive instance eqYearFormat :: Eq YearFormat
+
+derive instance ordYearFormat :: Ord YearFormat
+
+derive instance genericYearFormat :: Generic YearFormat _
+
+instance decodeJsonYearFormat :: DecodeJson YearFormat where
+  decodeJson = genericDecodeJson
+
+instance encodeJsonYearFormat :: EncodeJson YearFormat where
+  encodeJson = genericEncodeJson
+
+instance showYearFormat :: Show YearFormat where
+  show = genericShow
+
+{-------------------------------------------------------------------------------
+| ATTENTION: 2 is the number of values of `YearFormat`.
+-}
+instance arbitraryYearFormat :: Arbitrary YearFormat where
+  arbitrary = map intToYearFormat arbitrary
+    where
+    intToYearFormat :: Int -> YearFormat
+    intToYearFormat n
+      | n >= 0 = case n `mod` 2 of
+        0 -> NumericY
+        _ -> TwoDigitY
+      | otherwise = intToYearFormat (-n)
+
+{-------------------------------------------------------------------------------
+| The format of a month.
+|
+| One of
+|   * NumericM
+|   * TwoDigitM
+|   * LongM
+|   * ShortM
+|   * NarrowM
+-}
+data MonthFormat
+  = NumericM
+  | TwoDigitM
+  | LongM
+  | ShortM
+  | NarrowM
+
+{-------------------------------------------------------------------------------
+| Month format in the JS version for FFI.
+-}
+monthFormatJS ∷
+  { long ∷ String
+  , narrow ∷ String
+  , numeric ∷ String
+  , short ∷ String
+  , twoDigit ∷ String
+  }
+monthFormatJS =
+  { numeric: "numeric"
+  , twoDigit: "2-digit"
+  , long: "long"
+  , short: "short"
+  , narrow: "narrow"
+  }
+
+toMonthFormat :: MonthFormat -> String
+toMonthFormat NumericM = monthFormatJS.numeric
+
+toMonthFormat TwoDigitM = monthFormatJS.twoDigit
+
+toMonthFormat LongM = monthFormatJS.long
+
+toMonthFormat ShortM = monthFormatJS.short
+
+toMonthFormat NarrowM = monthFormatJS.narrow
+
+derive instance eqMonthFormat :: Eq MonthFormat
+
+derive instance ordMonthFormat :: Ord MonthFormat
+
+derive instance genericMonthFormat :: Generic MonthFormat _
+
+instance decodeJsonMonthFormat :: DecodeJson MonthFormat where
+  decodeJson = genericDecodeJson
+
+instance encodeJsonMonthFormat :: EncodeJson MonthFormat where
+  encodeJson = genericEncodeJson
+
+instance showMonthFormat :: Show MonthFormat where
+  show = genericShow
+
+{-------------------------------------------------------------------------------
+| ATTENTION: 5 is the number of values of `MonthFormat`.
+-}
+instance arbitraryMonthFormat :: Arbitrary MonthFormat where
+  arbitrary = map intToMonthFormat arbitrary
+    where
+    intToMonthFormat :: Int -> MonthFormat
+    intToMonthFormat n
+      | n >= 0 = case n `mod` 5 of
+        0 -> NumericM
+        1 -> TwoDigitM
+        2 -> LongM
+        3 -> ShortM
+        _ -> NarrowM
+      | otherwise = intToMonthFormat (-n)
+
+{-------------------------------------------------------------------------------
+| The format of a day
+|
+| One of
+|   * NumericD
+|   * TwoDigitD
+-}
+data DayFormat
+  = NumericD
+  | TwoDigitD
+
+{-------------------------------------------------------------------------------
+| The values of a day format for the JS FFI.
+-}
+dayFormatJS ::
+  { numeric :: String
+  , twoDigit :: String
+  }
+dayFormatJS = { numeric: "numeric", twoDigit: "2-digit" }
+
+toDayFormat :: DayFormat -> String
+toDayFormat NumericD = dayFormatJS.numeric
+
+toDayFormat TwoDigitD = dayFormatJS.twoDigit
+
+derive instance eqDayFormat :: Eq DayFormat
+
+derive instance ordDayFormat :: Ord DayFormat
+
+derive instance genericDayFormat :: Generic DayFormat _
+
+instance decodeJsonDayFormat :: DecodeJson DayFormat where
+  decodeJson = genericDecodeJson
+
+instance encodeJsonDayFormat :: EncodeJson DayFormat where
+  encodeJson = genericEncodeJson
+
+instance showDayFormat :: Show DayFormat where
+  show = genericShow
+
+{-------------------------------------------------------------------------------
+| ATTENTION: 2 is the number of values of `DayFormat`.
+-}
+instance arbitraryDayFormat :: Arbitrary DayFormat where
+  arbitrary = map intToDayFormat arbitrary
+    where
+    intToDayFormat :: Int -> DayFormat
+    intToDayFormat n
+      | n >= 0 = case n `mod` 2 of
+        0 -> NumericD
+        _ -> TwoDigitD
+      | otherwise = intToDayFormat (-n)
+
+{-------------------------------------------------------------------------------
 | The style of the time zone name.
 |
 | One of
@@ -545,19 +1133,35 @@ instance arbitraryTimeZoneNameStyle :: Arbitrary TimeZoneNameStyle where
       | otherwise = intToTimeZoneNameStyle (-n)
 
 {-------------------------------------------------------------------------------
-| Convert a `Locale` to a `String`.
-|
-| * `locale` - The `Locale` to convert to a `String`.
+| The JS version of `DateTimeFormatOptions`, the record which is used for JS
+| FFI.
 -}
-localeToString :: Locale -> String
-localeToString = unwrap
+type DateTimeFormatOptionsJS
+  = { dateStyle :: UndefinedOr String
+    , timeStyle :: UndefinedOr String
+    , calendar :: UndefinedOr String
+    , dayPeriod :: UndefinedOr String
+    , numberingSystem :: UndefinedOr String
+    , localeMatcher :: UndefinedOr String
+    , timeZone :: UndefinedOr String
+    , hour12 :: UndefinedOr Boolean
+    , hourCycle :: UndefinedOr String
+    , formatMatcher :: UndefinedOr String
+    , weekDay :: UndefinedOr String
+    , era :: UndefinedOr String
+    , year :: UndefinedOr String
+    , month :: UndefinedOr String
+    , day :: UndefinedOr String
+    , hour :: UndefinedOr String
+    , minute :: UndefinedOr String
+    , second :: UndefinedOr String
+    , fractionalSecondDigits :: UndefinedOr Int
+    , timeZoneNameStyle :: UndefinedOr String
+    }
 
 {-------------------------------------------------------------------------------
-| Convert a BCP 47 language tag String to a `Locale`.
-|
-| The given String is not validated, every String returns a Locale!
-|
-| * `str` - The `String` to convert to a `Locale`.
+| Helper function: convert a `DateTimeFormatOptions` object to a
+| `DateTimeFormatOptionsJS`
 -}
-stringToLocale :: String -> Locale
-stringToLocale = wrap
+convertDateTimeOptions :: DateTimeFormatOptions -> DateTimeFormatOptionsJS
+convertDateTimeOptions options = cast {}

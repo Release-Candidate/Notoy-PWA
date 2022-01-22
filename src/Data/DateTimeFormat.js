@@ -8,6 +8,10 @@
 // ==============================================================================
 /* eslint-disable max-params */
 /* eslint-disable no-undef */
+/* eslint-disable no-undefined */
+/* eslint-disable max-lines-per-function */
+/* eslint-disable max-statements */
+/* eslint-disable complexity */
 
 // eslint-disable-next-line strict
 "use strict"
@@ -18,6 +22,7 @@ exports.isoDateTimeJS = isoDateTimeJS
 exports.formatDateTimeNow = formatDateTimeNow
 exports.formatDateJS = formatDateJS
 exports.formatDateTimeJS = formatDateTimeJS
+exports.getDateTimeFormatJS = getDateTimeFormatJS
 
 /**
  * Return the default `DateTimeFormat` object of the current locale.
@@ -28,6 +33,125 @@ function defaultDateTimeFormat() {
     return function () {
         return new Intl.DateTimeFormat()
     }
+}
+
+/**
+ * Return the formatter with the given locale and options.
+ *
+ * @param {string[]} locales - The array of locales.
+ * @param {DateTimeFormatOptionsJS} options - The options of
+ *                                            `Intl.DateTimeFormat`
+ * @returns The formatter with the given options and locale.
+ */
+
+function getDateTimeFormatJS(
+    locales,
+    {
+        dateStyle,
+        timeStyle,
+        calendar,
+        dayPeriod,
+        numberingSystem,
+        localeMatcher,
+        timeZone,
+        hour12,
+        hourCycle,
+        formatMatcher,
+        weekDay,
+        era,
+        year,
+        month,
+        day,
+        hour,
+        minute,
+        second,
+        fractionalSecondDigits,
+        timeZoneNameStyle,
+    }
+) {
+    let options = {}
+    if (dateStyle !== undefined) {
+        const optionsAdd = { dateStyle }
+        options = Object.assign(options, optionsAdd)
+    }
+    if (timeStyle !== undefined) {
+        const optionsAdd = { timeStyle }
+        options = Object.assign(options, optionsAdd)
+    }
+    if (calendar !== undefined) {
+        const optionsAdd = { calendar }
+        options = Object.assign(options, optionsAdd)
+    }
+    if (dayPeriod !== undefined) {
+        const optionsAdd = { dayPeriod }
+        options = Object.assign(options, optionsAdd)
+    }
+    if (numberingSystem !== undefined) {
+        const optionsAdd = { numberingSystem }
+        options = Object.assign(options, optionsAdd)
+    }
+    if (localeMatcher !== undefined) {
+        const optionsAdd = { localeMatcher }
+        options = Object.assign(options, optionsAdd)
+    }
+    if (timeZone !== undefined) {
+        const optionsAdd = { timeZone }
+        options = Object.assign(options, optionsAdd)
+    }
+    if (hour12 !== undefined) {
+        const optionsAdd = { hour12 }
+        options = Object.assign(options, optionsAdd)
+    }
+    if (hourCycle !== undefined) {
+        const optionsAdd = { hourCycle }
+        options = Object.assign(options, optionsAdd)
+    }
+    if (formatMatcher !== undefined) {
+        const optionsAdd = { formatMatcher }
+        options = Object.assign(options, optionsAdd)
+    }
+    if (weekDay !== undefined) {
+        const optionsAdd = { weekDay }
+        options = Object.assign(options, optionsAdd)
+    }
+    if (era !== undefined) {
+        const optionsAdd = { era }
+        options = Object.assign(options, optionsAdd)
+    }
+    if (year !== undefined) {
+        const optionsAdd = { year }
+        options = Object.assign(options, optionsAdd)
+    }
+    if (month !== undefined) {
+        const optionsAdd = { month }
+        options = Object.assign(options, optionsAdd)
+    }
+    if (day !== undefined) {
+        const optionsAdd = { day }
+        options = Object.assign(options, optionsAdd)
+    }
+    if (hour !== undefined) {
+        const optionsAdd = { hour }
+        options = Object.assign(options, optionsAdd)
+    }
+    if (minute !== undefined) {
+        const optionsAdd = { minute }
+        options = Object.assign(options, optionsAdd)
+    }
+    if (second !== undefined) {
+        const optionsAdd = { second }
+        options = Object.assign(options, optionsAdd)
+    }
+    if (fractionalSecondDigits !== undefined) {
+        const optionsAdd = { fractionalSecondDigits }
+        options = Object.assign(options, optionsAdd)
+    }
+    if (timeZoneNameStyle !== undefined) {
+        const optionsAdd = { timeZoneNameStyle }
+        options = Object.assign(options, optionsAdd)
+    }
+
+    return new Intl.DateTimeFormat(locales, options)
 }
 
 /**

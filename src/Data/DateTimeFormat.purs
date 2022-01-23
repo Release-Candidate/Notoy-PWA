@@ -7,6 +7,7 @@
 --
 -- ==============================================================================
 -- | Module Data.DateTimeFormat, to set the locale and format of a date or time.
+-- | See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat
 module Data.DateTimeFormat
   ( DateStyle(..)
   , DateTimeFormat
@@ -15,11 +16,16 @@ module Data.DateTimeFormat
   , DayPeriod(..)
   , EraFormat(..)
   , FormatMatcher(..)
+  , FractionalSecondDigits(..)
   , HourCycle(..)
+  , HourFormat(..)
   , Locale(..)
   , LocaleMatcher(..)
+  , MinuteFormat(..)
   , MonthFormat(..)
+  , SecondFormat(..)
   , TimeStyle(..)
+  , TimeZone(..)
   , TimeZoneNameStyle(..)
   , WeekDayFormat(..)
   , YearFormat(..)
@@ -38,12 +44,15 @@ module Data.DateTimeFormat
   , isoDateTimeNow
   , localeToString
   , stringToLocale
-  ) where
+  , stringToTimeZone
+  , timeZoneToString
+  )
 
 import Prelude
 import Data.Argonaut (class DecodeJson, class EncodeJson)
 import Data.Argonaut.Decode.Generic (genericDecodeJson)
 import Data.Argonaut.Encode.Generic (genericEncodeJson)
+import Data.CalendarFormat (CalendarFormat)
 import Data.Date (Date, canonicalDate, day, month, year)
 import Data.DateTime (DateTime(..), Time(..), hour, minute, second)
 import Data.Enum (fromEnum, toEnum)
@@ -51,6 +60,7 @@ import Data.Function.Uncurried (Fn2, Fn4, Fn6, Fn7, runFn2, runFn4, runFn6, runF
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe)
 import Data.Newtype (class Newtype, unwrap, wrap)
+import Data.NumberingSystem (NumberingSystem)
 import Data.Show.Generic (genericShow)
 import Effect (Effect)
 import Test.QuickCheck (class Arbitrary, arbitrary)
@@ -98,7 +108,7 @@ localeToString = unwrap
 {-------------------------------------------------------------------------------
 | Convert a BCP 47 language tag String to a `Locale`.
 |
-| The given String is not validated, every String returns a Locale!
+| The given String is not validated, every String returns a `Locale`!
 |
 | * `str` - The `String` to convert to a `Locale`.
 -}
@@ -112,11 +122,11 @@ data DateTimeFormatOptions
   = DateTimeFormatOptions
     { dateStyle :: Maybe DateStyle
     , timeStyle :: Maybe TimeStyle
-    , calendar :: Maybe String
+    , calendar :: Maybe CalendarFormat
     , dayPeriod :: Maybe DayPeriod
-    , numberingSystem :: Maybe String
+    , numberingSystem :: Maybe NumberingSystem
     , localeMatcher :: Maybe LocaleMatcher
-    , timeZone :: Maybe String
+    , timeZone :: Maybe TimeZone
     , hour12 :: Maybe Boolean
     , hourCycle :: Maybe HourCycle
     , formatMatcher :: Maybe FormatMatcher
@@ -125,10 +135,10 @@ data DateTimeFormatOptions
     , year :: Maybe YearFormat
     , month :: Maybe MonthFormat
     , day :: Maybe DayFormat
-    -- , hour :: Maybe HourFormat
-    -- , minute :: Maybe MinuteFormat
-    -- , second :: Maybe SecondFormat
-    -- , fractionalSecondDigits :: Maybe FractionalSecondDigits
+    , hour :: Maybe HourFormat
+    , minute :: Maybe MinuteFormat
+    , second :: Maybe SecondFormat
+    , fractionalSecondDigits :: Maybe FractionalSecondDigits
     , timeZoneNameStyle :: Maybe TimeZoneNameStyle
     }
 
@@ -155,12 +165,12 @@ instance arbitraryDateTimeFormatOptions :: Arbitrary DateTimeFormatOptions where
 -}
 foreign import defaultDateTimeFormat :: Unit -> Effect DateTimeFormat
 
-dateTimeFormat :: Locale -> DateTimeFormatOptions -> DateTimeFormat
-dateTimeFormat locale options = runFn2 getDateTimeFormatJS locale optionsJS
+dateTimeFormat :: Array Locale -> DateTimeFormatOptions -> DateTimeFormat
+dateTimeFormat locales options = runFn2 getDateTimeFormatJS locales optionsJS
   where
   optionsJS = convertDateTimeOptions options
 
-foreign import getDateTimeFormatJS :: Fn2 Locale DateTimeFormatOptionsJS DateTimeFormat
+foreign import getDateTimeFormatJS :: Fn2 (Array Locale) DateTimeFormatOptionsJS DateTimeFormat
 
 {-------------------------------------------------------------------------------
 | Return a string of the current date and time formatted using the given
@@ -539,12 +549,12 @@ dayPeriodJS ::
   }
 dayPeriodJS = { narrow: "narrow", short: "short", long: "long" }
 
-toDayPeriod :: DayPeriod -> String
-toDayPeriod NarrowDP = dayPeriodJS.narrow
+toDayPeriodJS :: DayPeriod -> String
+toDayPeriodJS NarrowDP = dayPeriodJS.narrow
 
-toDayPeriod ShortDP = dayPeriodJS.short
+toDayPeriodJS ShortDP = dayPeriodJS.short
 
-toDayPeriod LongDP = dayPeriodJS.long
+toDayPeriodJS LongDP = dayPeriodJS.long
 
 derive instance eqDayPeriod :: Eq DayPeriod
 
@@ -595,10 +605,10 @@ localeMatcherJS ::
   }
 localeMatcherJS = { lookup: "lookup", bestFit: "best fit" }
 
-toLocalMatcher :: LocaleMatcher -> String
-toLocalMatcher Lookup = localeMatcherJS.lookup
+toLocalMatcherJS :: LocaleMatcher -> String
+toLocalMatcherJS Lookup = localeMatcherJS.lookup
 
-toLocalMatcher BestFit = localeMatcherJS.bestFit
+toLocalMatcherJS BestFit = localeMatcherJS.bestFit
 
 derive instance eqLocaleMatcher :: Eq LocaleMatcher
 
@@ -629,6 +639,46 @@ instance arbitraryLocaleMatcher :: Arbitrary LocaleMatcher where
       | otherwise = intToLocaleMatcher (-n)
 
 {-------------------------------------------------------------------------------
+| The timezone of a locale.
+|
+| See https://www.iana.org/time-zones for (long ;) list.
+-}
+newtype TimeZone
+  = TimeZone String
+
+derive newtype instance eqTimeZone :: Eq TimeZone
+
+derive newtype instance ordTimeZone :: Ord TimeZone
+
+derive newtype instance showTimeZone :: Show TimeZone
+
+derive newtype instance decodeJsonTimeZone :: DecodeJson TimeZone
+
+derive newtype instance encodeJsonTimeZone :: EncodeJson TimeZone
+
+derive instance genericTimeZone :: Generic TimeZone _
+
+derive instance newtypeTimeZone :: Newtype TimeZone _
+
+derive newtype instance arbitraryTimeZone :: Arbitrary TimeZone
+
+{-------------------------------------------------------------------------------
+| Convert a `TimeZone` to a `String`.
+|
+| * `obj` - The `TimeZone` to convert to a `String`.
+-}
+timeZoneToString :: TimeZone -> String
+timeZoneToString = unwrap
+
+{-------------------------------------------------------------------------------
+| Convert a String to a `TimeZone`.
+|
+| * `obj` - The `String` to convert to a `TimeZone`.
+-}
+stringToTimeZone :: String -> TimeZone
+stringToTimeZone = wrap
+
+{-------------------------------------------------------------------------------
 | The number of hours in a clock cycle of a day.
 |
 | One of
@@ -654,14 +704,14 @@ hourCycleJS ::
   }
 hourCycleJS = { h11: "h11", h12: "h12", h23: "h23", h24: "h24" }
 
-toHourCycle :: HourCycle -> String
-toHourCycle H11 = hourCycleJS.h11
+toHourCycleJS :: HourCycle -> String
+toHourCycleJS H11 = hourCycleJS.h11
 
-toHourCycle H12 = hourCycleJS.h12
+toHourCycleJS H12 = hourCycleJS.h12
 
-toHourCycle H23 = hourCycleJS.h23
+toHourCycleJS H23 = hourCycleJS.h23
 
-toHourCycle H24 = hourCycleJS.h24
+toHourCycleJS H24 = hourCycleJS.h24
 
 derive instance eqHourCycle :: Eq HourCycle
 
@@ -713,10 +763,10 @@ formatMatcherJS ::
   }
 formatMatcherJS = { basic: "basic", bestFit: "best fit" }
 
-toFormatMatcher :: FormatMatcher -> String
-toFormatMatcher BasicFM = formatMatcherJS.basic
+toFormatMatcherJS :: FormatMatcher -> String
+toFormatMatcherJS BasicFM = formatMatcherJS.basic
 
-toFormatMatcher BestFitFM = formatMatcherJS.bestFit
+toFormatMatcherJS BestFitFM = formatMatcherJS.bestFit
 
 derive instance eqFormatMatcher :: Eq FormatMatcher
 
@@ -769,12 +819,12 @@ weekDayFormatJS ::
   }
 weekDayFormatJS = { long: "long", short: "short", narrow: "narrow" }
 
-toWeekDayFormat :: WeekDayFormat -> String
-toWeekDayFormat LongWD = weekDayFormatJS.long
+toWeekDayFormatJS :: WeekDayFormat -> String
+toWeekDayFormatJS LongWD = weekDayFormatJS.long
 
-toWeekDayFormat ShortWD = weekDayFormatJS.short
+toWeekDayFormatJS ShortWD = weekDayFormatJS.short
 
-toWeekDayFormat NarrowWD = weekDayFormatJS.narrow
+toWeekDayFormatJS NarrowWD = weekDayFormatJS.narrow
 
 derive instance eqWeekDayFormat :: Eq WeekDayFormat
 
@@ -828,12 +878,12 @@ eraFormatJS ::
   }
 eraFormatJS = { long: "long", short: "short", narrow: "narrow" }
 
-toEraFormat :: EraFormat -> String
-toEraFormat LongE = eraFormatJS.long
+toEraFormatJS :: EraFormat -> String
+toEraFormatJS LongE = eraFormatJS.long
 
-toEraFormat ShortE = eraFormatJS.short
+toEraFormatJS ShortE = eraFormatJS.short
 
-toEraFormat NarrowE = eraFormatJS.narrow
+toEraFormatJS NarrowE = eraFormatJS.narrow
 
 derive instance eqEraFormat :: Eq EraFormat
 
@@ -884,10 +934,10 @@ yearFormatJS ::
   }
 yearFormatJS = { numeric: "numeric", twoDigit: "2-digit" }
 
-toYearFormat :: YearFormat -> String
-toYearFormat NumericY = yearFormatJS.numeric
+toYearFormatJS :: YearFormat -> String
+toYearFormatJS NumericY = yearFormatJS.numeric
 
-toYearFormat TwoDigitY = yearFormatJS.twoDigit
+toYearFormatJS TwoDigitY = yearFormatJS.twoDigit
 
 derive instance eqYearFormat :: Eq YearFormat
 
@@ -952,16 +1002,16 @@ monthFormatJS =
   , narrow: "narrow"
   }
 
-toMonthFormat :: MonthFormat -> String
-toMonthFormat NumericM = monthFormatJS.numeric
+toMonthFormatJS :: MonthFormat -> String
+toMonthFormatJS NumericM = monthFormatJS.numeric
 
-toMonthFormat TwoDigitM = monthFormatJS.twoDigit
+toMonthFormatJS TwoDigitM = monthFormatJS.twoDigit
 
-toMonthFormat LongM = monthFormatJS.long
+toMonthFormatJS LongM = monthFormatJS.long
 
-toMonthFormat ShortM = monthFormatJS.short
+toMonthFormatJS ShortM = monthFormatJS.short
 
-toMonthFormat NarrowM = monthFormatJS.narrow
+toMonthFormatJS NarrowM = monthFormatJS.narrow
 
 derive instance eqMonthFormat :: Eq MonthFormat
 
@@ -1014,10 +1064,10 @@ dayFormatJS ::
   }
 dayFormatJS = { numeric: "numeric", twoDigit: "2-digit" }
 
-toDayFormat :: DayFormat -> String
-toDayFormat NumericD = dayFormatJS.numeric
+toDayFormatJS :: DayFormat -> String
+toDayFormatJS NumericD = dayFormatJS.numeric
 
-toDayFormat TwoDigitD = dayFormatJS.twoDigit
+toDayFormatJS TwoDigitD = dayFormatJS.twoDigit
 
 derive instance eqDayFormat :: Eq DayFormat
 
@@ -1046,6 +1096,235 @@ instance arbitraryDayFormat :: Arbitrary DayFormat where
         0 -> NumericD
         _ -> TwoDigitD
       | otherwise = intToDayFormat (-n)
+
+{-------------------------------------------------------------------------------
+| The format fo an hour.
+|
+| One of
+|   * NumericH
+|   * TwoDigitH
+-}
+data HourFormat
+  = NumericH
+  | TwoDigitH
+
+{-------------------------------------------------------------------------------
+| The format of an hour, for JS FFI.
+-}
+hourFormatJS ::
+  { numeric :: String
+  , twoDigit :: String
+  }
+hourFormatJS = { numeric: "numeric", twoDigit: "2-digit" }
+
+toHourFormatJS :: HourFormat -> String
+toHourFormatJS NumericH = hourFormatJS.numeric
+
+toHourFormatJS TwoDigitH = hourFormatJS.twoDigit
+
+derive instance eqHourFormat :: Eq HourFormat
+
+derive instance ordHourFormat :: Ord HourFormat
+
+derive instance genericHourFormat :: Generic HourFormat _
+
+instance decodeJsonHourFormat :: DecodeJson HourFormat where
+  decodeJson = genericDecodeJson
+
+instance encodeJsonHourFormat :: EncodeJson HourFormat where
+  encodeJson = genericEncodeJson
+
+instance showHourFormat :: Show HourFormat where
+  show = genericShow
+
+{-------------------------------------------------------------------------------
+| ATTENTION: 2 is the number of values of `HourFormat`.
+-}
+instance arbitraryHourFormat :: Arbitrary HourFormat where
+  arbitrary = map intToHourFormat arbitrary
+    where
+    intToHourFormat :: Int -> HourFormat
+    intToHourFormat n
+      | n >= 0 = case n `mod` 2 of
+        0 -> NumericH
+        _ -> TwoDigitH
+      | otherwise = intToHourFormat (-n)
+
+{-------------------------------------------------------------------------------
+| The format of a minute.
+|
+| One of
+|   * NumericMi
+|   * TwoDigitMi
+-}
+data MinuteFormat
+  = NumericMi
+  | TwoDigitMi
+
+{-------------------------------------------------------------------------------
+| The minute format, JS interop.
+-}
+minuteFormatJS ::
+  { numeric :: String
+  , twoDigit :: String
+  }
+minuteFormatJS = { numeric: "numeric", twoDigit: "2-digit" }
+
+toMinuteFormatJS :: MinuteFormat -> String
+toMinuteFormatJS NumericMi = minuteFormatJS.numeric
+
+toMinuteFormatJS TwoDigitMi = minuteFormatJS.twoDigit
+
+derive instance eqMinuteFormat :: Eq MinuteFormat
+
+derive instance ordMinuteFormat :: Ord MinuteFormat
+
+derive instance genericMinuteFormat :: Generic MinuteFormat _
+
+instance decodeJsonMinuteFormat :: DecodeJson MinuteFormat where
+  decodeJson = genericDecodeJson
+
+instance encodeJsonMinuteFormat :: EncodeJson MinuteFormat where
+  encodeJson = genericEncodeJson
+
+instance showMinuteFormat :: Show MinuteFormat where
+  show = genericShow
+
+{-------------------------------------------------------------------------------
+| ATTENTION: 2 is the number of values of `MinuteFormat`.
+-}
+instance arbitraryMinuteFormat :: Arbitrary MinuteFormat where
+  arbitrary = map intToMinuteFormat arbitrary
+    where
+    intToMinuteFormat :: Int -> MinuteFormat
+    intToMinuteFormat n
+      | n >= 0 = case n `mod` 2 of
+        0 -> NumericMi
+        _ -> TwoDigitMi
+      | otherwise = intToMinuteFormat (-n)
+
+{-------------------------------------------------------------------------------
+| The format of a second.
+|
+| One of
+|   * NumericS
+|   * TwoDigitS
+-}
+data SecondFormat
+  = NumericS
+  | TwoDigitS
+
+{-------------------------------------------------------------------------------
+| Format of a second, JS FFI.
+-}
+secondFormatJS ::
+  { numeric :: String
+  , twoDigit :: String
+  }
+secondFormatJS = { numeric: "numeric", twoDigit: "2-digit" }
+
+toSecondFormatJS :: SecondFormat -> String
+toSecondFormatJS NumericS = secondFormatJS.numeric
+
+toSecondFormatJS TwoDigitS = secondFormatJS.twoDigit
+
+derive instance eqSecondFormat :: Eq SecondFormat
+
+derive instance ordSecondFormat :: Ord SecondFormat
+
+derive instance genericSecondFormat :: Generic SecondFormat _
+
+instance decodeJsonSecondFormat :: DecodeJson SecondFormat where
+  decodeJson = genericDecodeJson
+
+instance encodeJsonSecondFormat :: EncodeJson SecondFormat where
+  encodeJson = genericEncodeJson
+
+instance showSecondFormat :: Show SecondFormat where
+  show = genericShow
+
+{-------------------------------------------------------------------------------
+| ATTENTION: 2 is the number of values of `SecondFormat`.
+-}
+instance arbitrarySecondFormat :: Arbitrary SecondFormat where
+  arbitrary = map intToSecondFormat arbitrary
+    where
+    intToSecondFormat :: Int -> SecondFormat
+    intToSecondFormat n
+      | n >= 0 = case n `mod` 2 of
+        0 -> NumericS
+        _ -> TwoDigitS
+      | otherwise = intToSecondFormat (-n)
+
+{-------------------------------------------------------------------------------
+| The number of digits in the fractional part of the second.
+|
+| One of
+|   * Digits0
+|   * Digits1
+|   * Digits2
+|   * Digits3
+-}
+data FractionalSecondDigits
+  = Digits0
+  | Digits1
+  | Digits2
+  | Digits3
+
+{-------------------------------------------------------------------------------
+| The number of digits in the fractional part of a second, JS interop.
+-}
+fractionalSecondDigitsJS ::
+  { digits0 :: Int
+  , digits1 :: Int
+  , digits2 :: Int
+  , digits3 :: Int
+  }
+fractionalSecondDigitsJS =
+  { digits0: 0
+  , digits1: 1
+  , digits2: 2
+  , digits3: 3
+  }
+
+toFractionalDigitsJS :: FractionalSecondDigits -> Int
+toFractionalDigitsJS Digits0 = fractionalSecondDigitsJS.digits0
+
+toFractionalDigitsJS Digits1 = fractionalSecondDigitsJS.digits1
+
+toFractionalDigitsJS Digits2 = fractionalSecondDigitsJS.digits2
+
+toFractionalDigitsJS Digits3 = fractionalSecondDigitsJS.digits3
+
+derive instance eqFractionalSecondDigits :: Eq FractionalSecondDigits
+
+derive instance ordFractionalSecondDigits :: Ord FractionalSecondDigits
+
+derive instance genericFractionalSecondDigits :: Generic FractionalSecondDigits _
+
+instance decodeJsonFractionalSecondDigits :: DecodeJson FractionalSecondDigits where
+  decodeJson = genericDecodeJson
+
+instance encodeJsonFractionalSecondDigits :: EncodeJson FractionalSecondDigits where
+  encodeJson = genericEncodeJson
+
+instance showFractionalSecondDigits :: Show FractionalSecondDigits where
+  show = genericShow
+
+{-------------------------------------------------------------------------------
+| ATTENTION: 4 is the number of values of `FractionalSecondDigits`.
+-}
+instance arbitraryFractionalSecondDigits :: Arbitrary FractionalSecondDigits where
+  arbitrary = map intToFractionalSecondDigits arbitrary
+    where
+    intToFractionalSecondDigits :: Int -> FractionalSecondDigits
+    intToFractionalSecondDigits n
+      | n >= 0 = case n `mod` 4 of
+        0 -> Digits0
+        0 -> Digits1
+        0 -> Digits2
+        _ -> Digits3
+      | otherwise = intToFractionalSecondDigits (-n)
 
 {-------------------------------------------------------------------------------
 | The style of the time zone name.
@@ -1087,18 +1366,18 @@ timeZoneNameStyleJS =
   , longGeneric: "longGeneric"
   }
 
-toTimeZoneNameStyle :: TimeZoneNameStyle -> String
-toTimeZoneNameStyle ShortTZ = timeZoneNameStyleJS.short
+toTimeZoneNameStyleJS :: TimeZoneNameStyle -> String
+toTimeZoneNameStyleJS ShortTZ = timeZoneNameStyleJS.short
 
-toTimeZoneNameStyle LongTZ = timeZoneNameStyleJS.long
+toTimeZoneNameStyleJS LongTZ = timeZoneNameStyleJS.long
 
-toTimeZoneNameStyle ShortOffsetTZ = timeZoneNameStyleJS.shortOffset
+toTimeZoneNameStyleJS ShortOffsetTZ = timeZoneNameStyleJS.shortOffset
 
-toTimeZoneNameStyle LongOffsetTZ = timeZoneNameStyleJS.longOffset
+toTimeZoneNameStyleJS LongOffsetTZ = timeZoneNameStyleJS.longOffset
 
-toTimeZoneNameStyle ShortGenericTZ = timeZoneNameStyleJS.shortGeneric
+toTimeZoneNameStyleJS ShortGenericTZ = timeZoneNameStyleJS.shortGeneric
 
-toTimeZoneNameStyle LongGenericTZ = timeZoneNameStyleJS.longGeneric
+toTimeZoneNameStyleJS LongGenericTZ = timeZoneNameStyleJS.longGeneric
 
 derive instance eqTimeZoneNameStyle :: Eq TimeZoneNameStyle
 

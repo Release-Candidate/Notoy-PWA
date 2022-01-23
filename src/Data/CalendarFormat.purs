@@ -23,7 +23,8 @@ import Test.QuickCheck (class Arbitrary, arbitrary)
 {-------------------------------------------------------------------------------
 | The calendar format.
 |
-| The calendar `islamicc` is deprecated, use `islamic-civil` instead.
+| The calendar "islamicc" is deprecated, use `IslamicCivil` ("islamic-civil")
+| instead.
 |
 | See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Locale/calendar#unicode_calendar_keys
 |

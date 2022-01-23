@@ -9,6 +9,7 @@
 -- | Module Data.CalendarFormat, the type of the format of a calendar.
 module Data.CalendarFormat
   ( CalendarFormat(..)
+  , calendarFormatToString
   ) where
 
 import Prelude
@@ -27,65 +28,84 @@ import Test.QuickCheck (class Arbitrary, arbitrary)
 | See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Locale/calendar#unicode_calendar_keys
 |
 | One of
-|   *buddhist
-Thai Buddhist calendar
-
-chinese
-Traditional Chinese calendar
-
-coptic
-Coptic calendar
-
-dangi
-Traditional Korean calendar
-
-ethioaa
-Ethiopic calendar, Amete Alem (epoch approx. 5493 B.C.E)
-
-ethiopic
-Ethiopic calendar, Amete Mihret (epoch approx, 8 C.E.)
-
-gregory
-Gregorian calendar
-
-hebrew
-Traditional Hebrew calendar
-
-indian
-Indian calendar
-
-islamic
-Islamic calendar
-
-islamic-umalqura
-Islamic calendar, Umm al-Qura
-
-islamic-tbla
-Islamic calendar, tabular (intercalary years [2,5,7,10,13,16,18,21,24,26,29] - astronomical epoch)
-
-islamic-civil
-Islamic calendar, tabular (intercalary years [2,5,7,10,13,16,18,21,24,26,29] - civil epoch)
-
-islamic-rgsa
-Islamic calendar, Saudi Arabia sighting
-
-iso8601
-ISO calendar (Gregorian calendar using the ISO 8601 calendar week rules)
-
-japanese
-Japanese Imperial calendar
-
-persian
-Persian calendar
-
-roc
-Civil (algorithmic) Arabic calendar
-
-islamicc
+|    * Buddhist - Thai Buddhist calendar
+|    * Chinese - Traditional Chinese calendar
+|    * Coptic - Coptic calendar
+|    * Dangi - Traditional Korean calendar
+|    * Ethioaa - Ethiopic calendar, Amete Alem (epoch approx. 5493 B.C.E)
+|    * Ethiopic - Ethiopic calendar, Amete Mihret (epoch approx, 8 C.E.)
+|    * Gregory - Gregorian calendar
+|    * Hebrew - Traditional Hebrew calendar
+|    * Indian - Indian calendar
+|    * Islamic - Islamic calendar
+|    * IslamicUmalqura - Islamic calendar, Umm al-Qura
+|    * IslamicTbla - Islamic calendar, tabular (intercalary years [2,5,7,10,13,16,18,21,24,26,29] - astronomical epoch)
+|    * IslamicCivil - Islamic calendar, tabular (intercalary years [2,5,7,10,13,16,18,21,24,26,29] - civil epoch)
+|    * IslamicRgsa - Islamic calendar, Saudi Arabia sighting
+|    * Iso8601 - ISO calendar (Gregorian calendar using the ISO 8601 calendar week rules)
+|    * Japanese - Japanese Imperial calendar
+|    * Persian - Persian calendar
+|    * Roc - Civil (algorithmic) Arabic calendar
 -}
 data CalendarFormat
-  = A
-  | B
+  = Buddhist
+  | Chinese
+  | Coptic
+  | Dangi
+  | Ethioaa
+  | Ethiopic
+  | Gregory
+  | Hebrew
+  | Indian
+  | Islamic
+  | IslamicUmalqura
+  | IslamicTbla
+  | IslamicCivil
+  | IslamicRgsa
+  | Iso8601
+  | Japanese
+  | Persian
+  | Roc
+
+{-------------------------------------------------------------------------------
+| Convert the `CalendarFormat` to a string.
+-}
+calendarFormatToString :: CalendarFormat -> String
+calendarFormatToString Buddhist = "buddhist"
+
+calendarFormatToString Chinese = "chinese"
+
+calendarFormatToString Coptic = "coptic"
+
+calendarFormatToString Dangi = "dangi"
+
+calendarFormatToString Ethioaa = "ethioaa"
+
+calendarFormatToString Ethiopic = "ethiopic"
+
+calendarFormatToString Gregory = "gregory"
+
+calendarFormatToString Hebrew = "hebrew"
+
+calendarFormatToString Indian = "indian"
+
+calendarFormatToString Islamic = "islamic"
+
+calendarFormatToString IslamicUmalqura = "islamic-umalqura"
+
+calendarFormatToString IslamicTbla = "islamic-tbla"
+
+calendarFormatToString IslamicCivil = "islamic-civil"
+
+calendarFormatToString IslamicRgsa = "islamic-rgsa"
+
+calendarFormatToString Iso8601 = "iso8601"
+
+calendarFormatToString Japanese = "japanese"
+
+calendarFormatToString Persian = "persian"
+
+calendarFormatToString Roc = "roc"
 
 derive instance eqCalendarFormat :: Eq CalendarFormat
 
@@ -111,6 +131,22 @@ instance arbitraryCalendarFormat :: Arbitrary CalendarFormat where
     intToCalendarFormat :: Int -> CalendarFormat
     intToCalendarFormat n
       | n >= 0 = case n `mod` 18 of
-        0 -> A
-        _ -> B
+        0 -> Buddhist
+        1 -> Chinese
+        2 -> Coptic
+        3 -> Dangi
+        4 -> Ethioaa
+        5 -> Ethiopic
+        6 -> Gregory
+        7 -> Hebrew
+        8 -> Indian
+        9 -> Islamic
+        10 -> IslamicUmalqura
+        11 -> IslamicTbla
+        12 -> IslamicCivil
+        13 -> IslamicRgsa
+        14 -> Iso8601
+        15 -> Japanese
+        16 -> Persian
+        _ -> Roc
       | otherwise = intToCalendarFormat (-n)

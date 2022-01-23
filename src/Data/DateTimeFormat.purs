@@ -46,7 +46,7 @@ module Data.DateTimeFormat
   , stringToLocale
   , stringToTimeZone
   , timeZoneToString
-  )
+  ) where
 
 import Prelude
 import Data.Argonaut (class DecodeJson, class EncodeJson)

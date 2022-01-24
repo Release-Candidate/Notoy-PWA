@@ -218,8 +218,8 @@ instance showNumberingSystem :: Show NumberingSystem where
   show = genericShow
 
 {-------------------------------------------------------------------------------
- | ATTENTION: 86 is the number of values of `NumberingSystem`.
- -}
+| ATTENTION: 86 is the number of values of `NumberingSystem`.
+-}
 instance arbitraryNumberingSystem :: Arbitrary NumberingSystem where
   arbitrary = map intToNumberingSystem arbitrary
     where

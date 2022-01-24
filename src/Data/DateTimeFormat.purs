@@ -31,6 +31,7 @@ module Data.DateTimeFormat
   , YearFormat(..)
   , dateTimeFormat
   , defaultDateTimeFormat
+  , emptyDateTimeFormatOptions
   , formatDate
   , formatDateInts
   , formatDateIntsUnsafe
@@ -52,15 +53,24 @@ import Prelude
 import Data.Argonaut (class DecodeJson, class EncodeJson)
 import Data.Argonaut.Decode.Generic (genericDecodeJson)
 import Data.Argonaut.Encode.Generic (genericEncodeJson)
-import Data.CalendarFormat (CalendarFormat)
+import Data.CalendarFormat (CalendarFormat, calendarFormatToString)
 import Data.Date (Date, canonicalDate, day, month, year)
 import Data.DateTime (DateTime(..), Time(..), hour, minute, second)
 import Data.Enum (fromEnum, toEnum)
-import Data.Function.Uncurried (Fn2, Fn4, Fn6, Fn7, runFn2, runFn4, runFn6, runFn7)
+import Data.Function.Uncurried
+  ( Fn2
+  , Fn4
+  , Fn6
+  , Fn7
+  , runFn2
+  , runFn4
+  , runFn6
+  , runFn7
+  )
 import Data.Generic.Rep (class Generic)
-import Data.Maybe (Maybe)
+import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, unwrap, wrap)
-import Data.NumberingSystem (NumberingSystem)
+import Data.NumberingSystem (NumberingSystem, numberingSystemToString)
 import Data.Show.Generic (genericShow)
 import Effect (Effect)
 import Test.QuickCheck (class Arbitrary, arbitrary)
@@ -116,31 +126,62 @@ stringToLocale :: String -> Locale
 stringToLocale = wrap
 
 {-------------------------------------------------------------------------------
+| A empty `DateTimeFormatOptions` object, with all fields set to `Nothing`.
+-}
+emptyDateTimeFormatOptions ∷ DateTimeFormatOptions
+emptyDateTimeFormatOptions =
+  DateTimeFormatOptions
+    { dateStyle: Nothing
+    , timeStyle: Nothing
+    , calendar: Nothing
+    , dayPeriod: Nothing
+    , numberingSystem: Nothing
+    , localeMatcher: Nothing
+    , timeZone: Nothing
+    , hour12: Nothing
+    , hourCycle: Nothing
+    , formatMatcher: Nothing
+    , weekDay: Nothing
+    , era: Nothing
+    , year: Nothing
+    , month: Nothing
+    , day: Nothing
+    , hour: Nothing
+    , minute: Nothing
+    , second: Nothing
+    , fractionalSecondDigits: Nothing
+    , timeZoneNameStyle: Nothing
+    }
+
+setDateStyle :: DateTimeFormatOptions -> DateStyle -> DateTimeFormatOptions
+setDateStyle (DateTimeFormatOptions options) style = DateTimeFormatOptions options { dateStyle = Just style }
+
+{-------------------------------------------------------------------------------
 | The options of a `DateTimeFormat`.
 -}
-data DateTimeFormatOptions
+newtype DateTimeFormatOptions
   = DateTimeFormatOptions
-    { dateStyle :: Maybe DateStyle
-    , timeStyle :: Maybe TimeStyle
-    , calendar :: Maybe CalendarFormat
-    , dayPeriod :: Maybe DayPeriod
-    , numberingSystem :: Maybe NumberingSystem
-    , localeMatcher :: Maybe LocaleMatcher
-    , timeZone :: Maybe TimeZone
-    , hour12 :: Maybe Boolean
-    , hourCycle :: Maybe HourCycle
-    , formatMatcher :: Maybe FormatMatcher
-    , weekDay :: Maybe WeekDayFormat
-    , era :: Maybe EraFormat
-    , year :: Maybe YearFormat
-    , month :: Maybe MonthFormat
-    , day :: Maybe DayFormat
-    , hour :: Maybe HourFormat
-    , minute :: Maybe MinuteFormat
-    , second :: Maybe SecondFormat
-    , fractionalSecondDigits :: Maybe FractionalSecondDigits
-    , timeZoneNameStyle :: Maybe TimeZoneNameStyle
-    }
+  { dateStyle :: Maybe DateStyle
+  , timeStyle :: Maybe TimeStyle
+  , calendar :: Maybe CalendarFormat
+  , dayPeriod :: Maybe DayPeriod
+  , numberingSystem :: Maybe NumberingSystem
+  , localeMatcher :: Maybe LocaleMatcher
+  , timeZone :: Maybe TimeZone
+  , hour12 :: Maybe Boolean
+  , hourCycle :: Maybe HourCycle
+  , formatMatcher :: Maybe FormatMatcher
+  , weekDay :: Maybe WeekDayFormat
+  , era :: Maybe EraFormat
+  , year :: Maybe YearFormat
+  , month :: Maybe MonthFormat
+  , day :: Maybe DayFormat
+  , hour :: Maybe HourFormat
+  , minute :: Maybe MinuteFormat
+  , second :: Maybe SecondFormat
+  , fractionalSecondDigits :: Maybe FractionalSecondDigits
+  , timeZoneNameStyle :: Maybe TimeZoneNameStyle
+  }
 
 derive instance eqDateTimeFormatOptions :: Eq DateTimeFormatOptions
 
@@ -1440,7 +1481,160 @@ type DateTimeFormatOptionsJS
 
 {-------------------------------------------------------------------------------
 | Helper function: convert a `DateTimeFormatOptions` object to a
-| `DateTimeFormatOptionsJS`
+| `DateTimeFormatOptionsJS` object.
 -}
 convertDateTimeOptions :: DateTimeFormatOptions -> DateTimeFormatOptionsJS
-convertDateTimeOptions options = cast {}
+convertDateTimeOptions options =
+  setDTFOJSFromMaybe setDateStyleJS dateStyle (cast {})
+    # setDTFOJSFromMaybe setTimeStyleJS timeStyle
+    # setDTFOJSFromMaybe setCalendarFormatJS calendar
+    # setDTFOJSFromMaybe setDayPeriodStyleJS dayPeriod
+    # setDTFOJSFromMaybe setNumberingSystemJS numberingSystem
+    # setDTFOJSFromMaybe setLocaleMatcherJS localeMatcher
+    # setDTFOJSFromMaybe setTimeZoneJS timeZone
+    # setDTFOJSFromMaybe setHour12JS hour12
+    # setDTFOJSFromMaybe setHourCycleJS hourCycle
+    # setDTFOJSFromMaybe setFormatMatcherJS formatMatcher
+    # setDTFOJSFromMaybe setWeekDayFormatJS weekDay
+    # setDTFOJSFromMaybe setEraFormatJS era
+    # setDTFOJSFromMaybe setYearFormatJS year
+    # setDTFOJSFromMaybe setMonthFormatJS month
+    # setDTFOJSFromMaybe setDayFormatJS day
+    # setDTFOJSFromMaybe setHourFormatJS hour
+    # setDTFOJSFromMaybe setMinuteFormatJS minute
+    # setDTFOJSFromMaybe setSecondFormatJS second
+    # setDTFOJSFromMaybe setFractionalSecondDigitsJS fractionalSecondDigits
+    # setDTFOJSFromMaybe setTimeZoneNameStyleJS timeZoneNameStyle
+  where
+  DateTimeFormatOptions
+    { dateStyle: dateStyle
+  , timeStyle: timeStyle
+  , calendar: calendar
+  , dayPeriod: dayPeriod
+  , numberingSystem: numberingSystem
+  , localeMatcher: localeMatcher
+  , timeZone: timeZone
+  , hour12: hour12
+  , hourCycle: hourCycle
+  , formatMatcher: formatMatcher
+  , weekDay: weekDay
+  , era: era
+  , year: year
+  , month: month
+  , day: day
+  , hour: hour
+  , minute: minute
+  , second: second
+  , fractionalSecondDigits: fractionalSecondDigits
+  , timeZoneNameStyle
+  } = options
+
+setDTFOJSFromMaybe ::
+  forall a.
+  (DateTimeFormatOptionsJS -> a -> DateTimeFormatOptionsJS) ->
+  Maybe a ->
+  DateTimeFormatOptionsJS ->
+  DateTimeFormatOptionsJS
+setDTFOJSFromMaybe f (Just x) fmt = f fmt x
+
+setDTFOJSFromMaybe _ Nothing fmt = fmt
+
+setDateStyleJS ::
+  DateTimeFormatOptionsJS ->
+  DateStyle -> DateTimeFormatOptionsJS
+setDateStyleJS fmt style = cast fmt { dateStyle = toDateStyleJS style }
+
+setTimeStyleJS ::
+  DateTimeFormatOptionsJS ->
+  TimeStyle -> DateTimeFormatOptionsJS
+setTimeStyleJS fmt style = cast fmt { timeStyle = toTimeStyleJS style }
+
+setCalendarFormatJS ::
+  DateTimeFormatOptionsJS ->
+  CalendarFormat -> DateTimeFormatOptionsJS
+setCalendarFormatJS fmt calFmt = cast fmt { calendar = calendarFormatToString calFmt }
+
+setDayPeriodStyleJS ::
+  DateTimeFormatOptionsJS ->
+  DayPeriod -> DateTimeFormatOptionsJS
+setDayPeriodStyleJS fmt style = cast fmt { dayPeriod = toDayPeriodJS style }
+
+setNumberingSystemJS ::
+  DateTimeFormatOptionsJS ->
+  NumberingSystem -> DateTimeFormatOptionsJS
+setNumberingSystemJS fmt numSys = cast fmt { numberingSystem = numberingSystemToString numSys }
+
+setLocaleMatcherJS ::
+  DateTimeFormatOptionsJS ->
+  LocaleMatcher -> DateTimeFormatOptionsJS
+setLocaleMatcherJS fmt matcher = cast fmt { localeMatcher = toLocalMatcherJS matcher }
+
+setTimeZoneJS ::
+  DateTimeFormatOptionsJS ->
+  TimeZone -> DateTimeFormatOptionsJS
+setTimeZoneJS fmt timezone = cast fmt { timeZone = timeZoneToString timezone }
+
+setHour12JS ::
+  DateTimeFormatOptionsJS ->
+  Boolean -> DateTimeFormatOptionsJS
+setHour12JS fmt hour12 = cast fmt { hour12 = hour12 }
+
+setHourCycleJS ::
+  DateTimeFormatOptionsJS ->
+  HourCycle -> DateTimeFormatOptionsJS
+setHourCycleJS fmt style = cast fmt { hourCycle = toHourCycleJS style }
+
+setFormatMatcherJS ::
+  DateTimeFormatOptionsJS ->
+  FormatMatcher -> DateTimeFormatOptionsJS
+setFormatMatcherJS fmt style = cast fmt { formatMatcher = toFormatMatcherJS style }
+
+setWeekDayFormatJS ::
+  DateTimeFormatOptionsJS ->
+  WeekDayFormat -> DateTimeFormatOptionsJS
+setWeekDayFormatJS fmt style = cast fmt { weekDay = toWeekDayFormatJS style }
+
+setEraFormatJS ::
+  DateTimeFormatOptionsJS ->
+  EraFormat -> DateTimeFormatOptionsJS
+setEraFormatJS fmt style = cast fmt { era = toEraFormatJS style }
+
+setYearFormatJS ::
+  DateTimeFormatOptionsJS ->
+  YearFormat -> DateTimeFormatOptionsJS
+setYearFormatJS fmt style = cast fmt { year = toYearFormatJS style }
+
+setMonthFormatJS ::
+  DateTimeFormatOptionsJS ->
+  MonthFormat -> DateTimeFormatOptionsJS
+setMonthFormatJS fmt style = cast fmt { month = toMonthFormatJS style }
+
+setDayFormatJS ::
+  DateTimeFormatOptionsJS ->
+  DayFormat -> DateTimeFormatOptionsJS
+setDayFormatJS fmt style = cast fmt { day = toDayFormatJS style }
+
+setHourFormatJS ::
+  DateTimeFormatOptionsJS ->
+  HourFormat -> DateTimeFormatOptionsJS
+setHourFormatJS fmt style = cast fmt { hour = toHourFormatJS style }
+
+setMinuteFormatJS ::
+  DateTimeFormatOptionsJS ->
+  MinuteFormat -> DateTimeFormatOptionsJS
+setMinuteFormatJS fmt style = cast fmt { minute = toMinuteFormatJS style }
+
+setSecondFormatJS ::
+  DateTimeFormatOptionsJS ->
+  SecondFormat -> DateTimeFormatOptionsJS
+setSecondFormatJS fmt style = cast fmt { second = toSecondFormatJS style }
+
+setFractionalSecondDigitsJS ::
+  DateTimeFormatOptionsJS ->
+  FractionalSecondDigits -> DateTimeFormatOptionsJS
+setFractionalSecondDigitsJS fmt style = cast fmt { fractionalSecondDigits = toFractionalDigitsJS style }
+
+setTimeZoneNameStyleJS ::
+  DateTimeFormatOptionsJS ->
+  TimeZoneNameStyle -> DateTimeFormatOptionsJS
+setTimeZoneNameStyleJS fmt style = cast fmt { timeZoneNameStyle = toTimeZoneNameStyleJS style }

@@ -28,6 +28,9 @@ import Test.QuickCheck (class Arbitrary, arbitrary)
 import Web.URL (unsafeFromAbsolute)
 import Web.URL as WURL
 
+{-------------------------------------------------------------------------------
+| The type for the URL of a note.
+-}
 newtype NoteURL
   = NoteURL WURL.URL
 
@@ -48,7 +51,7 @@ instance encodeJSONURL :: EncodeJson NoteURL where
   encodeJson url = encodeJson $ noteUrlToString url
 
 {-------------------------------------------------------------------------------
-| TODO: often returns "https://localhost:1234/"
+TODO: often returns "https://localhost:1234/"
 -}
 instance arbitraryNoteURL :: Arbitrary NoteURL where
   arbitrary = map stringToNoteURL arbitrary

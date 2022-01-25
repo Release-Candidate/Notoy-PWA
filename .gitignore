@@ -7,3 +7,5 @@ packages.dhall/
 dist/
 .parcel-cache/
 http/
+bla.txt
+generated-docs/

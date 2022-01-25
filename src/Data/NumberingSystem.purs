@@ -11,6 +11,7 @@
 module Data.NumberingSystem
   ( NumberingSystem(..)
   , numberingSystemToString
+  , toString
   ) where
 
 import Prelude
@@ -218,7 +219,7 @@ instance showNumberingSystem :: Show NumberingSystem where
   show = genericShow
 
 {-------------------------------------------------------------------------------
-| ATTENTION: 86 is the number of values of `NumberingSystem`.
+ ATTENTION: 86 is the number of values of `NumberingSystem`.
 -}
 instance arbitraryNumberingSystem :: Arbitrary NumberingSystem where
   arbitrary = map intToNumberingSystem arbitrary
@@ -315,7 +316,15 @@ instance arbitraryNumberingSystem :: Arbitrary NumberingSystem where
       | otherwise = intToNumberingSystem (-n)
 
 {-------------------------------------------------------------------------------
-| Return the string representation of the `NumberingSystem`.
+| Return the string representation of a `NumberingSystem`.
+|
+| A shorter alias of `numberingSystemToString`.
+-}
+toString ∷ NumberingSystem → String
+toString = numberingSystemToString
+
+{-------------------------------------------------------------------------------
+| Return the string representation of a `NumberingSystem`.
 -}
 numberingSystemToString :: NumberingSystem -> String
 numberingSystemToString Adlm = "adlm"

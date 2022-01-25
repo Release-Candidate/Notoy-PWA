@@ -376,11 +376,7 @@ newOptionsStateGeneric ∷
   ((State → State) → H.HalogenM State action () output m a) →
   Options →
   H.HalogenM State action () output m a
-newOptionsStateGeneric f newOptions =
-  f \state ->
-    { note: state.note
-    , options: newOptions
-    }
+newOptionsStateGeneric f newOptions = f \state -> state { options = newOptions }
 
 {-------------------------------------------------------------------------------
 | Helper function: set the `Format` of the `Options` in the state.
@@ -394,19 +390,9 @@ newOptionsStateGenericFormat ::
 newOptionsStateGenericFormat f newFormat =
   f \state ->
     let
-      Options
-        { addDate: oldAddDate
-      , addYaml: oldAddYaml
-      } = state.options
+      Options opts = state.options
     in
-      { note: state.note
-      , options:
-          Options
-            { format: newFormat
-            , addDate: oldAddDate
-            , addYaml: oldAddYaml
-            }
-      }
+      state { options = Options opts { format = newFormat } }
 
 {-------------------------------------------------------------------------------
 | Helper function: set the `AddDate` of the `Options` in the state.
@@ -420,19 +406,9 @@ newOptionsStateGenericAddDate ::
 newOptionsStateGenericAddDate f newAddDate =
   f \state ->
     let
-      Options
-        { format: oldFormat
-      , addYaml: oldAddYaml
-      } = state.options
+      Options opts = state.options
     in
-      { note: state.note
-      , options:
-          Options
-            { format: oldFormat
-            , addDate: newAddDate
-            , addYaml: oldAddYaml
-            }
-      }
+      state { options = Options opts { addDate = newAddDate } }
 
 {-------------------------------------------------------------------------------
 | Helper function: set the `AddYamlHeader` of the `Options` in the state.
@@ -446,19 +422,9 @@ newOptionsStateGenericAddYaml ::
 newOptionsStateGenericAddYaml f newAddYaml =
   f \state ->
     let
-      Options
-        { format: oldFormat
-      , addDate: oldAddDate
-      } = state.options
+      Options opts = state.options
     in
-      { note: state.note
-      , options:
-          Options
-            { format: oldFormat
-            , addDate: oldAddDate
-            , addYaml: newAddYaml
-            }
-      }
+      state { options = Options opts { addYaml = newAddYaml } }
 
 {-------------------------------------------------------------------------------
 | Helper function: set the `Note` object of the state to a new one.
@@ -469,11 +435,7 @@ newNoteStateGeneric ∷
   ((State → State) → H.HalogenM State action () output m a) →
   Note →
   H.HalogenM State action () output m a
-newNoteStateGeneric f newNote =
-  f \state ->
-    { note: newNote
-    , options: state.options
-    }
+newNoteStateGeneric f newNote = f \state -> state { note = newNote }
 
 {-------------------------------------------------------------------------------
 | Helper function: set the title string of the `Note` in the state.
@@ -487,24 +449,9 @@ newNoteStateGenericTitle ∷
 newNoteStateGenericTitle f newTitle =
   f \state ->
     let
-      Note
-        { url: oldUrl
-      , keywords: oldKeywords
-      , shortDesc: oldShortDesc
-      , longDesc: oldLongDesc
-      } = state.note
+      Note n = state.note
     in
-      { note:
-          Note
-            { title:
-                Just newTitle
-            , url: oldUrl
-            , keywords: oldKeywords
-            , shortDesc: oldShortDesc
-            , longDesc: oldLongDesc
-            }
-      , options: state.options
-      }
+      state { note = Note n { title = Just newTitle } }
 
 {-------------------------------------------------------------------------------
 | Helper function: set the URL of the `Note` in the state.
@@ -518,23 +465,9 @@ newNoteStateGenericUrl ∷
 newNoteStateGenericUrl f newUrl =
   f \state ->
     let
-      Note
-        { title: oldTitle
-      , keywords: oldKeywords
-      , shortDesc: oldShortDesc
-      , longDesc: oldLongDesc
-      } = state.note
+      Note n = state.note
     in
-      { note:
-          Note
-            { title: oldTitle
-            , url: newUrl
-            , keywords: oldKeywords
-            , shortDesc: oldShortDesc
-            , longDesc: oldLongDesc
-            }
-      , options: state.options
-      }
+      state { note = Note n { url = newUrl } }
 
 {-------------------------------------------------------------------------------
 | Helper function: set the keyword array of the `Note` in the state.
@@ -548,23 +481,9 @@ newNoteStateGenericKeyWords ∷
 newNoteStateGenericKeyWords f newKeywords =
   f \state ->
     let
-      Note
-        { title: oldTitle
-      , url: oldUrl
-      , shortDesc: oldShortDesc
-      , longDesc: oldLongDesc
-      } = state.note
+      Note n = state.note
     in
-      { note:
-          Note
-            { title: oldTitle
-            , url: oldUrl
-            , keywords: newKeywords
-            , shortDesc: oldShortDesc
-            , longDesc: oldLongDesc
-            }
-      , options: state.options
-      }
+      state { note = Note n { keywords = newKeywords } }
 
 {-------------------------------------------------------------------------------
 | Helper function: set the short description string of the `Note` in the state.
@@ -578,23 +497,9 @@ newNoteStateGenericShort ∷
 newNoteStateGenericShort f newShortDesc =
   f \state ->
     let
-      Note
-        { title: oldTitle
-      , url: oldUrl
-      , keywords: oldKeywords
-      , longDesc: oldLongDesc
-      } = state.note
+      Note n = state.note
     in
-      { note:
-          Note
-            { title: oldTitle
-            , url: oldUrl
-            , keywords: oldKeywords
-            , shortDesc: Just newShortDesc
-            , longDesc: oldLongDesc
-            }
-      , options: state.options
-      }
+      state { note = Note n { shortDesc = Just newShortDesc } }
 
 {-------------------------------------------------------------------------------
 | Helper function: set the detailed description string of the `Note` in the
@@ -609,20 +514,6 @@ newNoteStateGenericLong ∷
 newNoteStateGenericLong f newLongDesc =
   f \state ->
     let
-      Note
-        { title: oldTitle
-      , url: oldUrl
-      , keywords: oldKeywords
-      , shortDesc: oldShortDesc
-      } = state.note
+      Note n = state.note
     in
-      { note:
-          Note
-            { title: oldTitle
-            , url: oldUrl
-            , keywords: oldKeywords
-            , shortDesc: oldShortDesc
-            , longDesc: Just newLongDesc
-            }
-      , options: state.options
-      }
+      state { note = Note n { longDesc = Just newLongDesc } }

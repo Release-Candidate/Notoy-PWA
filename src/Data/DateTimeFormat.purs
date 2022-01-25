@@ -17,6 +17,7 @@ module Data.DateTimeFormat
   , EraFormat(..)
   , FormatMatcher(..)
   , FractionalSecondDigits(..)
+  , Hour12(..)
   , HourCycle(..)
   , HourFormat(..)
   , Locale(..)
@@ -44,7 +45,28 @@ module Data.DateTimeFormat
   , isoDateTimeIntsUnsafe
   , isoDateTimeNow
   , localeToString
+  , setCalendarFormat
+  , setDateStyle
+  , setDayFormat
+  , setDayPeriod
+  , setEraFormat
+  , setFormatMatcher
+  , setFractionalSecondDigits
+  , setHour12
+  , setHourCycle
+  , setHourFormat
+  , setLocaleMatcher
+  , setMinuteFormat
+  , setMonthFormat
+  , setNumberingSystem
+  , setSecondFormat
+  , setTimeStyle
+  , setTimeZone
+  , setTimeZoneNameStyle
+  , setWeekDayFormat
+  , setYearFormat
   , stringToLocale
+  , stringToLocaleUnsafe
   , stringToTimeZone
   , timeZoneToString
   ) where
@@ -57,21 +79,16 @@ import Data.CalendarFormat (CalendarFormat, calendarFormatToString)
 import Data.Date (Date, canonicalDate, day, month, year)
 import Data.DateTime (DateTime(..), Time(..), hour, minute, second)
 import Data.Enum (fromEnum, toEnum)
-import Data.Function.Uncurried
-  ( Fn2
-  , Fn4
-  , Fn6
-  , Fn7
-  , runFn2
-  , runFn4
-  , runFn6
-  , runFn7
-  )
+import Data.Function.Uncurried (Fn2, Fn4, Fn6, Fn7, runFn2, runFn4, runFn6, runFn7)
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, unwrap, wrap)
 import Data.NumberingSystem (NumberingSystem, numberingSystemToString)
 import Data.Show.Generic (genericShow)
+import Data.String (trim)
+import Data.String.Regex (Regex, match)
+import Data.String.Regex.Flags (unicode)
+import Data.String.Regex.Unsafe (unsafeRegex)
 import Effect (Effect)
 import Test.QuickCheck (class Arbitrary, arbitrary)
 import Test.QuickCheck.Arbitrary (genericArbitrary)
@@ -86,7 +103,14 @@ foreign import data DateTimeFormat :: Type
 {-------------------------------------------------------------------------------
 | The type of a locale.
 |
-| This is a wrapped BCP 47 language tag.
+| This is a wrapped BCP 47 with Unicode extensions ('Extension U') locale tag.
+|
+| Examples of valid locale strings:
+|
+| "en", "zh", "de"
+| "eng", "zho", "deu"
+| "en-US", "zh-cn", "de-AT"
+| "en-US-u-ca-buddhist", "gsw-u-sd-chzh", "he-IL-u-ca-hebrew-tz-jeruslm"
 -}
 newtype Locale
   = Locale String
@@ -116,17 +140,34 @@ localeToString :: Locale -> String
 localeToString = unwrap
 
 {-------------------------------------------------------------------------------
-| Convert a BCP 47 language tag String to a `Locale`.
+| Convert a BCP 47 language tag `String` to a `Locale`.
 |
-| The given String is not validated, every String returns a `Locale`!
+| The given `String` is not validated, every non-empty String containing any
+| non-whitespace character returns a `Locale`!
 |
 | * `str` - The `String` to convert to a `Locale`.
 -}
-stringToLocale :: String -> Locale
-stringToLocale = wrap
+stringToLocale :: String -> Maybe Locale
+stringToLocale "" = Nothing
+
+stringToLocale str = case match notOnlyWhitespaceRegex str of
+  Nothing -> Nothing
+  _ -> Just $ wrap $ trim str
+
+{-------------------------------------------------------------------------------
+| Convert a BCP 47 language tag `String` to a `Locale`.
+|
+| The given `String` is not validated, every String returns a `Locale`!
+|
+| * `str` - The `String` to convert to a `Locale`.
+-}
+stringToLocaleUnsafe :: String -> Locale
+stringToLocaleUnsafe = wrap
 
 {-------------------------------------------------------------------------------
 | A empty `DateTimeFormatOptions` object, with all fields set to `Nothing`.
+|
+| This is also the `Monoid`s `mempty`.
 -}
 emptyDateTimeFormatOptions ∷ DateTimeFormatOptions
 emptyDateTimeFormatOptions =
@@ -153,11 +194,162 @@ emptyDateTimeFormatOptions =
     , timeZoneNameStyle: Nothing
     }
 
-setDateStyle :: DateTimeFormatOptions -> DateStyle -> DateTimeFormatOptions
-setDateStyle (DateTimeFormatOptions options) style = DateTimeFormatOptions options { dateStyle = Just style }
+{-------------------------------------------------------------------------------
+| Set the `dateStyle` field of the given `DateTimeFormatOptions` to the given
+| value.
+-}
+setDateStyle :: DateStyle -> DateTimeFormatOptions -> DateTimeFormatOptions
+setDateStyle style (DateTimeFormatOptions options) = DateTimeFormatOptions options { dateStyle = Just style }
+
+{-------------------------------------------------------------------------------
+| Set the `timeStyle` field of the given `DateTimeFormatOptions` to the given
+| value.
+-}
+setTimeStyle :: TimeStyle -> DateTimeFormatOptions -> DateTimeFormatOptions
+setTimeStyle style (DateTimeFormatOptions options) = DateTimeFormatOptions options { timeStyle = Just style }
+
+{-------------------------------------------------------------------------------
+| Set the `calendar` field of the given `DateTimeFormatOptions` to the given
+| value.
+-}
+setCalendarFormat :: CalendarFormat -> DateTimeFormatOptions -> DateTimeFormatOptions
+setCalendarFormat style (DateTimeFormatOptions options) = DateTimeFormatOptions options { calendar = Just style }
+
+{-------------------------------------------------------------------------------
+| Set the `dayPeriod` field of the given `DateTimeFormatOptions` to the given
+| value.
+-}
+setDayPeriod :: DayPeriod -> DateTimeFormatOptions -> DateTimeFormatOptions
+setDayPeriod style (DateTimeFormatOptions options) = DateTimeFormatOptions options { dayPeriod = Just style }
+
+{-------------------------------------------------------------------------------
+| Set the `numberingSystem` field of the given `DateTimeFormatOptions` to the given
+| value.
+-}
+setNumberingSystem :: NumberingSystem -> DateTimeFormatOptions -> DateTimeFormatOptions
+setNumberingSystem style (DateTimeFormatOptions options) = DateTimeFormatOptions options { numberingSystem = Just style }
+
+{-------------------------------------------------------------------------------
+| Set the `localeMatcher` field of the given `DateTimeFormatOptions` to the given
+| value.
+-}
+setLocaleMatcher :: LocaleMatcher -> DateTimeFormatOptions -> DateTimeFormatOptions
+setLocaleMatcher style (DateTimeFormatOptions options) = DateTimeFormatOptions options { localeMatcher = Just style }
+
+{-------------------------------------------------------------------------------
+| Set the `timeZone` field of the given `DateTimeFormatOptions` to the given
+| value.
+-}
+setTimeZone :: TimeZone -> DateTimeFormatOptions -> DateTimeFormatOptions
+setTimeZone style (DateTimeFormatOptions options) = DateTimeFormatOptions options { timeZone = Just style }
+
+{-------------------------------------------------------------------------------
+| Set the `hour12` field of the given `DateTimeFormatOptions` to the given
+| value.
+-}
+setHour12 :: Hour12 -> DateTimeFormatOptions -> DateTimeFormatOptions
+setHour12 style (DateTimeFormatOptions options) = DateTimeFormatOptions options { hour12 = Just style }
+
+{-------------------------------------------------------------------------------
+| Set the `hourCycle` field of the given `DateTimeFormatOptions` to the given
+| value.
+-}
+setHourCycle :: HourCycle -> DateTimeFormatOptions -> DateTimeFormatOptions
+setHourCycle style (DateTimeFormatOptions options) = DateTimeFormatOptions options { hourCycle = Just style }
+
+{-------------------------------------------------------------------------------
+| Set the `formatMatcher` field of the given `DateTimeFormatOptions` to the given
+| value.
+-}
+setFormatMatcher :: FormatMatcher -> DateTimeFormatOptions -> DateTimeFormatOptions
+setFormatMatcher style (DateTimeFormatOptions options) = DateTimeFormatOptions options { formatMatcher = Just style }
+
+{-------------------------------------------------------------------------------
+| Set the `weekDay` field of the given `DateTimeFormatOptions` to the given
+| value.
+-}
+setWeekDayFormat :: WeekDayFormat -> DateTimeFormatOptions -> DateTimeFormatOptions
+setWeekDayFormat style (DateTimeFormatOptions options) = DateTimeFormatOptions options { weekDay = Just style }
+
+{-------------------------------------------------------------------------------
+| Set the `era` field of the given `DateTimeFormatOptions` to the given
+| value.
+-}
+setEraFormat :: EraFormat -> DateTimeFormatOptions -> DateTimeFormatOptions
+setEraFormat style (DateTimeFormatOptions options) = DateTimeFormatOptions options { era = Just style }
+
+{-------------------------------------------------------------------------------
+| Set the `year` field of the given `DateTimeFormatOptions` to the given
+| value.
+-}
+setYearFormat :: YearFormat -> DateTimeFormatOptions -> DateTimeFormatOptions
+setYearFormat style (DateTimeFormatOptions options) = DateTimeFormatOptions options { year = Just style }
+
+{-------------------------------------------------------------------------------
+| Set the `month` field of the given `DateTimeFormatOptions` to the given
+| value.
+-}
+setMonthFormat :: MonthFormat -> DateTimeFormatOptions -> DateTimeFormatOptions
+setMonthFormat style (DateTimeFormatOptions options) = DateTimeFormatOptions options { month = Just style }
+
+{-------------------------------------------------------------------------------
+| Set the `day` field of the given `DateTimeFormatOptions` to the given
+| value.
+-}
+setDayFormat :: DayFormat -> DateTimeFormatOptions -> DateTimeFormatOptions
+setDayFormat style (DateTimeFormatOptions options) = DateTimeFormatOptions options { day = Just style }
+
+{-------------------------------------------------------------------------------
+| Set the `hour` field of the given `DateTimeFormatOptions` to the given
+| value.
+-}
+setHourFormat :: HourFormat -> DateTimeFormatOptions -> DateTimeFormatOptions
+setHourFormat style (DateTimeFormatOptions options) = DateTimeFormatOptions options { hour = Just style }
+
+{-------------------------------------------------------------------------------
+| Set the `minute` field of the given `DateTimeFormatOptions` to the given
+| value.
+-}
+setMinuteFormat :: MinuteFormat -> DateTimeFormatOptions -> DateTimeFormatOptions
+setMinuteFormat style (DateTimeFormatOptions options) = DateTimeFormatOptions options { minute = Just style }
+
+{-------------------------------------------------------------------------------
+| Set the `second` field of the given `DateTimeFormatOptions` to the given
+| value.
+-}
+setSecondFormat :: SecondFormat -> DateTimeFormatOptions -> DateTimeFormatOptions
+setSecondFormat style (DateTimeFormatOptions options) = DateTimeFormatOptions options { second = Just style }
+
+{-------------------------------------------------------------------------------
+| Set the `fractionalSecondDigits` field of the given `DateTimeFormatOptions` to the given
+| value.
+-}
+setFractionalSecondDigits :: FractionalSecondDigits -> DateTimeFormatOptions -> DateTimeFormatOptions
+setFractionalSecondDigits style (DateTimeFormatOptions options) = DateTimeFormatOptions options { fractionalSecondDigits = Just style }
+
+{-------------------------------------------------------------------------------
+| Set the `timeZoneNameStyle` field of the given `DateTimeFormatOptions` to the given
+| value.
+-}
+setTimeZoneNameStyle :: TimeZoneNameStyle -> DateTimeFormatOptions -> DateTimeFormatOptions
+setTimeZoneNameStyle style (DateTimeFormatOptions options) = DateTimeFormatOptions options { timeZoneNameStyle = Just style }
 
 {-------------------------------------------------------------------------------
 | The options of a `DateTimeFormat`.
+|
+| You can set the fields of `DateTimeFormat` using `Monoid`s `append` `<>`, or by
+| chaining calls to the `set...` functions using `#`.
+|
+| Example:
+|
+| ```purescript
+| formatOpts = setDateStyle (DateStyle Long) mempty <> setTimeStyle (TimeStyle MediumT) mempty
+|
+| formatOpts = mempty # setDateStyle (DateStyle Long) # setTimeStyle (TimeStyle MediumT)
+| ```
+|
+| See MDN for more information of the fields:
+| https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat
 -}
 newtype DateTimeFormatOptions
   = DateTimeFormatOptions
@@ -168,7 +360,7 @@ newtype DateTimeFormatOptions
   , numberingSystem :: Maybe NumberingSystem
   , localeMatcher :: Maybe LocaleMatcher
   , timeZone :: Maybe TimeZone
-  , hour12 :: Maybe Boolean
+  , hour12 :: Maybe Hour12
   , hourCycle :: Maybe HourCycle
   , formatMatcher :: Maybe FormatMatcher
   , weekDay :: Maybe WeekDayFormat
@@ -201,11 +393,50 @@ instance showDateTimeFormatOptions :: Show DateTimeFormatOptions where
 instance arbitraryDateTimeFormatOptions :: Arbitrary DateTimeFormatOptions where
   arbitrary = genericArbitrary
 
+instance semiGroupDateTimeFormatOptions :: Semigroup DateTimeFormatOptions where
+  append (DateTimeFormatOptions a) (DateTimeFormatOptions b) =
+    DateTimeFormatOptions
+      { dateStyle: setAOrB a.dateStyle b.dateStyle
+      , timeStyle: setAOrB a.timeStyle b.timeStyle
+      , calendar: setAOrB a.calendar b.calendar
+      , dayPeriod: setAOrB a.dayPeriod b.dayPeriod
+      , numberingSystem: setAOrB a.numberingSystem b.numberingSystem
+      , localeMatcher: setAOrB a.localeMatcher b.localeMatcher
+      , timeZone: setAOrB a.timeZone b.timeZone
+      , hour12: setAOrB a.hour12 b.hour12
+      , hourCycle: setAOrB a.hourCycle b.hourCycle
+      , formatMatcher: setAOrB a.formatMatcher b.formatMatcher
+      , weekDay: setAOrB a.weekDay b.weekDay
+      , era: setAOrB a.era b.era
+      , year: setAOrB a.year b.year
+      , month: setAOrB a.month b.month
+      , day: setAOrB a.day b.day
+      , hour: setAOrB a.hour b.hour
+      , minute: setAOrB a.minute b.minute
+      , second: setAOrB a.second b.second
+      , fractionalSecondDigits: setAOrB a.fractionalSecondDigits b.fractionalSecondDigits
+      , timeZoneNameStyle: setAOrB a.timeZoneNameStyle b.timeZoneNameStyle
+      }
+    where
+    setAOrB :: forall a. Maybe a -> Maybe a -> Maybe a
+    setAOrB c Nothing = c
+
+    setAOrB _ (Just d) = Just d
+
+instance monoidDateTimeFormatOptions :: Monoid DateTimeFormatOptions where
+  mempty = emptyDateTimeFormatOptions
+
 {-------------------------------------------------------------------------------
 | Return the default `DateTimeFormat` object of the current (browser) locale.
 -}
 foreign import defaultDateTimeFormat :: Unit -> Effect DateTimeFormat
 
+{-------------------------------------------------------------------------------
+| Return a `DateTimeFormat` from the given `Locale` and `DateTimeFormatOptions`.
+|
+| This format is to be used as argument to to `format...` functions, like
+| `formatDateTime`.
+-}
 dateTimeFormat :: Array Locale -> DateTimeFormatOptions -> DateTimeFormat
 dateTimeFormat locales options = runFn2 getDateTimeFormatJS locales optionsJS
   where
@@ -481,7 +712,7 @@ instance showDateStyle :: Show DateStyle where
   show = genericShow
 
 {-------------------------------------------------------------------------------
-| ATTENTION: 4 is the number of values of `DateStyle`.
+ ATTENTION: 4 is the number of values of `DateStyle`.
 -}
 instance arbitraryDateStyle :: Arbitrary DateStyle where
   arbitrary = map intToDateStyle arbitrary
@@ -551,7 +782,7 @@ instance showTimeStyle :: Show TimeStyle where
   show = genericShow
 
 {-------------------------------------------------------------------------------
-| ATTENTION: 4 is the number of values of `TimeStyle`.
+ ATTENTION: 4 is the number of values of `TimeStyle`.
 -}
 instance arbitraryTimeStyle :: Arbitrary TimeStyle where
   arbitrary = map intToTimeStyle arbitrary
@@ -613,7 +844,7 @@ instance showDayPeriod :: Show DayPeriod where
   show = genericShow
 
 {-------------------------------------------------------------------------------
-| ATTENTION: 3 is the number of values of `DayPeriod`.
+ ATTENTION: 3 is the number of values of `DayPeriod`.
 -}
 instance arbitraryDayPeriod :: Arbitrary DayPeriod where
   arbitrary = map intToDayPeriod arbitrary
@@ -667,7 +898,7 @@ instance showLocaleMatcher :: Show LocaleMatcher where
   show = genericShow
 
 {-------------------------------------------------------------------------------
-| ATTENTION: 2 is the number of values of `LocaleMatcher`.
+ ATTENTION: 2 is the number of values of `LocaleMatcher`.
 -}
 instance arbitraryLocaleMatcher :: Arbitrary LocaleMatcher where
   arbitrary = map intToLocaleMatcher arbitrary
@@ -720,6 +951,52 @@ stringToTimeZone :: String -> TimeZone
 stringToTimeZone = wrap
 
 {-------------------------------------------------------------------------------
+| Set the time formt to a 12 hour one.
+|
+| Only works if the number of hours isn't set to 24 elsewhere.
+|
+| One of
+|   * Hour12
+|   * Hour24
+-}
+data Hour12
+  = Hour12
+  | Hour24
+
+derive instance eqHour12 :: Eq Hour12
+
+derive instance ordHour12 :: Ord Hour12
+
+derive instance genericHour12 :: Generic Hour12 _
+
+instance decodeJsonHour12 :: DecodeJson Hour12 where
+  decodeJson = genericDecodeJson
+
+instance encodeJsonHour12 :: EncodeJson Hour12 where
+  encodeJson = genericEncodeJson
+
+instance showHour12 :: Show Hour12 where
+  show = genericShow
+
+{-------------------------------------------------------------------------------
+ ATTENTION: 2 is the number of values of `Hour12`.
+-}
+instance arbitraryHour12 :: Arbitrary Hour12 where
+  arbitrary = map intToHour12 arbitrary
+    where
+    intToHour12 :: Int -> Hour12
+    intToHour12 n
+      | n >= 0 = case n `mod` 2 of
+        0 -> Hour12
+        _ -> Hour24
+      | otherwise = intToHour12 (-n)
+
+hour12ToBoolean :: Hour12 -> Boolean
+hour12ToBoolean Hour12 = true
+
+hour12ToBoolean Hour24 = false
+
+{-------------------------------------------------------------------------------
 | The number of hours in a clock cycle of a day.
 |
 | One of
@@ -770,7 +1047,7 @@ instance showHourCycle :: Show HourCycle where
   show = genericShow
 
 {-------------------------------------------------------------------------------
-| ATTENTION: 4 is the number of values of `HourCycle`.
+ ATTENTION: 4 is the number of values of `HourCycle`.
 -}
 instance arbitraryHourCycle :: Arbitrary HourCycle where
   arbitrary = map intToHourCycle arbitrary
@@ -825,7 +1102,7 @@ instance showFormatMatcher :: Show FormatMatcher where
   show = genericShow
 
 {-------------------------------------------------------------------------------
-| ATTENTION: 2 is the number of values of `FormatMatcher`.
+ ATTENTION: 2 is the number of values of `FormatMatcher`.
 -}
 instance arbitraryFormatMatcher :: Arbitrary FormatMatcher where
   arbitrary = map intToFormatMatcher arbitrary
@@ -883,7 +1160,7 @@ instance showWeekDayFormat :: Show WeekDayFormat where
   show = genericShow
 
 {-------------------------------------------------------------------------------
-| ATTENTION: 3 is the number of values of `WeekDayFormat`.
+ ATTENTION: 3 is the number of values of `WeekDayFormat`.
 -}
 instance arbitraryWeekDayFormat :: Arbitrary WeekDayFormat where
   arbitrary = map intToWeekDayFormat arbitrary
@@ -942,7 +1219,7 @@ instance showEraFormat :: Show EraFormat where
   show = genericShow
 
 {-------------------------------------------------------------------------------
-| ATTENTION: 3 is the number of values of `EraFormat`.
+ ATTENTION: 3 is the number of values of `EraFormat`.
 -}
 instance arbitraryEraFormat :: Arbitrary EraFormat where
   arbitrary = map intToEraFormat arbitrary
@@ -996,7 +1273,7 @@ instance showYearFormat :: Show YearFormat where
   show = genericShow
 
 {-------------------------------------------------------------------------------
-| ATTENTION: 2 is the number of values of `YearFormat`.
+ ATTENTION: 2 is the number of values of `YearFormat`.
 -}
 instance arbitraryYearFormat :: Arbitrary YearFormat where
   arbitrary = map intToYearFormat arbitrary
@@ -1070,7 +1347,7 @@ instance showMonthFormat :: Show MonthFormat where
   show = genericShow
 
 {-------------------------------------------------------------------------------
-| ATTENTION: 5 is the number of values of `MonthFormat`.
+ ATTENTION: 5 is the number of values of `MonthFormat`.
 -}
 instance arbitraryMonthFormat :: Arbitrary MonthFormat where
   arbitrary = map intToMonthFormat arbitrary
@@ -1126,7 +1403,7 @@ instance showDayFormat :: Show DayFormat where
   show = genericShow
 
 {-------------------------------------------------------------------------------
-| ATTENTION: 2 is the number of values of `DayFormat`.
+ ATTENTION: 2 is the number of values of `DayFormat`.
 -}
 instance arbitraryDayFormat :: Arbitrary DayFormat where
   arbitrary = map intToDayFormat arbitrary
@@ -1179,7 +1456,7 @@ instance showHourFormat :: Show HourFormat where
   show = genericShow
 
 {-------------------------------------------------------------------------------
-| ATTENTION: 2 is the number of values of `HourFormat`.
+ ATTENTION: 2 is the number of values of `HourFormat`.
 -}
 instance arbitraryHourFormat :: Arbitrary HourFormat where
   arbitrary = map intToHourFormat arbitrary
@@ -1232,7 +1509,7 @@ instance showMinuteFormat :: Show MinuteFormat where
   show = genericShow
 
 {-------------------------------------------------------------------------------
-| ATTENTION: 2 is the number of values of `MinuteFormat`.
+ ATTENTION: 2 is the number of values of `MinuteFormat`.
 -}
 instance arbitraryMinuteFormat :: Arbitrary MinuteFormat where
   arbitrary = map intToMinuteFormat arbitrary
@@ -1285,7 +1562,7 @@ instance showSecondFormat :: Show SecondFormat where
   show = genericShow
 
 {-------------------------------------------------------------------------------
-| ATTENTION: 2 is the number of values of `SecondFormat`.
+ ATTENTION: 2 is the number of values of `SecondFormat`.
 -}
 instance arbitrarySecondFormat :: Arbitrary SecondFormat where
   arbitrary = map intToSecondFormat arbitrary
@@ -1353,7 +1630,7 @@ instance showFractionalSecondDigits :: Show FractionalSecondDigits where
   show = genericShow
 
 {-------------------------------------------------------------------------------
-| ATTENTION: 4 is the number of values of `FractionalSecondDigits`.
+ ATTENTION: 4 is the number of values of `FractionalSecondDigits`.
 -}
 instance arbitraryFractionalSecondDigits :: Arbitrary FractionalSecondDigits where
   arbitrary = map intToFractionalSecondDigits arbitrary
@@ -1436,7 +1713,7 @@ instance showTimeZoneNameStyle :: Show TimeZoneNameStyle where
   show = genericShow
 
 {-------------------------------------------------------------------------------
-| ATTENTION: 6 is the number of values of `TimeZoneNameStyle`.
+ ATTENTION: 6 is the number of values of `TimeZoneNameStyle`.
 -}
 instance arbitraryTimeZoneNameStyle :: Arbitrary TimeZoneNameStyle where
   arbitrary = map intToTimeZoneNameStyle arbitrary
@@ -1484,50 +1761,27 @@ type DateTimeFormatOptionsJS
 | `DateTimeFormatOptionsJS` object.
 -}
 convertDateTimeOptions :: DateTimeFormatOptions -> DateTimeFormatOptionsJS
-convertDateTimeOptions options =
-  setDTFOJSFromMaybe setDateStyleJS dateStyle (cast {})
-    # setDTFOJSFromMaybe setTimeStyleJS timeStyle
-    # setDTFOJSFromMaybe setCalendarFormatJS calendar
-    # setDTFOJSFromMaybe setDayPeriodStyleJS dayPeriod
-    # setDTFOJSFromMaybe setNumberingSystemJS numberingSystem
-    # setDTFOJSFromMaybe setLocaleMatcherJS localeMatcher
-    # setDTFOJSFromMaybe setTimeZoneJS timeZone
-    # setDTFOJSFromMaybe setHour12JS hour12
-    # setDTFOJSFromMaybe setHourCycleJS hourCycle
-    # setDTFOJSFromMaybe setFormatMatcherJS formatMatcher
-    # setDTFOJSFromMaybe setWeekDayFormatJS weekDay
-    # setDTFOJSFromMaybe setEraFormatJS era
-    # setDTFOJSFromMaybe setYearFormatJS year
-    # setDTFOJSFromMaybe setMonthFormatJS month
-    # setDTFOJSFromMaybe setDayFormatJS day
-    # setDTFOJSFromMaybe setHourFormatJS hour
-    # setDTFOJSFromMaybe setMinuteFormatJS minute
-    # setDTFOJSFromMaybe setSecondFormatJS second
-    # setDTFOJSFromMaybe setFractionalSecondDigitsJS fractionalSecondDigits
-    # setDTFOJSFromMaybe setTimeZoneNameStyleJS timeZoneNameStyle
-  where
-  DateTimeFormatOptions
-    { dateStyle: dateStyle
-  , timeStyle: timeStyle
-  , calendar: calendar
-  , dayPeriod: dayPeriod
-  , numberingSystem: numberingSystem
-  , localeMatcher: localeMatcher
-  , timeZone: timeZone
-  , hour12: hour12
-  , hourCycle: hourCycle
-  , formatMatcher: formatMatcher
-  , weekDay: weekDay
-  , era: era
-  , year: year
-  , month: month
-  , day: day
-  , hour: hour
-  , minute: minute
-  , second: second
-  , fractionalSecondDigits: fractionalSecondDigits
-  , timeZoneNameStyle
-  } = options
+convertDateTimeOptions (DateTimeFormatOptions options) =
+  setDTFOJSFromMaybe setDateStyleJS options.dateStyle (cast {})
+    # setDTFOJSFromMaybe setTimeStyleJS options.timeStyle
+    # setDTFOJSFromMaybe setCalendarFormatJS options.calendar
+    # setDTFOJSFromMaybe setDayPeriodStyleJS options.dayPeriod
+    # setDTFOJSFromMaybe setNumberingSystemJS options.numberingSystem
+    # setDTFOJSFromMaybe setLocaleMatcherJS options.localeMatcher
+    # setDTFOJSFromMaybe setTimeZoneJS options.timeZone
+    # setDTFOJSFromMaybe setHour12JS options.hour12
+    # setDTFOJSFromMaybe setHourCycleJS options.hourCycle
+    # setDTFOJSFromMaybe setFormatMatcherJS options.formatMatcher
+    # setDTFOJSFromMaybe setWeekDayFormatJS options.weekDay
+    # setDTFOJSFromMaybe setEraFormatJS options.era
+    # setDTFOJSFromMaybe setYearFormatJS options.year
+    # setDTFOJSFromMaybe setMonthFormatJS options.month
+    # setDTFOJSFromMaybe setDayFormatJS options.day
+    # setDTFOJSFromMaybe setHourFormatJS options.hour
+    # setDTFOJSFromMaybe setMinuteFormatJS options.minute
+    # setDTFOJSFromMaybe setSecondFormatJS options.second
+    # setDTFOJSFromMaybe setFractionalSecondDigitsJS options.fractionalSecondDigits
+    # setDTFOJSFromMaybe setTimeZoneNameStyleJS options.timeZoneNameStyle
 
 setDTFOJSFromMaybe ::
   forall a.
@@ -1576,8 +1830,8 @@ setTimeZoneJS fmt timezone = cast fmt { timeZone = timeZoneToString timezone }
 
 setHour12JS ::
   DateTimeFormatOptionsJS ->
-  Boolean -> DateTimeFormatOptionsJS
-setHour12JS fmt hour12 = cast fmt { hour12 = hour12 }
+  Hour12 -> DateTimeFormatOptionsJS
+setHour12JS fmt hour12 = cast fmt { hour12 = hour12ToBoolean hour12 }
 
 setHourCycleJS ::
   DateTimeFormatOptionsJS ->
@@ -1638,3 +1892,9 @@ setTimeZoneNameStyleJS ::
   DateTimeFormatOptionsJS ->
   TimeZoneNameStyle -> DateTimeFormatOptionsJS
 setTimeZoneNameStyleJS fmt style = cast fmt { timeZoneNameStyle = toTimeZoneNameStyleJS style }
+
+{-------------------------------------------------------------------------------
+| Regex matching a `String` not containing only whitespace or being empty.
+-}
+notOnlyWhitespaceRegex :: Regex
+notOnlyWhitespaceRegex = unsafeRegex "\\S+" unicode

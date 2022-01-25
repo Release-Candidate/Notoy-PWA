@@ -10,6 +10,7 @@
     "scripts": {
         "list": "gulp --tasks",
         "clean": "gulp clean",
+        "doc": "spago docs --open",
         "install": "spago install",
         "build": "spago build",
         "test": "spago test",

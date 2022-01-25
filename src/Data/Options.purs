@@ -45,12 +45,12 @@ optionsKeyId = StoreKeyId "Options"
 | * `addDate` - add the current date to the note?
 | * `addYaml` - add a YAML front matter header to the note?
 -}
-data Options
+newtype Options
   = Options
-    { format :: Format
-    , addDate :: AddDate
-    , addYaml :: AddYamlHeader
-    }
+  { format :: Format
+  , addDate :: AddDate
+  , addYaml :: AddYamlHeader
+  }
 
 {-------------------------------------------------------------------------------
 | The default `Options`, markdown format with the current date as timestamp,

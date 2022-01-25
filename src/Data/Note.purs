@@ -48,14 +48,14 @@ noteKeyId = StoreKeyId "Note"
 | * `shortDesc` - the short description text.
 | * `longDesc` - the longer, detailed description.
 -}
-data Note
+newtype Note
   = Note
-    { title :: Maybe String
-    , url :: Maybe NoteURL
-    , keywords :: Maybe KeyWordArray
-    , shortDesc :: Maybe String
-    , longDesc :: Maybe String
-    }
+  { title :: Maybe String
+  , url :: Maybe NoteURL
+  , keywords :: Maybe KeyWordArray
+  , shortDesc :: Maybe String
+  , longDesc :: Maybe String
+  }
 
 {-------------------------------------------------------------------------------
 | The default, empty note.

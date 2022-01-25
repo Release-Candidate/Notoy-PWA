@@ -10,6 +10,7 @@
 module Data.CalendarFormat
   ( CalendarFormat(..)
   , calendarFormatToString
+  , toString
   ) where
 
 import Prelude
@@ -69,7 +70,15 @@ data CalendarFormat
   | Roc
 
 {-------------------------------------------------------------------------------
-| Convert the `CalendarFormat` to a string.
+| Return the string representation of a `CalendarFormat`.
+|
+| A shorter alias for `calendarFormatToString`.
+-}
+toString ∷ CalendarFormat → String
+toString = calendarFormatToString
+
+{-------------------------------------------------------------------------------
+| Return the string representation of a `CalendarFormat`.
 -}
 calendarFormatToString :: CalendarFormat -> String
 calendarFormatToString Buddhist = "buddhist"
@@ -124,7 +133,7 @@ instance showCalendarFormat :: Show CalendarFormat where
   show = genericShow
 
 {-------------------------------------------------------------------------------
-| ATTENTION: 18 is the number of values of `CalendarFormat`.
+ ATTENTION: 18 is the number of values of `CalendarFormat`.
 -}
 instance arbitraryCalendarFormat :: Arbitrary CalendarFormat where
   arbitrary = map intToCalendarFormat arbitrary

@@ -31,6 +31,7 @@ to generate this file without the comments in this block.
   , "maybe"
   , "media-types"
   , "newtype"
+  , "numbers"
   , "partial"
   , "prelude"
   , "psci-support"

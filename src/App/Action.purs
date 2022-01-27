@@ -14,37 +14,24 @@ module App.Action
 
 import Prelude
 import App.Constants (hiddenURLId)
+import App.Geolocation (currPositionJS, defaultGeoLocOptions, setTimeout)
 import App.ShareTarget (handleShare, shareNote)
-import App.State
-  ( State
-  , getState
-  , newNoteState
-  , newNoteStateKeyWords
-  , newNoteStateLongDesc
-  , newNoteStateShortDesc
-  , newNoteStateTitle
-  , newNoteStateUrl
-  , newOptionsState
-  , newOptionsStateAddDate
-  , newOptionsStateAddYamlHeader
-  , newOptionsStateFormat
-  )
+import App.State (State, getState, newNoteState, newNoteStateKeyWords, newNoteStateLongDesc, newNoteStateShortDesc, newNoteStateTitle, newNoteStateUrl, newOptionsState, newOptionsStateAddDate, newOptionsStateAddYamlHeader, newOptionsStateFormat)
 import Data.Argonaut (class DecodeJson)
-import Data.Maybe (Maybe(..))
+import Data.Function.Uncurried (mkFn2, mkFn4, runFn3)
+import Data.Maybe (Maybe(..), fromJust)
+import Data.Newtype (unwrap)
 import Data.Note (keyWordArrayFromString, noteKeyId)
-import Data.Options
-  ( addDateFromBool
-  , formatFromString
-  , optionsKeyId
-  , yamlHeaderFromBool
-  )
+import Data.Options (addDateFromBool, formatFromString, optionsKeyId, yamlHeaderFromBool)
 import Data.StoreKey (class StoreKey, StoreKeyId)
+import Data.Time.Duration (Milliseconds(..))
 import Data.URL (noteUrlFromString)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Console (log)
 import Halogen as H
 import Halogen.Query.Event (eventListener)
 import Helpers.Browser (downloadNote, loadFromLocalStorage, saveToLocalStorage)
+import Partial.Unsafe (unsafePartial)
 import Web.Event.Internal.Types (Event)
 import Web.HTML (Window, window)
 import Web.HTML.Event.EventTypes (domcontentloaded)
@@ -96,8 +83,14 @@ handleAction = case _ of
     H.liftAff $ shareNote state.note
   DownloadNote -> do
     state <- getState
-    H.liftEffect $ downloadNote hiddenURLId state
+    H.liftEffect
+      $ runFn3
+          currPositionJS
+          (mkFn4 \a b c d -> log $ show a <> " " <> show b <> " " <> show c <> " " <> show d)
+          (mkFn2 \a b -> log $ show a <> " err " <> show b)
+          (unwrap $ unsafePartial $ fromJust $ setTimeout (Milliseconds 1000.0) defaultGeoLocOptions)
 
+-- H.liftEffect $ downloadNote hiddenURLId state
 {-------------------------------------------------------------------------------
 | Initialization.
 |

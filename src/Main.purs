@@ -125,6 +125,25 @@ render state =
                       ]
                   ]
               ]
+          , HH.div [ HP.id "Geolocation" ]
+              [ HH.label [ HP.for "currentPosition" ]
+                  [ HH.span_ [ HH.text "Location:" ]
+                  , HH.br_
+                  , HH.input
+                      [ HP.id "currentPosition"
+                      , HP.type_ HP.InputText
+                      , HP.min 50.0
+                      , HP.placeholder "Position"
+                      , HP.value ""
+                      --, HE.onValueInput \st -> KeywordsChanged st
+                      ]
+                  ]
+              , HH.button
+                  [ HP.id "positionButton"
+                  , HE.onClick \_ -> GetPosition
+                  ]
+                  [ HH.text "Get current position" ]
+              ]
           , HH.div [ HP.id "description" ]
               [ HH.label [ HP.for "descriptionText" ]
                   [ HH.span_ [ HH.text "Short description:" ]

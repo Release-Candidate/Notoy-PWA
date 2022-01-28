@@ -28,6 +28,7 @@ to generate this file without the comments in this block.
   , "halogen"
   , "interpolate"
   , "js-uri"
+  , "literals"
   , "maybe"
   , "media-types"
   , "newtype"

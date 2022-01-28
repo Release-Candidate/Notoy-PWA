@@ -37,12 +37,15 @@ function shareNoteJS({ title, text, url }) {
         return navigator
             .share({ title, text, url })
             .then(
-                () =>
+                function () {
                     console.log(
                         `Successfully shared note '${title}, ${url}, ${text}'`
                     )
+                }
                 // eslint-disable-next-line function-paren-newline
             )
-            .catch((error) => console.log(`Error '${error}' sharing note`))
+            .catch(function (error) {
+                console.log(`Error '${error}' sharing note`)
+            })
     }
 }

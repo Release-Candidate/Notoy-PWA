@@ -143,7 +143,7 @@ async function promise(options) {
 /**
  * Do not watch the geolocation position with ID `id` any more.
  *
- * @param {Number} id
+ * @param {Number} id The watch ID returned from `watchPositionJS`.
  */
 function clearWatchJS(id) {
     return function () {

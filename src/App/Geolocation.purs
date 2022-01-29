@@ -43,7 +43,19 @@ module App.Geolocation
 
 import Prelude
 import App.GeoLocOptions (GeoLocOptions, GeoLocOptionsJS)
-import App.GeoLocOptions (GeoLocOptions(..), GeoLocOptionsJS, HighAccuracy(..), defaultGeoLocOptions, setAccuracy, setAlwaysUseCached, setMaxCacheAge, setNeverUseCached, setNoTimeout, setTimeout) as Reexports
+import App.GeoLocOptions
+  ( GeoLocOptions(..)
+  , GeoLocOptionsJS
+  , HighAccuracy(..)
+  , defaultGeoLocOptions
+  , setAccuracy
+  , setAlwaysUseCached
+  , setMaxCacheAge
+  , setNeverUseCached
+  , setNoTimeout
+  , setTimeout
+  )
+  as Reexports
 import Control.Promise (Promise, toAffE)
 import Data.Argonaut (class DecodeJson, class EncodeJson)
 import Data.Argonaut.Decode.Generic (genericDecodeJson)

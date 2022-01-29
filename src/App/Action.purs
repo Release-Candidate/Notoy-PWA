@@ -13,15 +13,34 @@ module App.Action
   ) where
 
 import Prelude
+import App.BigDataGeoLoc (bigDataGeolocResponse, bigDataGeolocURL)
 import App.Constants (hiddenURLId)
-import App.Geolocation (GeolocationPosition(..), defaultGeoLocOptions, getCurrentPosition, setTimeout)
+import App.Geolocation (defaultGeoLocOptions, getCurrentPosition, setTimeout)
 import App.ShareTarget (handleShare, shareNote)
-import App.State (State, getState, newNoteState, newNoteStateKeyWords, newNoteStateLongDesc, newNoteStateShortDesc, newNoteStateTitle, newNoteStateUrl, newOptionsState, newOptionsStateAddDate, newOptionsStateAddYamlHeader, newOptionsStateFormat)
+import App.State
+  ( State
+  , getState
+  , newNoteState
+  , newNoteStateKeyWords
+  , newNoteStateLongDesc
+  , newNoteStateShortDesc
+  , newNoteStateTitle
+  , newNoteStateUrl
+  , newOptionsState
+  , newOptionsStateAddDate
+  , newOptionsStateAddYamlHeader
+  , newOptionsStateFormat
+  )
 import Data.Argonaut (class DecodeJson)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), fromJust)
 import Data.Note (keyWordArrayFromString, noteKeyId)
-import Data.Options (addDateFromBool, formatFromString, optionsKeyId, yamlHeaderFromBool)
+import Data.Options
+  ( addDateFromBool
+  , formatFromString
+  , optionsKeyId
+  , yamlHeaderFromBool
+  )
 import Data.StoreKey (class StoreKey, StoreKeyId)
 import Data.Time.Duration (Milliseconds(..))
 import Data.URL (noteUrlFromString)
@@ -29,7 +48,12 @@ import Effect.Aff.Class (class MonadAff)
 import Effect.Console (log)
 import Halogen as H
 import Halogen.Query.Event (eventListener)
-import Helpers.Browser (downloadNote, loadFromLocalStorage, saveToLocalStorage)
+import Helpers.Browser
+  ( downloadNote
+  , loadFromLocalStorage
+  , reverseGeoLocation
+  , saveToLocalStorage
+  )
 import Partial.Unsafe (unsafePartial)
 import Web.Event.Internal.Types (Event)
 import Web.HTML (Window, window)
@@ -72,11 +96,7 @@ handleAction = case _ of
     handleShare win e
   TitleChanged st -> newStateAndSave newNoteStateTitle st
   URLChanged st -> newStateAndSave (newNoteStateUrl <<< noteUrlFromString) st
-  GetPosition -> do
-    poE <- H.liftAff $ getCurrentPosition $ unsafePartial $ fromJust $ setTimeout (Milliseconds 10000.0) defaultGeoLocOptions
-    case poE of
-      Left err -> H.liftEffect $ log $ show err
-      Right pos -> H.liftEffect $ log $ show pos
+  GetPosition -> getPosition
   KeywordsChanged st -> newStateAndSave (newNoteStateKeyWords <<< keyWordArrayFromString) st
   ShortDescChanged st -> newStateAndSave newNoteStateShortDesc st
   LongDescChanged st -> newStateAndSave newNoteStateLongDesc st
@@ -105,6 +125,22 @@ appInit = do
       domcontentloaded
       (toEventTarget win)
       (\e -> Just $ ShareTargetEvent e)
+
+{-------------------------------------------------------------------------------
+| Make a reverse geolocation lookup of the current position.
+-}
+getPosition :: forall output m. MonadAff m => H.HalogenM State Action () output m Unit
+getPosition = do
+  poE <- H.liftAff $ getCurrentPosition $ unsafePartial $ fromJust $ setTimeout (Milliseconds 10000.0) defaultGeoLocOptions
+  case poE of
+    Left err -> H.liftEffect $ log $ show err
+    Right pos -> do
+      posString <- H.liftAff $ reverseGeoLocation bigDataGeolocURL bigDataGeolocResponse pos
+      case posString of
+        Left err -> H.liftEffect $ log $ "Reverse geolocation response failed to decode: " <> err
+        Right dat -> do
+          newStateAndSave newNoteStateLongDesc dat
+          H.liftEffect $ log $ "Reverse geolocation response: " <> dat
 
 {-------------------------------------------------------------------------------
 | Helper function to load the `Note` from the local storage and put it into the

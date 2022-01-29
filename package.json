@@ -29,6 +29,8 @@
         "gulp-connect": "^5.7.0",
         "gulp-esbuild": "^0.10.0",
         "gulp-string-replace": "^1.1.2",
-        "spago": "^0.20.3"
+        "spago": "^0.20.3",
+        "url": "^0.11.0",
+        "xhr2": "^0.2.1"
     }
 }

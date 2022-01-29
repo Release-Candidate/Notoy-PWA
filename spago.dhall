@@ -14,6 +14,7 @@ to generate this file without the comments in this block.
 , dependencies =
   [ "aff"
   , "aff-promise"
+  , "affjax"
   , "argonaut"
   , "argonaut-generic"
   , "arrays"
@@ -26,6 +27,7 @@ to generate this file without the comments in this block.
   , "foldable-traversable"
   , "functions"
   , "halogen"
+  , "http-methods"
   , "interpolate"
   , "js-uri"
   , "literals"

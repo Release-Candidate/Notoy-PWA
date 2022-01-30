@@ -45,6 +45,7 @@ noteKeyId = StoreKeyId "Note"
 | * `url` - the URL of the website the note is about.
 |           ATTENTION: has to be encoded to work as a link!
 | * `keywords` - the array of keywords that describe the note
+| * `location` - the location the note is taken
 | * `shortDesc` - the short description text.
 | * `longDesc` - the longer, detailed description.
 -}
@@ -53,6 +54,7 @@ newtype Note
   { title :: Maybe String
   , url :: Maybe NoteURL
   , keywords :: Maybe KeyWordArray
+  , location :: Maybe String
   , shortDesc :: Maybe String
   , longDesc :: Maybe String
   }
@@ -66,6 +68,7 @@ defaultNote =
     { title: Nothing
     , url: Nothing
     , keywords: Nothing
+    , location: Nothing
     , shortDesc: Nothing
     , longDesc: Nothing
     }
@@ -87,35 +90,34 @@ instance storeKeyNote :: StoreKey Note where
   key _ = noteKeyId
 
 instance showNote :: Show Note where
-  show ( Note
-      { title: title
-    , url: url
-    , keywords: keywords
-    , shortDesc: shortDesc
-    , longDesc: longDesc
-    }
-  ) =
-    let
-      showField :: String -> Maybe String -> String
-      showField name val = case val of
-        Just s -> name <> ": " <> s <> " "
-        Nothing -> ""
+  show (Note note) =
+    titleString
+      <> urlString
+      <> keywordString
+      <> locationString
+      <> shortString
+      <> longString
+    where
+    showField :: String -> Maybe String -> String
+    showField name val = case val of
+      Just s -> name <> ": " <> s <> " "
+      Nothing -> ""
 
-      showFieldKeyWds keywds = case keywds of
-        Just keys -> "Keywords: " <> show keys <> " "
-        Nothing -> ""
+    showFieldKeyWds keywds = case keywds of
+      Just keys -> "Keywords: " <> show keys <> " "
+      Nothing -> ""
 
-      titleString = showField "Title" title
+    titleString = showField "Title" note.title
 
-      urlString = showField "URL" $ map noteUrlToString url
+    urlString = showField "URL" $ map noteUrlToString note.url
 
-      keywordString = showFieldKeyWds keywords
+    keywordString = showFieldKeyWds note.keywords
 
-      shortString = showField "Short Description" shortDesc
+    locationString = showField "Location" note.location
 
-      longString = showField "Detailed Description" longDesc
-    in
-      titleString <> urlString <> keywordString <> shortString <> longString
+    shortString = showField "Short Description" note.shortDesc
+
+    longString = showField "Detailed Description" note.longDesc
 
 {-------------------------------------------------------------------------------
 | Construct a `Note` from the given title, url and text.
@@ -134,6 +136,7 @@ fromShared (Just title) Nothing Nothing =
     { title: txt
     , url: urlSt
     , keywords: Nothing
+    , location: Nothing
     , shortDesc: Nothing
     , longDesc: Nothing
     }
@@ -145,6 +148,7 @@ fromShared Nothing Nothing (Just text) =
     { title: Nothing
     , url: urlSt
     , keywords: Nothing
+    , location: Nothing
     , shortDesc: txt
     , longDesc: Nothing
     }
@@ -156,6 +160,7 @@ fromShared (Just title) Nothing (Just text) =
     { title: tl
     , url: foundURL
     , keywords: Nothing
+    , location: Nothing
     , shortDesc: txt
     , longDesc: Nothing
     }
@@ -173,6 +178,7 @@ fromShared title url text =
     { title: title
     , url: url
     , keywords: Nothing
+    , location: Nothing
     , shortDesc: text
     , longDesc: Nothing
     }

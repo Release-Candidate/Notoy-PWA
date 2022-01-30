@@ -16,6 +16,8 @@ module App.State
   , newNoteState
   , newNoteStateKeyWords
   , newNoteStateKeyWords_
+  , newNoteStateLocation
+  , newNoteStateLocation_
   , newNoteStateLongDesc
   , newNoteStateLongDesc_
   , newNoteStateShortDesc
@@ -32,6 +34,8 @@ module App.State
   , newOptionsStateAddYamlHeader_
   , newOptionsStateFormat
   , newOptionsStateFormat_
+  , newOptionsStateLookupLocation
+  , newOptionsStateLookupLocation_
   , newOptionsState_
   ) where
 
@@ -40,7 +44,7 @@ import Data.Maybe (Maybe(..), fromMaybe)
 import Data.MediaType (MediaType(..))
 import Data.Note (KeyWordArray, Note(..), defaultNote)
 import Data.NoteContent (noteContentString)
-import Data.Options (AddDate, AddYamlHeader, Format, Options(..), defaultOptions, noteFileMime, noteFileSuffix)
+import Data.Options (AddDate, AddYamlHeader, Format, LookupLocation, Options(..), defaultOptions, noteFileMime, noteFileSuffix)
 import Data.URL (NoteURL)
 import Effect.Aff.Class (class MonadAff)
 import Halogen as H
@@ -204,6 +208,32 @@ newNoteStateKeyWords_ ::
 newNoteStateKeyWords_ = newNoteStateGenericKeyWords H.modify_
 
 {-------------------------------------------------------------------------------
+| Set the geolocation of the note in the state to `location`.
+|
+|  Return the new state.
+|
+| * `location` - The new geolocation of the note to set in the state.
+-}
+newNoteStateLocation ::
+  forall action output m.
+  MonadAff m =>
+  String -> H.HalogenM State action () output m State
+newNoteStateLocation = newNoteStateGenericLocation H.modify
+
+{-------------------------------------------------------------------------------
+| Set the geolocation of the note in the state to `location`.
+|
+|  Does not return the new state.
+|
+| * `location` - The new geolocation of the note to set in the state.
+-}
+newNoteStateLocation_ ::
+  forall action output m.
+  MonadAff m =>
+  String -> H.HalogenM State action () output m Unit
+newNoteStateLocation_ = newNoteStateGenericLocation H.modify_
+
+{-------------------------------------------------------------------------------
 | Set the short description of the note in the state to `shortDesc`.
 |
 |  Return the new state.
@@ -338,6 +368,36 @@ newOptionsStateAddDate_ ::
 newOptionsStateAddDate_ = newOptionsStateGenericAddDate H.modify_
 
 {-------------------------------------------------------------------------------
+| Set whether to do a reverse geolocation lookup of the position in the Options
+| of the state.
+|
+| Return the new state.
+|
+| * `lookupLocation` - The `LookupLocation` to set the Options in the state to.
+-}
+newOptionsStateLookupLocation ::
+  ∀ action output m.
+  MonadAff m =>
+  LookupLocation →
+  H.HalogenM State action () output m State
+newOptionsStateLookupLocation = newOptionsStateGenericLookupLocation H.modify
+
+{-------------------------------------------------------------------------------
+| Set whether to do a reverse geolocation lookup of the position in the Options
+| of the state.
+|
+| Does not return the new state.
+|
+| * `lookupLocation` - The `LookupLocation` to set the Options in the state to.
+-}
+newOptionsStateLookupLocation_ ::
+  ∀ action output m.
+  MonadAff m =>
+  LookupLocation →
+  H.HalogenM State action () output m Unit
+newOptionsStateLookupLocation_ = newOptionsStateGenericLookupLocation H.modify_
+
+{-------------------------------------------------------------------------------
 | Set whether to add a YAML front matter header to the note in the Options of
 | the state.
 |
@@ -409,6 +469,22 @@ newOptionsStateGenericAddDate f newAddDate =
       Options opts = state.options
     in
       state { options = Options opts { addDate = newAddDate } }
+
+{-------------------------------------------------------------------------------
+| Helper function: set the `LookupLocation` of the `Options` in the state.
+-}
+newOptionsStateGenericLookupLocation ::
+  ∀ action output m a.
+  MonadAff m =>
+  ((State → State) → H.HalogenM State action () output m a) →
+  LookupLocation →
+  H.HalogenM State action () output m a
+newOptionsStateGenericLookupLocation f newLookup =
+  f \state ->
+    let
+      Options opts = state.options
+    in
+      state { options = Options opts { lookupLocation = newLookup } }
 
 {-------------------------------------------------------------------------------
 | Helper function: set the `AddYamlHeader` of the `Options` in the state.
@@ -484,6 +560,22 @@ newNoteStateGenericKeyWords f newKeywords =
       Note n = state.note
     in
       state { note = Note n { keywords = newKeywords } }
+
+{-------------------------------------------------------------------------------
+| Helper function: set the location string of the `Note` in the state.
+-}
+newNoteStateGenericLocation ∷
+  ∀ action output m a.
+  MonadAff m =>
+  ((State → State) → H.HalogenM State action () output m a) →
+  String →
+  H.HalogenM State action () output m a
+newNoteStateGenericLocation f newLocation =
+  f \state ->
+    let
+      Note n = state.note
+    in
+      state { note = Note n { location = Just newLocation } }
 
 {-------------------------------------------------------------------------------
 | Helper function: set the short description string of the `Note` in the state.

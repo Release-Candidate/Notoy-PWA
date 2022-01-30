@@ -37,6 +37,7 @@ module App.Geolocation
   , getCurrentPosition
   , getCurrentPositionCB
   , module Reexports
+  , showLatitudeLongitude
   , supportsGeoLocation
   , watchPositionCB
   ) where
@@ -134,6 +135,23 @@ instance showGeolocationPosition :: Show GeolocationPosition where
 
 instance arbitraryGeolocationPosition :: Arbitrary GeolocationPosition where
   arbitrary = genericArbitrary
+
+{-------------------------------------------------------------------------------
+| Return a String containing the latitude and longitude of the position.
+|
+| Example:
+|
+| (49.0435799°, 19.733561°)
+-}
+showLatitudeLongitude :: GeolocationPosition -> String
+showLatitudeLongitude (GeolocationPosition pos) =
+  "("
+    <> addDegreeSign pos.latitude
+    <> ", "
+    <> addDegreeSign pos.longitude
+    <> ")"
+  where
+  addDegreeSign num = show num <> "°"
 
 {-------------------------------------------------------------------------------
 | Record holding the error information if a position request has failed.

@@ -15,13 +15,20 @@ module App.Action
 import Prelude
 import App.BigDataGeoLoc (bigDataGeolocResponse, bigDataGeolocURL)
 import App.Constants (hiddenURLId)
-import App.Geolocation (defaultGeoLocOptions, getCurrentPosition, setTimeout)
+import App.Geolocation
+  ( GeolocationPosition
+  , defaultGeoLocOptions
+  , getCurrentPosition
+  , setTimeout
+  , showLatitudeLongitude
+  )
 import App.ShareTarget (handleShare, shareNote)
 import App.State
   ( State
   , getState
   , newNoteState
   , newNoteStateKeyWords
+  , newNoteStateLocation
   , newNoteStateLongDesc
   , newNoteStateShortDesc
   , newNoteStateTitle
@@ -30,20 +37,25 @@ import App.State
   , newOptionsStateAddDate
   , newOptionsStateAddYamlHeader
   , newOptionsStateFormat
+  , newOptionsStateLookupLocation
   )
 import Data.Argonaut (class DecodeJson)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), fromJust)
 import Data.Note (keyWordArrayFromString, noteKeyId)
 import Data.Options
-  ( addDateFromBool
+  ( LookupLocation(..)
+  , Options(..)
+  , addDateFromBool
   , formatFromString
+  , lookupLocationFromBool
   , optionsKeyId
   , yamlHeaderFromBool
   )
 import Data.StoreKey (class StoreKey, StoreKeyId)
 import Data.Time.Duration (Milliseconds(..))
 import Data.URL (noteUrlFromString)
+import Effect.Aff (Aff, Error)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Console (log)
 import Halogen as H
@@ -69,11 +81,13 @@ data Action
   | TitleChanged String
   | URLChanged String
   | GetPosition
+  | PositionChanged String
   | KeywordsChanged String
   | ShortDescChanged String
   | LongDescChanged String
   | FormatChanged String
   | AddDateChanged Boolean
+  | ReverseGeolocChanged Boolean
   | AddYamlHeaderChanged Boolean
   | ShareNote
   | DownloadNote
@@ -97,11 +111,13 @@ handleAction = case _ of
   TitleChanged st -> newStateAndSave newNoteStateTitle st
   URLChanged st -> newStateAndSave (newNoteStateUrl <<< noteUrlFromString) st
   GetPosition -> getPosition
+  PositionChanged st -> newStateAndSave newNoteStateLocation st
   KeywordsChanged st -> newStateAndSave (newNoteStateKeyWords <<< keyWordArrayFromString) st
   ShortDescChanged st -> newStateAndSave newNoteStateShortDesc st
   LongDescChanged st -> newStateAndSave newNoteStateLongDesc st
   FormatChanged st -> newStateAndSave (newOptionsStateFormat <<< formatFromString) st
   AddDateChanged b -> newStateAndSave (newOptionsStateAddDate <<< addDateFromBool) b
+  ReverseGeolocChanged b -> newStateAndSave (newOptionsStateLookupLocation <<< lookupLocationFromBool) b
   AddYamlHeaderChanged b -> newStateAndSave (newOptionsStateAddYamlHeader <<< yamlHeaderFromBool) b
   ShareNote -> do
     state <- getState
@@ -131,16 +147,46 @@ appInit = do
 -}
 getPosition :: forall output m. MonadAff m => H.HalogenM State Action () output m Unit
 getPosition = do
-  poE <- H.liftAff $ getCurrentPosition $ unsafePartial $ fromJust $ setTimeout (Milliseconds 10000.0) defaultGeoLocOptions
+  poE <- H.liftAff $ getCurrPosTimeout (Milliseconds 10000.0)
   case poE of
     Left err -> H.liftEffect $ log $ show err
     Right pos -> do
-      posString <- H.liftAff $ reverseGeoLocation bigDataGeolocURL bigDataGeolocResponse pos
-      case posString of
-        Left err -> H.liftEffect $ log $ "Reverse geolocation response failed to decode: " <> err
-        Right dat -> do
-          newStateAndSave newNoteStateLongDesc dat
-          H.liftEffect $ log $ "Reverse geolocation response: " <> dat
+      state <- getState
+      let
+        (Options options) = state.options
+      case options.lookupLocation of
+        NoReverseGeolocation -> savePosToState $ showLatitudeLongitude pos
+        ReverseGeolocation -> do
+          posString <- H.liftAff $ reverseGeoLocation bigDataGeolocURL bigDataGeolocResponse pos
+          case posString of
+            Left err -> do
+              savePosToState $ showLatitudeLongitude pos
+              H.liftEffect $ log $ "Reverse geolocation response failed to decode: " <> err
+            Right dat -> do
+              savePosToState dat
+              H.liftEffect $ log $ "Reverse geolocation response: " <> dat
+
+{-------------------------------------------------------------------------------
+| Helper function: get current position with given timeout and default options.
+|
+| WARNING: unsafe, the `timeout` must be a valid timeout value!
+-}
+getCurrPosTimeout :: Milliseconds -> Aff (Either Error GeolocationPosition)
+getCurrPosTimeout timeout =
+  getCurrentPosition
+    $ unsafePartial
+    $ fromJust
+    $ setTimeout timeout defaultGeoLocOptions
+
+{-------------------------------------------------------------------------------
+| Helper function to save the position to the state.
+-}
+savePosToState ::
+  forall output m.
+  MonadAff m =>
+  String ->
+  H.HalogenM State Action () output m Unit
+savePosToState = newStateAndSave newNoteStateLocation
 
 {-------------------------------------------------------------------------------
 | Helper function to load the `Note` from the local storage and put it into the

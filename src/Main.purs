@@ -20,7 +20,7 @@ import App.ShareTarget (canShare)
 import App.State (State, initialState)
 import Data.Maybe (Maybe(..), fromJust, fromMaybe)
 import Data.Note (Note(..))
-import Data.Options (AddDate(..), AddYamlHeader(..), Format(..), Options(..))
+import Data.Options (AddDate(..), AddYamlHeader(..), Format(..), LookupLocation(..), Options(..))
 import Data.String.Regex (replace)
 import Data.String.Regex.Flags (unicode)
 import Data.String.Regex.Unsafe (unsafeRegex)
@@ -65,19 +65,9 @@ render state =
   let
     urlSuffixRegex = unsafeRegex "[/]+$" unicode
 
-    Note
-      { title: noteTitle
-    , url: noteURL
-    , keywords: noteKeywords
-    , shortDesc: noteShortDesc
-    , longDesc: noteLongDesc
-    } = state.note
+    Note note = state.note
 
-    Options
-      { format: optionFormat
-    , addDate: optionAddDate
-    , addYaml: optionAddYaml
-    } = state.options
+    Options options = state.options
   in
     HH.div [ HP.id "all" ]
       [ HH.div [ HP.id "hiddenDiv" ]
@@ -93,7 +83,7 @@ render state =
                       [ HP.id "titleText"
                       , HP.type_ HP.InputText
                       , HP.min 50.0
-                      , HP.value $ fromMaybe "" noteTitle
+                      , HP.value $ fromMaybe "" note.title
                       , HE.onValueInput \st -> TitleChanged st
                       ]
                   ]
@@ -106,7 +96,9 @@ render state =
                       [ HP.id "pageURL"
                       , HP.type_ HP.InputUrl
                       , HP.min 50.0
-                      , HP.value $ replace urlSuffixRegex "" $ fromMaybe "" $ map noteUrlToString noteURL
+                      , HP.value $ replace urlSuffixRegex ""
+                          $ fromMaybe ""
+                          $ map noteUrlToString note.url
                       , HE.onValueInput \st -> URLChanged st
                       ]
                   ]
@@ -120,7 +112,7 @@ render state =
                       , HP.type_ HP.InputText
                       , HP.min 50.0
                       , HP.placeholder "keyword1, key word 2, Keyword 3"
-                      , HP.value $ fromMaybe "" $ map show noteKeywords
+                      , HP.value $ fromMaybe "" $ map show note.keywords
                       , HE.onValueInput \st -> KeywordsChanged st
                       ]
                   ]
@@ -134,8 +126,8 @@ render state =
                       , HP.type_ HP.InputText
                       , HP.min 50.0
                       , HP.placeholder "Position"
-                      , HP.value ""
-                      --, HE.onValueInput \st -> KeywordsChanged st
+                      , HP.value $ fromMaybe "" note.location
+                      , HE.onValueInput \st -> PositionChanged st
                       ]
                   ]
               , HH.button
@@ -152,7 +144,7 @@ render state =
                       [ HP.id "descriptionText"
                       , HP.rows 5
                       , HP.cols 60
-                      , HP.value $ fromMaybe "" noteShortDesc
+                      , HP.value $ fromMaybe "" note.shortDesc
                       , HE.onValueInput \st -> ShortDescChanged st
                       ]
                   ]
@@ -165,7 +157,7 @@ render state =
                       [ HP.id "detailedDescription"
                       , HP.rows 5
                       , HP.cols 60
-                      , HP.value $ fromMaybe "" noteLongDesc
+                      , HP.value $ fromMaybe "" note.longDesc
                       , HE.onValueInput \st -> LongDescChanged st
                       ]
                   ]
@@ -199,7 +191,7 @@ render state =
                           , HP.name "formatRadio"
                           , HP.type_ HP.InputRadio
                           , HP.value $ show Markdown
-                          , HP.checked $ optionFormat == Markdown
+                          , HP.checked $ options.format == Markdown
                           , HE.onChecked \_ -> FormatChanged $ show Markdown
                           ]
                       , HH.text "Markdown (Obsidian, Joplin, Zettlr)"
@@ -210,7 +202,7 @@ render state =
                           , HP.name "formatRadio"
                           , HP.type_ HP.InputRadio
                           , HP.value $ show OrgMode
-                          , HP.checked $ optionFormat == OrgMode
+                          , HP.checked $ options.format == OrgMode
                           , HE.onChecked \_ -> FormatChanged $ show OrgMode
                           ]
                       , HH.text "Org-Mode (Emacs)"
@@ -221,7 +213,7 @@ render state =
                           , HP.name "formatRadio"
                           , HP.type_ HP.InputRadio
                           , HP.value $ show Text
-                          , HP.checked $ optionFormat == Text
+                          , HP.checked $ options.format == Text
                           , HE.onChecked \_ -> FormatChanged $ show Text
                           ]
                       , HH.text "Plain Text"
@@ -235,8 +227,19 @@ render state =
               , HH.input
                   [ HP.type_ HP.InputCheckbox
                   , HP.id "timestampInput"
-                  , HP.checked $ optionAddDate == AddDate
+                  , HP.checked $ options.addDate == AddDate
                   , HE.onChecked \b -> AddDateChanged b
+                  ]
+              ]
+          ]
+      , HH.div [ HP.id "reverseGeolocation" ]
+          [ HH.label [ HP.for "reverseGeolocationInput" ]
+              [ HH.span_ [ HH.text "Look the position up on BigData?" ]
+              , HH.input
+                  [ HP.type_ HP.InputCheckbox
+                  , HP.id "reverseGeolocationInput"
+                  , HP.checked $ options.lookupLocation == ReverseGeolocation
+                  , HE.onChecked \b -> ReverseGeolocChanged b
                   ]
               ]
           ]
@@ -246,7 +249,7 @@ render state =
               , HH.input
                   [ HP.type_ HP.InputCheckbox
                   , HP.id "yamlFrontMatter"
-                  , HP.checked $ optionAddYaml == AddYamlHeader
+                  , HP.checked $ options.addYaml == AddYamlHeader
                   , HE.onChecked \b -> AddYamlHeaderChanged b
                   ]
               ]

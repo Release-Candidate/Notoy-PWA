@@ -12,10 +12,12 @@ module Data.Options
   ( AddDate(..)
   , AddYamlHeader(..)
   , Format(..)
+  , LookupLocation(..)
   , Options(..)
   , addDateFromBool
   , defaultOptions
   , formatFromString
+  , lookupLocationFromBool
   , noteFileMime
   , noteFileSuffix
   , optionsKeyId
@@ -49,18 +51,20 @@ newtype Options
   = Options
   { format :: Format
   , addDate :: AddDate
+  , lookupLocation :: LookupLocation
   , addYaml :: AddYamlHeader
   }
 
 {-------------------------------------------------------------------------------
 | The default `Options`, markdown format with the current date as timestamp,
-| but no YAML front matter.
+| but no YAML front matter or reverse geolocation of the position.
 -}
 defaultOptions ∷ Options
 defaultOptions =
   Options
     { format: Markdown
     , addDate: AddDate
+    , lookupLocation: NoReverseGeolocation
     , addYaml: NoYamlHeader
     }
 
@@ -114,7 +118,7 @@ instance showFormat :: Show Format where
   show = genericShow
 
 {-------------------------------------------------------------------------------
-| ATTENTION: 3 is the number of values of `Format`.
+ ATTENTION: 3 is the number of values of `Format`.
 -}
 instance arbitraryFormat :: Arbitrary Format where
   arbitrary = map intToFormat arbitrary
@@ -129,6 +133,10 @@ instance arbitraryFormat :: Arbitrary Format where
 
 {-------------------------------------------------------------------------------
 | Whether to automatically add the current date as timestamp to the note.
+|
+| One of:
+|   * NoDate
+|   * AddDate
 -}
 data AddDate
   = NoDate
@@ -150,7 +158,7 @@ instance showAddDate :: Show AddDate where
   show = genericShow
 
 {-------------------------------------------------------------------------------
-| ATTENTION: 2 is the number of values of `AddDate`!
+ ATTENTION: 2 is the number of values of `AddDate`!
 -}
 instance arbitraryAddDate :: Arbitrary AddDate where
   arbitrary = map intToAddDate arbitrary
@@ -163,7 +171,50 @@ instance arbitraryAddDate :: Arbitrary AddDate where
       | otherwise = intToAddDate (-n)
 
 {-------------------------------------------------------------------------------
+| Whether to do a reverse geolocation lookup of the position or not.
+|
+| One of
+|   * ReverseGeolocation
+|   * NoReverseGeolocation
+-}
+data LookupLocation
+  = ReverseGeolocation
+  | NoReverseGeolocation
+
+derive instance eqLookupLocation :: Eq LookupLocation
+
+derive instance ordLookupLocation :: Ord LookupLocation
+
+derive instance genericLookupLocation :: Generic LookupLocation _
+
+instance decodeJsonLookupLocation :: DecodeJson LookupLocation where
+  decodeJson = genericDecodeJson
+
+instance encodeJsonLookupLocation :: EncodeJson LookupLocation where
+  encodeJson = genericEncodeJson
+
+instance showLookupLocation :: Show LookupLocation where
+  show = genericShow
+
+{-------------------------------------------------------------------------------
+ ATTENTION: 2 is the number of values of `LookupLocation`.
+-}
+instance arbitraryLookupLocation :: Arbitrary LookupLocation where
+  arbitrary = map intToLookupLocation arbitrary
+    where
+    intToLookupLocation :: Int -> LookupLocation
+    intToLookupLocation n
+      | n >= 0 = case n `mod` 2 of
+        0 -> ReverseGeolocation
+        _ -> NoReverseGeolocation
+      | otherwise = intToLookupLocation (-n)
+
+{-------------------------------------------------------------------------------
 | Whether to automatically add a YAML front matter header to the note.
+|
+| One of:
+|   * NoYamlHeader
+|   * AddYamlHeader
 -}
 data AddYamlHeader
   = NoYamlHeader
@@ -185,7 +236,7 @@ instance showAddYamlHeader :: Show AddYamlHeader where
   show = genericShow
 
 {-------------------------------------------------------------------------------
-| ATTENTION: 2 is the number of values of `AddYamlHeader`!
+ ATTENTION: 2 is the number of values of `AddYamlHeader`!
 -}
 instance arbitraryAddYamlHeader :: Arbitrary AddYamlHeader where
   arbitrary = map intToAddYamlHeader arbitrary
@@ -219,6 +270,17 @@ addDateFromBool :: Boolean -> AddDate
 addDateFromBool false = NoDate
 
 addDateFromBool true = AddDate
+
+{-------------------------------------------------------------------------------
+| Convert a `Boolean` to an `LookupLocation`.
+|
+| * `b` - If `b` is `true`, return `ReverseGeolocation`. Else return
+|         `NoReverseGeolocation`.
+-}
+lookupLocationFromBool :: Boolean -> LookupLocation
+lookupLocationFromBool false = NoReverseGeolocation
+
+lookupLocationFromBool true = ReverseGeolocation
 
 {-------------------------------------------------------------------------------
 | Convert a `Boolean` to an `AddYamlHeader`.

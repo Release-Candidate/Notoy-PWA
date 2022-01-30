@@ -56,6 +56,7 @@ fromSharedSpecs =
                 { title: Just s1
                 , url: noteUrlFromString "http://url"
                 , keywords: Nothing
+                , location: Nothing
                 , shortDesc: Just s2
                 , longDesc: Nothing
                 }
@@ -73,6 +74,7 @@ fromSharedSpecs =
                 { title: urlSt
                 , url: noteUrlFromString "http://url"
                 , keywords: Nothing
+                , location: Nothing
                 , shortDesc: Just $ trim $ s2
                 , longDesc: Nothing
                 }
@@ -90,6 +92,7 @@ fromSharedSpecs =
                 { title: Just $ trim $ s2
                 , url: noteUrlFromString "http://url"
                 , keywords: Nothing
+                , location: Nothing
                 , shortDesc: urlSt
                 , longDesc: Nothing
                 }
@@ -107,6 +110,7 @@ fromSharedSpecs =
                 { title: urlSt
                 , url: noteUrlFromString "http://url"
                 , keywords: Nothing
+                , location: Nothing
                 , shortDesc: Just $ trim $ s2
                 , longDesc: Nothing
                 }
@@ -124,6 +128,7 @@ fromSharedSpecs =
                 { title: Just $ trim $ s2
                 , url: noteUrlFromString "http://url"
                 , keywords: Nothing
+                , location: Nothing
                 , shortDesc: urlSt
                 , longDesc: Nothing
                 }
@@ -145,6 +150,7 @@ fromSharedSpecs =
                 { title: title
                 , url: url
                 , keywords: Nothing
+                , location: Nothing
                 , shortDesc: shortDesc
                 , longDesc: Nothing
                 }
@@ -190,6 +196,7 @@ fromSharedNotes =
           { title: Just "Title 1"
           , url: noteUrlFromString "https://url.com:12354/index.html"
           , keywords: Nothing
+          , location: Nothing
           , shortDesc: Just "Short text"
           , longDesc: Nothing
           }
@@ -198,6 +205,7 @@ fromSharedNotes =
           { title: Just "Title 1"
           , url: noteUrlFromString "https://url.com:12354/index.html"
           , keywords: Nothing
+          , location: Nothing
           , shortDesc: Just "Short text"
           , longDesc: Nothing
           }
@@ -207,6 +215,7 @@ fromSharedNotes =
           { title: Just "Title 1"
           , url: noteUrlFromString "\"https://url.com:12354/index.html\""
           , keywords: Nothing
+          , location: Nothing
           , shortDesc: Just "Short text"
           , longDesc: Nothing
           }
@@ -215,6 +224,7 @@ fromSharedNotes =
           { title: Just "Title 1"
           , url: noteUrlFromString "https://url.com:12354/index.html"
           , keywords: Nothing
+          , location: Nothing
           , shortDesc: Just "Short text"
           , longDesc: Nothing
           }
@@ -223,6 +233,7 @@ fromSharedNotes =
       ( Note
           { title: Just "Title 2"
           , url: Nothing
+          , location: Nothing
           , keywords: Nothing
           , shortDesc: Just "Short text 2"
           , longDesc: Nothing
@@ -232,6 +243,7 @@ fromSharedNotes =
           { title: Just "Title 2"
           , url: Nothing
           , keywords: Nothing
+          , location: Nothing
           , shortDesc: Just "Short text 2"
           , longDesc: Nothing
           }
@@ -241,6 +253,7 @@ fromSharedNotes =
           { title: Just "Title 3"
           , url: Nothing
           , keywords: Nothing
+          , location: Nothing
           , shortDesc: Nothing
           , longDesc: Nothing
           }
@@ -249,6 +262,7 @@ fromSharedNotes =
           { title: Just "Title 3"
           , url: Nothing
           , keywords: Nothing
+          , location: Nothing
           , shortDesc: Nothing
           , longDesc: Nothing
           }
@@ -258,6 +272,7 @@ fromSharedNotes =
           { title: Nothing
           , url: Nothing
           , keywords: Nothing
+          , location: Nothing
           , shortDesc: Just "Short text 4"
           , longDesc: Nothing
           }
@@ -266,6 +281,7 @@ fromSharedNotes =
           { title: Nothing
           , url: Nothing
           , keywords: Nothing
+          , location: Nothing
           , shortDesc: Just "Short text 4"
           , longDesc: Nothing
           }
@@ -275,6 +291,7 @@ fromSharedNotes =
           { title: Nothing
           , url: Nothing
           , keywords: Nothing
+          , location: Nothing
           , shortDesc: Nothing
           , longDesc: Nothing
           }
@@ -283,6 +300,7 @@ fromSharedNotes =
           { title: Nothing
           , url: Nothing
           , keywords: Nothing
+          , location: Nothing
           , shortDesc: Nothing
           , longDesc: Nothing
           }
@@ -292,6 +310,7 @@ fromSharedNotes =
           { title: Just "http://url"
           , url: Nothing
           , keywords: Nothing
+          , location: Nothing
           , shortDesc: Nothing
           , longDesc: Nothing
           }
@@ -300,6 +319,7 @@ fromSharedNotes =
           { title: Nothing
           , url: noteUrlFromString "http://url"
           , keywords: Nothing
+          , location: Nothing
           , shortDesc: Nothing
           , longDesc: Nothing
           }
@@ -309,6 +329,7 @@ fromSharedNotes =
           { title: Just "\"http://url"
           , url: Nothing
           , keywords: Nothing
+          , location: Nothing
           , shortDesc: Nothing
           , longDesc: Nothing
           }
@@ -317,6 +338,7 @@ fromSharedNotes =
           { title: Nothing
           , url: noteUrlFromString "http://url"
           , keywords: Nothing
+          , location: Nothing
           , shortDesc: Nothing
           , longDesc: Nothing
           }
@@ -326,6 +348,7 @@ fromSharedNotes =
           { title: Just "\"http://url\""
           , url: Nothing
           , keywords: Nothing
+          , location: Nothing
           , shortDesc: Nothing
           , longDesc: Nothing
           }
@@ -334,6 +357,7 @@ fromSharedNotes =
           { title: Nothing
           , url: noteUrlFromString "http://url"
           , keywords: Nothing
+          , location: Nothing
           , shortDesc: Nothing
           , longDesc: Nothing
           }
@@ -343,6 +367,7 @@ fromSharedNotes =
           { title: Just "http://url\""
           , url: Nothing
           , keywords: Nothing
+          , location: Nothing
           , shortDesc: Nothing
           , longDesc: Nothing
           }
@@ -351,6 +376,7 @@ fromSharedNotes =
           { title: Nothing
           , url: noteUrlFromString "http://url"
           , keywords: Nothing
+          , location: Nothing
           , shortDesc: Nothing
           , longDesc: Nothing
           }
@@ -360,6 +386,7 @@ fromSharedNotes =
           { title: Nothing
           , url: Nothing
           , keywords: Nothing
+          , location: Nothing
           , shortDesc: Just "http://url"
           , longDesc: Nothing
           }
@@ -368,6 +395,7 @@ fromSharedNotes =
           { title: Nothing
           , url: noteUrlFromString "http://url"
           , keywords: Nothing
+          , location: Nothing
           , shortDesc: Nothing
           , longDesc: Nothing
           }
@@ -377,6 +405,7 @@ fromSharedNotes =
           { title: Just " http://url "
           , url: Nothing
           , keywords: Nothing
+          , location: Nothing
           , shortDesc: Nothing
           , longDesc: Nothing
           }
@@ -385,6 +414,7 @@ fromSharedNotes =
           { title: Nothing
           , url: noteUrlFromString "http://url"
           , keywords: Nothing
+          , location: Nothing
           , shortDesc: Nothing
           , longDesc: Nothing
           }
@@ -394,6 +424,7 @@ fromSharedNotes =
           { title: Nothing
           , url: Nothing
           , keywords: Nothing
+          , location: Nothing
           , shortDesc: Just " http://url "
           , longDesc: Nothing
           }
@@ -402,6 +433,7 @@ fromSharedNotes =
           { title: Nothing
           , url: noteUrlFromString "http://url"
           , keywords: Nothing
+          , location: Nothing
           , shortDesc: Nothing
           , longDesc: Nothing
           }
@@ -411,6 +443,7 @@ fromSharedNotes =
           { title: Just "http://url fgsdf"
           , url: Nothing
           , keywords: Nothing
+          , location: Nothing
           , shortDesc: Nothing
           , longDesc: Nothing
           }
@@ -419,6 +452,7 @@ fromSharedNotes =
           { title: Just "http://url fgsdf"
           , url: noteUrlFromString "http://url"
           , keywords: Nothing
+          , location: Nothing
           , shortDesc: Nothing
           , longDesc: Nothing
           }
@@ -428,6 +462,7 @@ fromSharedNotes =
           { title: Nothing
           , url: Nothing
           , keywords: Nothing
+          , location: Nothing
           , shortDesc: Just " http://url ghgfdgh "
           , longDesc: Nothing
           }
@@ -436,6 +471,7 @@ fromSharedNotes =
           { title: Nothing
           , url: noteUrlFromString "http://url"
           , keywords: Nothing
+          , location: Nothing
           , shortDesc: Just "http://url ghgfdgh"
           , longDesc: Nothing
           }

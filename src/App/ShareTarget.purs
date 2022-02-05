@@ -83,9 +83,9 @@ shareNote note =
 | Text: https://news.ycombinator.com/news
 -}
 handleShare ::
-  forall action output m.
+  forall action output m row.
   MonadAff m =>
-  Window -> Event -> H.HalogenM State action () output m Unit
+  Window -> Event -> H.HalogenM State action (row) output m Unit
 handleShare win _ = do
   url <- H.liftEffect $ getCurrentUrl unit
   case url of

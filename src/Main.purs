@@ -69,8 +69,8 @@ render state =
         [ HH.a [ HP.id hiddenURLId, hiddenP true ]
             [ HH.text "download.md" ]
         ]
-    , HH.slot N._noteComponent unit N.noteComponent state.note NoteAction
-    , HH.slot_ O._optionsComponent unit O.optionsComponent state.options
+    , HH.slot N._noteComponent unit N.component state.note NoteAction
+    , HH.slot_ O._optionsComponent unit O.component state.options
     ]
 
 {-------------------------------------------------------------------------------

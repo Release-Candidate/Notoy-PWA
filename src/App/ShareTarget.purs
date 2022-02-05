@@ -15,7 +15,7 @@ module App.ShareTarget
   ) where
 
 import Prelude
-import App.State (State, newNoteState_)
+import App.State (State, setNoteState_)
 import Control.Promise (Promise, toAffE)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Note (Note(..), fromShared)
@@ -111,7 +111,7 @@ handleShare win _ = do
         , longDesc: Nothing
         } -> pure unit
         _ -> do
-          newNoteState_ note
+          setNoteState_ note
           H.liftEffect $ saveToLocalStorage win note
           H.liftEffect $ log $ "Got shared note: " <> show note
     Nothing -> pure unit

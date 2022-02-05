@@ -29,21 +29,16 @@ import App.ShareTarget (handleShare, shareNote)
 import App.State
   ( State
   , getState
-  , newNoteState
-  , newNoteState_
-  , newOptionsState
-  , newOptionsState_
+  , setNoteState
+  , setNoteState_
+  , setOptionsState
+  , setOptionsState_
   )
 import Data.Argonaut (class DecodeJson)
 import Data.Either (Either(..))
-import Data.Maybe (Maybe(..), fromJust, fromMaybe)
+import Data.Maybe (Maybe(..), fromJust)
 import Data.Note (Note(..), noteKeyId)
-import Data.Options
-  ( LookupLocation(..)
-  , Options(..)
-  , defaultOptions
-  , optionsKeyId
-  )
+import Data.Options (LookupLocation(..), Options(..), optionsKeyId)
 import Data.StoreKey (class StoreKey, StoreKeyId)
 import Data.Time.Duration (Milliseconds(..))
 import Effect.Aff (Aff, Error)
@@ -55,8 +50,8 @@ import Helpers.Browser
   ( downloadNote
   , loadFromLocalStorage
   , reverseGeoLocation
-  , saveToLocalStorage
   )
+import Helpers.Components (modifyStateAndSave)
 import Partial.Unsafe (unsafePartial)
 import Web.Event.Internal.Types (Event)
 import Web.HTML (Window, window)
@@ -73,6 +68,10 @@ type Slots
 
 {-------------------------------------------------------------------------------
 | The app's actions, emitted if an event has occurred.
+|
+| * Initialize - On initialization of the app.
+| * ShareTargetEvent - If an URL has been shared with this app.
+| * NoteAction - The output of the `NoteComponent`.
 -}
 data Action
   = Initialize
@@ -97,16 +96,14 @@ handleAction action = case action of
     handleShare win e
   NoteAction output -> case output of
     N.Geolocation note -> do
-      options <- H.request O._optionsComponent unit O.GetOptions
-      newOptionsState_ $ fromMaybe defaultOptions options
-      newNoteState_ note
+      updateOptions
+      setNoteState_ note
       getPosition
     N.Share note -> do
       H.liftAff $ shareNote note
     N.Download note -> do
-      options <- H.request O._optionsComponent unit O.GetOptions
-      newOptionsState_ $ fromMaybe defaultOptions options
-      state <- newNoteState note
+      updateOptions
+      state <- setNoteState note
       H.liftEffect $ downloadNote hiddenURLId state
 
 {-------------------------------------------------------------------------------
@@ -127,6 +124,9 @@ appInit = do
 
 {-------------------------------------------------------------------------------
 | Make a reverse geolocation lookup of the current position.
+|
+| If `options.lookupLocation` is `NoReverseGeolocation`, do no reverse lookup,
+| use the GPS coordinates.
 -}
 getPosition :: forall output m. MonadAff m => H.HalogenM State Action Slots output m Unit
 getPosition = do
@@ -162,6 +162,20 @@ getCurrPosTimeout timeout =
     $ setTimeout timeout defaultGeoLocOptions
 
 {-------------------------------------------------------------------------------
+| Helper function to request the `Options` state from the child Component and
+| save it to the state.
+-}
+updateOptions ::
+  forall output m.
+  MonadAff m =>
+  H.HalogenM State Action Slots output m Unit
+updateOptions = do
+  options <- H.request O._optionsComponent unit O.GetOptions
+  case options of
+    Just opts -> setOptionsState_ opts
+    Nothing -> pure unit
+
+{-------------------------------------------------------------------------------
 | Helper function to save the position to the state.
 -}
 savePosToState ::
@@ -169,7 +183,7 @@ savePosToState ::
   MonadAff m =>
   String ->
   H.HalogenM State Action Slots output m Unit
-savePosToState = newStateAndSave newNoteStateLocation
+savePosToState = modifyStateAndSave setNoteStateLocation
 
 {-------------------------------------------------------------------------------
 | Helper function to load the `Note` from the local storage and put it into the
@@ -180,7 +194,7 @@ loadNote ::
   MonadAff m =>
   Window ->
   H.HalogenM State Action Slots output m Unit
-loadNote = loadObject newNoteState noteKeyId "Note"
+loadNote = loadObject setNoteState noteKeyId "Note"
 
 {-------------------------------------------------------------------------------
 | Helper function to load the `Options` from the local storage and put it into
@@ -191,7 +205,7 @@ loadOptions ::
   MonadAff m =>
   Window ->
   H.HalogenM State Action Slots output m Unit
-loadOptions = loadObject newOptionsState optionsKeyId "Options"
+loadOptions = loadObject setOptionsState optionsKeyId "Options"
 
 {-------------------------------------------------------------------------------
 | Helper function to deserialize an object from local storage and save it to the
@@ -217,35 +231,14 @@ loadObject storeToState keyId name win = do
 {-------------------------------------------------------------------------------
 | Helper function: set the location string of the `Note` in the state.
 -}
-newNoteStateLocation ∷
+setNoteStateLocation ∷
   ∀ output m.
   MonadAff m =>
   String →
   H.HalogenM State Action Slots output m State
-newNoteStateLocation newLocation =
+setNoteStateLocation newLocation =
   H.modify \state ->
     let
       Note n = state.note
     in
       state { note = Note n { location = Just newLocation } }
-
-{-------------------------------------------------------------------------------
-| Helper function: change the app's state using a function `f` with the new
-| value `newVal` to set it (`f newVal` is called by newStateAndSave).
-|
-| The new state is saved to the local storage after setting the new state.
-|
-| * `f` - The function to use to set the new state.
-| * `newVal` - The new value to set in the state.
--}
-newStateAndSave ::
-  forall output m a.
-  MonadAff m =>
-  (a -> H.HalogenM State Action Slots output m State) ->
-  a ->
-  H.HalogenM State Action Slots output m Unit
-newStateAndSave f newVal = do
-  newState <- f newVal
-  win <- H.liftEffect $ window
-  H.liftEffect $ saveToLocalStorage win newState.note
-  H.liftEffect $ saveToLocalStorage win newState.options

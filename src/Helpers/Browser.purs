@@ -8,8 +8,7 @@
 -- ==============================================================================
 -- | Module Helpers.Browser, helper functions for Browser stuff.
 module Helpers.Browser
-  ( downloadFromAnchor
-  , downloadNote
+  ( downloadNote
   , getCurrentUrl
   , getCurrentUrlString
   , getElementFromId
@@ -29,20 +28,16 @@ import App.Constants (downloadAttr, hrefAttr)
 import App.Geolocation (GeolocationPosition)
 import App.State (State, filenameFromState, makeBlob)
 import Data.Argonaut (class DecodeJson, class EncodeJson, Json)
-import Data.DateTimeFormat (Locale(..))
+import Data.DateTimeFormat (Locale(..), localeToString)
 import Data.Either (Either(..))
 import Data.HTTP.Method (Method(..))
 import Data.Maybe (Maybe(..))
-import Data.StoreKey
-  ( class StoreKey
-  , StoreKeyId
-  , storeKeyIdStringFromObject
-  , storeKeyIdToString
-  )
+import Data.StoreKey (class StoreKey, StoreKeyId, storeKeyIdStringFromObject, storeKeyIdToString)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Console (log)
+import Helpers.DateTime (getDateStringJS)
 import Helpers.General (decodeJsonFromString, encodeToJsonString)
 import Web.DOM (Element)
 import Web.DOM.Element (setAttribute)
@@ -102,30 +97,21 @@ downloadNote aId state = do
         log $ "Error trying to download: the element with id "
           <> aId
           <> " is not an anchor"
-      Just anchorEl -> downloadNoteFromAnchor anchorEl state
+      Just anchorEl -> downloadFromAnchor filenameFromState makeBlob anchorEl state
 
 {-------------------------------------------------------------------------------
-| Download the given `Note` from the given (hidden) anchor element.
+| Download the given object from the app.
 |
-| * `anchorEl` - The (hidden) anchor element to use to download.
-| * `state` - The state containing the `Options` and `Note` needed to generate
-|             the data of the note to download it.
--}
-downloadNoteFromAnchor :: HTMLA.HTMLAnchorElement -> State -> Effect Unit
-downloadNoteFromAnchor = downloadFromAnchor filenameFromState makeBlob
-
-{-------------------------------------------------------------------------------
-| Download
-|
-| * `filenameFromObj` -
-| * `makeBlobFromObj` -
-| * `anchorEl` -
-| * `obj` -
+| * `filenameFromObj` - A function to get the filename to use for the download.
+| * `makeBlobFromObj` - A function to get the `Blob` of the object to download.
+| * `anchorEl` - The hidden anchor HTML element to use for the hidden download
+|                link
+| * `obj` - The object to download.
 -}
 downloadFromAnchor ::
   forall a.
   (a -> String) ->
-  (a -> Blob) ->
+  (a -> String -> String -> Blob) ->
   HTMLA.HTMLAnchorElement -> a -> Effect Unit
 downloadFromAnchor filenameFromObj makeBlobFromObj anchorEl obj = do
   let
@@ -134,7 +120,9 @@ downloadFromAnchor filenameFromObj makeBlobFromObj anchorEl obj = do
     element = HTMLA.toElement anchorEl
   setAttribute downloadAttr filename element
   HTMLA.setText filename anchorEl
-  blobUrl <- createObjectURL $ makeBlobFromObj obj
+  timestamp <- getDateStringJS unit
+  locale <- getLanguage unit
+  blobUrl <- createObjectURL $ makeBlobFromObj obj timestamp (localeToString locale)
   setAttribute hrefAttr blobUrl element
   click $ HTMLA.toHTMLElement anchorEl
 

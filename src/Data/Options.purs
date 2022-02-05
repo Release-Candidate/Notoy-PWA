@@ -45,6 +45,7 @@ optionsKeyId = StoreKeyId "Options"
 |
 | * `format` - the note format to use. Markdown, Emacs Org-Mode or plain text.
 | * `addDate` - add the current date to the note?
+| * `lookupLocation` - do reverse geolocation?
 | * `addYaml` - add a YAML front matter header to the note?
 -}
 newtype Options

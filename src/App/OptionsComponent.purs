@@ -13,31 +13,25 @@ module App.OptionsComponent
   , Query(..)
   , Slot
   , _optionsComponent
-  , optionsComponent
+  , component
   ) where
 
 import Prelude
-import App.Components (newState, newStateAndSave)
 import App.State (getState)
 import Data.Maybe (Maybe(..))
-import Data.Options
-  ( AddDate(..)
-  , AddYamlHeader(..)
-  , Format(..)
-  , LookupLocation(..)
-  , Options(..)
-  , addDateFromBool
-  , formatFromString
-  , lookupLocationFromBool
-  , yamlHeaderFromBool
-  )
+import Data.Options (AddDate(..), AddYamlHeader(..), Format(..), LookupLocation(..), Options(..), addDateFromBool, formatFromString, lookupLocationFromBool, yamlHeaderFromBool)
 import Effect.Aff.Class (class MonadAff)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
+import Helpers.Components (modifyComponentStateAndSave, setState)
 import Type.Proxy (Proxy(..))
 
+{-------------------------------------------------------------------------------
+| The proxy for an `OptionsComponent`, to use in the slot of the parent
+| component.
+-}
 _optionsComponent = Proxy :: Proxy "options"
 
 {-------------------------------------------------------------------------------
@@ -48,9 +42,23 @@ _optionsComponent = Proxy :: Proxy "options"
 type Slot
   = H.Slot Query Void Unit
 
+{-------------------------------------------------------------------------------
+| The type for queries from the parent component.
+|
+| * GetOptions - Send the current `Options` state to the parent component.
+-}
 data Query a
   = GetOptions (Options -> a)
 
+{-------------------------------------------------------------------------------
+| The actions (events) of the component.
+|
+| * Receive - Input from the parent component received.
+| * FormatChanged - The format of a note has changed.
+| * AddDateChanged - Whether to add the date to the note has changed.
+| * ReverseGeolocChanged - Whether to do reverse geolocation has changed.
+| * AddYamlHeaderChanged - Whether to add a YAML front matter header has changed.
+-}
 data Action
   = Receive Options
   | FormatChanged String
@@ -58,8 +66,11 @@ data Action
   | ReverseGeolocChanged Boolean
   | AddYamlHeaderChanged Boolean
 
-optionsComponent ∷ ∀ output m. MonadAff m => H.Component Query Options output m
-optionsComponent =
+{-------------------------------------------------------------------------------
+| The `OptionsComponent` description for use in the parent component.
+-}
+component ∷ ∀ output m. MonadAff m => H.Component Query Options output m
+component =
   H.mkComponent
     { initialState
     , render
@@ -75,9 +86,9 @@ optionsComponent =
   initialState options = options
 
 {-------------------------------------------------------------------------------
-| The app's main `Action` (event) handler.
+| The component's `Action` (event) handler.
 |
-| Handles the app's events, by dispatching on event type `e`.
+| Handles the component's events, by dispatching on event type `action`.
 |
 | * `action` - The `Action` to process.
 -}
@@ -90,12 +101,17 @@ handleAction action = case action of
     currState <- getState
     case currState == options of
       true -> pure unit
-      false -> newStateAndSave newState options
-  FormatChanged st -> newStateAndSave (newOptionsStateFormat <<< formatFromString) st
-  AddDateChanged b -> newStateAndSave (newOptionsStateAddDate <<< addDateFromBool) b
-  ReverseGeolocChanged b -> newStateAndSave (newOptionsStateLookupLocation <<< lookupLocationFromBool) b
-  AddYamlHeaderChanged b -> newStateAndSave (newOptionsStateAddYamlHeader <<< yamlHeaderFromBool) b
+      false -> modifyComponentStateAndSave setState options
+  FormatChanged st -> modifyComponentStateAndSave (setOptionsStateFormat <<< formatFromString) st
+  AddDateChanged b -> modifyComponentStateAndSave (setOptionsStateAddDate <<< addDateFromBool) b
+  ReverseGeolocChanged b -> modifyComponentStateAndSave (setOptionsStateLookupLocation <<< lookupLocationFromBool) b
+  AddYamlHeaderChanged b -> modifyComponentStateAndSave (setOptionsStateAddYamlHeader <<< yamlHeaderFromBool) b
 
+{-------------------------------------------------------------------------------
+| The handler for queries from the parent component.
+|
+| * `q` - The `Query` to process.
+-}
 handleQuery ::
   forall m a output.
   MonadAff m =>
@@ -105,6 +121,9 @@ handleQuery q = case q of
     options <- getState
     pure $ Just $ k options
 
+{-------------------------------------------------------------------------------
+| The Halogen render function of this component.
+-}
 render :: forall m. MonadAff m => Options -> H.ComponentHTML Action () m
 render opts =
   let
@@ -187,40 +206,48 @@ render opts =
 
 {-------------------------------------------------------------------------------
 | Helper function: set the `Format` of the `Options` in the state.
+|
+| For use with `modifyComponentStateAndSave`.
 -}
-newOptionsStateFormat ::
+setOptionsStateFormat ::
   ∀ action output m.
   MonadAff m =>
   Format →
   H.HalogenM Options action () output m Options
-newOptionsStateFormat newFormat = H.modify \(Options options) -> Options options { format = newFormat }
+setOptionsStateFormat newFormat = H.modify \(Options options) -> Options options { format = newFormat }
 
 {-------------------------------------------------------------------------------
 | Helper function: set the `AddDate` of the `Options` in the state.
+|
+| For use with `modifyComponentStateAndSave`.
 -}
-newOptionsStateAddDate ::
+setOptionsStateAddDate ::
   ∀ action output m.
   MonadAff m =>
   AddDate →
   H.HalogenM Options action () output m Options
-newOptionsStateAddDate newAddDate = H.modify \(Options options) -> Options options { addDate = newAddDate }
+setOptionsStateAddDate newAddDate = H.modify \(Options options) -> Options options { addDate = newAddDate }
 
 {-------------------------------------------------------------------------------
 | Helper function: set the `LookupLocation` of the `Options` in the state.
+|
+| For use with `modifyComponentStateAndSave`.
 -}
-newOptionsStateLookupLocation ::
+setOptionsStateLookupLocation ::
   ∀ action output m.
   MonadAff m =>
   LookupLocation →
   H.HalogenM Options action () output m Options
-newOptionsStateLookupLocation newLookup = H.modify \(Options options) -> Options options { lookupLocation = newLookup }
+setOptionsStateLookupLocation newLookup = H.modify \(Options options) -> Options options { lookupLocation = newLookup }
 
 {-------------------------------------------------------------------------------
 | Helper function: set the `AddYamlHeader` of the `Options` in the state.
+|
+| For use with `modifyComponentStateAndSave`.
 -}
-newOptionsStateAddYamlHeader ::
+setOptionsStateAddYamlHeader ::
   ∀ action output m.
   MonadAff m =>
   AddYamlHeader →
   H.HalogenM Options action () output m Options
-newOptionsStateAddYamlHeader newAddYaml = H.modify \(Options options) -> Options options { addYaml = newAddYaml }
+setOptionsStateAddYamlHeader newAddYaml = H.modify \(Options options) -> Options options { addYaml = newAddYaml }

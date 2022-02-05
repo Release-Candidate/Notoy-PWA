@@ -12,11 +12,10 @@ module App.NoteComponent
   , Output(..)
   , Slot
   , _noteComponent
-  , noteComponent
+  , component
   ) where
 
 import Prelude
-import App.Components (newState, newStateAndSave)
 import App.ShareTarget (canShare)
 import App.State (getState)
 import Data.Argonaut (class DecodeJson, class EncodeJson)
@@ -35,8 +34,12 @@ import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
+import Helpers.Components (modifyComponentStateAndSave, setState)
 import Type.Proxy (Proxy(..))
 
+{-------------------------------------------------------------------------------
+| Proxy to use in the slot of the parent component.
+-}
 _noteComponent = Proxy :: Proxy "note"
 
 {-------------------------------------------------------------------------------
@@ -53,12 +56,27 @@ type Slot
 | * Download - Download the current note using the current `Options` state.
 | * Geolocation - Do a lookup of the current position, maybe using reverse
 |                 geolocation (if enabled in the options).
+| * Share - Share the note with other apps.
 -}
 data Output
   = Download Note
   | Geolocation Note
   | Share Note
 
+{-------------------------------------------------------------------------------
+| The actions (events) of a note component.
+|
+| * Receive - Input from the parent component received.
+| * TitleChanged - The note's title has changed.
+| * URLChanged - The note's URL has changed.
+| * PositionChanged - The note's position has changed.
+| * KeywordsChanged - The note's keywords has changed.
+| * ShortDescChanged - The note's short description has changed.
+| * LongDescChanged - The note's detailed description has changed.
+| * GetPosition - Get the current position of the device.
+| * ShareNote - Share the note with another app.
+| * DownloadNote - Download the note.
+-}
 data Action
   = Receive Note
   | TitleChanged String
@@ -84,8 +102,11 @@ instance encodeJsonAction :: EncodeJson Action where
 instance showAction :: Show Action where
   show = genericShow
 
-noteComponent :: ∀ query m. MonadAff m => H.Component query Note Output m
-noteComponent =
+{-------------------------------------------------------------------------------
+| The `NoteComponent`'s description for use in the parent component.
+-}
+component :: ∀ query m. MonadAff m => H.Component query Note Output m
+component =
   H.mkComponent
     { initialState
     , render
@@ -115,13 +136,13 @@ handleAction action = case action of
     currState <- getState
     case currState == note of
       true -> pure unit
-      false -> newStateAndSave newState note
-  TitleChanged st -> newStateAndSave newNoteStateTitle st
-  URLChanged st -> newStateAndSave (newNoteStateUrl <<< noteUrlFromString) st
-  PositionChanged st -> newStateAndSave newNoteStateLocation st
-  KeywordsChanged st -> newStateAndSave (newNoteStateKeyWords <<< keyWordArrayFromString) st
-  ShortDescChanged st -> newStateAndSave newNoteStateShortDesc st
-  LongDescChanged st -> newStateAndSave newNoteStateLongDesc st
+      false -> modifyComponentStateAndSave setState note
+  TitleChanged st -> modifyComponentStateAndSave setNoteStateTitle st
+  URLChanged st -> modifyComponentStateAndSave (setNoteStateUrl <<< noteUrlFromString) st
+  PositionChanged st -> modifyComponentStateAndSave setNoteStateLocation st
+  KeywordsChanged st -> modifyComponentStateAndSave (setNoteStateKeyWords <<< keyWordArrayFromString) st
+  ShortDescChanged st -> modifyComponentStateAndSave setNoteStateShortDesc st
+  LongDescChanged st -> modifyComponentStateAndSave setNoteStateLongDesc st
   GetPosition -> do
     note <- getState
     H.raise $ Geolocation note
@@ -132,6 +153,9 @@ handleAction action = case action of
     note <- getState
     H.raise $ Download note
 
+{-------------------------------------------------------------------------------
+| Halogen's render function of this component.
+-}
 render :: forall m. MonadAff m => Note -> H.ComponentHTML Action () m
 render n =
   let
@@ -249,72 +273,72 @@ render n =
 {-------------------------------------------------------------------------------
 | Helper function: set the title string of the `Note` in the state.
 |
-| To be used with `newStateAndSave`.
+| To be used with `modifyComponentStateAndSave`.
 -}
-newNoteStateTitle ∷
+setNoteStateTitle ∷
   ∀ action output m.
   MonadAff m =>
   String →
   H.HalogenM Note action () output m Note
-newNoteStateTitle newTitle = H.modify \(Note note) -> Note note { title = Just newTitle }
+setNoteStateTitle newTitle = H.modify \(Note note) -> Note note { title = Just newTitle }
 
 {-------------------------------------------------------------------------------
 | Helper function: set the URL of the `Note` in the state.
 |
-| To be used with `newStateAndSave`.
+| To be used with `modifyComponentStateAndSave`.
 -}
-newNoteStateUrl ∷
+setNoteStateUrl ∷
   ∀ action output m.
   MonadAff m =>
   Maybe NoteURL →
   H.HalogenM Note action () output m Note
-newNoteStateUrl newUrl = H.modify \(Note note) -> Note note { url = newUrl }
+setNoteStateUrl newUrl = H.modify \(Note note) -> Note note { url = newUrl }
 
 {-------------------------------------------------------------------------------
 | Helper function: set the keyword array of the `Note` in the state.
 |
-| To be used with `newStateAndSave`.
+| To be used with `modifyComponentStateAndSave`.
 -}
-newNoteStateKeyWords ∷
+setNoteStateKeyWords ∷
   ∀ action output m.
   MonadAff m =>
   Maybe KeyWordArray →
   H.HalogenM Note action () output m Note
-newNoteStateKeyWords newKeywords = H.modify \(Note note) -> Note note { keywords = newKeywords }
+setNoteStateKeyWords newKeywords = H.modify \(Note note) -> Note note { keywords = newKeywords }
 
 {-------------------------------------------------------------------------------
 | Helper function: set the location string of the `Note` in the state.
 |
-| To be used with `newStateAndSave`.
+| To be used with `modifyComponentStateAndSave`.
 -}
-newNoteStateLocation ∷
+setNoteStateLocation ∷
   ∀ action output m.
   MonadAff m =>
   String →
   H.HalogenM Note action () output m Note
-newNoteStateLocation newLocation = H.modify \(Note note) -> Note note { location = Just newLocation }
+setNoteStateLocation newLocation = H.modify \(Note note) -> Note note { location = Just newLocation }
 
 {-------------------------------------------------------------------------------
 | Helper function: set the short description string of the `Note` in the state.
 |
-| To be used with `newStateAndSave`.
+| To be used with `modifyComponentStateAndSave`.
 -}
-newNoteStateShortDesc ∷
+setNoteStateShortDesc ∷
   ∀ action output m.
   MonadAff m =>
   String →
   H.HalogenM Note action () output m Note
-newNoteStateShortDesc newShortDesc = H.modify \(Note note) -> Note note { shortDesc = Just newShortDesc }
+setNoteStateShortDesc newShortDesc = H.modify \(Note note) -> Note note { shortDesc = Just newShortDesc }
 
 {-------------------------------------------------------------------------------
 | Helper function: set the detailed description string of the `Note` in the
 | state.
 |
-| To be used with `newStateAndSave`.
+| To be used with `modifyComponentStateAndSave`.
 -}
-newNoteStateLongDesc ∷
+setNoteStateLongDesc ∷
   ∀ action output m.
   MonadAff m =>
   String →
   H.HalogenM Note action () output m Note
-newNoteStateLongDesc newLongDesc = H.modify \(Note note) -> Note note { longDesc = Just newLongDesc }
+setNoteStateLongDesc newLongDesc = H.modify \(Note note) -> Note note { longDesc = Just newLongDesc }

@@ -13,10 +13,10 @@ module App.State
   , getState
   , initialState
   , makeBlob
-  , newNoteState
-  , newNoteState_
-  , newOptionsState
-  , newOptionsState_
+  , setNoteState
+  , setNoteState_
+  , setOptionsState
+  , setOptionsState_
   ) where
 
 import Prelude
@@ -60,11 +60,14 @@ getState = H.get
 | Return the formatted note as a string.
 |
 | * `state` - The `State` holding the `Note` and `Options` needed.
+| * `timestamp` - The date to use if it should be added to the note.
+| * `language` - The language this note is written in, for the YAML front
+|                matter.
 -}
-makeBlob :: State -> Blob.Blob
-makeBlob state = Blob.fromString content mediaType
+makeBlob :: State -> String -> String -> Blob.Blob
+makeBlob state timestamp language = Blob.fromString content mediaType
   where
-  content = noteContentString state.options state.note
+  content = noteContentString state.options state.note timestamp language
 
   mediaType = MediaType $ noteFileMime state.options
 
@@ -89,11 +92,11 @@ filenameFromState state = sanitizeFileName title <> noteFileSuffix state.options
 |
 | * `note` - The note to set in the new State.
 -}
-newNoteState ::
+setNoteState ::
   forall action output m row.
   MonadAff m =>
   Note -> H.HalogenM State action (row) output m State
-newNoteState = newNoteStateGeneric H.modify
+setNoteState = setNoteStateGeneric H.modify
 
 {-------------------------------------------------------------------------------
 | Set the Note in the State to the given Note `note`.
@@ -102,11 +105,11 @@ newNoteState = newNoteStateGeneric H.modify
 |
 | * `note` - The note to set in the new State.
 -}
-newNoteState_ ::
+setNoteState_ ::
   forall action output m row.
   MonadAff m =>
   Note -> H.HalogenM State action (row) output m Unit
-newNoteState_ = newNoteStateGeneric H.modify_
+setNoteState_ = setNoteStateGeneric H.modify_
 
 {-------------------------------------------------------------------------------
 | Set the options of the state to the given object.
@@ -115,11 +118,11 @@ newNoteState_ = newNoteStateGeneric H.modify_
 |
 | * `options` - The new Options to set in the state.
 -}
-newOptionsState ::
+setOptionsState ::
   forall action output m row.
   MonadAff m =>
   Options -> H.HalogenM State action (row) output m State
-newOptionsState = newOptionsStateGeneric H.modify
+setOptionsState = setOptionsStateGeneric H.modify
 
 {-------------------------------------------------------------------------------
 | Set the options of the state to the given object.
@@ -128,30 +131,30 @@ newOptionsState = newOptionsStateGeneric H.modify
 |
 | * `options` - The new Options to set in the state.
 -}
-newOptionsState_ ::
+setOptionsState_ ::
   forall action output m row.
   MonadAff m =>
   Options -> H.HalogenM State action (row) output m Unit
-newOptionsState_ = newOptionsStateGeneric H.modify_
+setOptionsState_ = setOptionsStateGeneric H.modify_
 
 {-------------------------------------------------------------------------------
 | Helper function: set the `Options` of the state.
 -}
-newOptionsStateGeneric ∷
+setOptionsStateGeneric ∷
   ∀ action output m a row.
   MonadAff m =>
   ((State → State) → H.HalogenM State action (row) output m a) →
   Options →
   H.HalogenM State action (row) output m a
-newOptionsStateGeneric f newOptions = f \state -> state { options = newOptions }
+setOptionsStateGeneric f newOptions = f \state -> state { options = newOptions }
 
 {-------------------------------------------------------------------------------
 | Helper function: set the `Note` object of the state to a new one.
 -}
-newNoteStateGeneric ∷
+setNoteStateGeneric ∷
   ∀ action output m a row.
   MonadAff m =>
   ((State → State) → H.HalogenM State action (row) output m a) →
   Note →
   H.HalogenM State action (row) output m a
-newNoteStateGeneric f newNote = f \state -> state { note = newNote }
+setNoteStateGeneric f newNote = f \state -> state { note = newNote }

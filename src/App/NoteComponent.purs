@@ -232,7 +232,7 @@ render n =
               , HH.textarea
                   [ HP.id "descriptionText"
                   , HP.rows 5
-                  , HP.cols 60
+                  , HP.cols 40
                   , HP.value $ fromMaybe "" note.shortDesc
                   , HE.onValueInput \st -> ShortDescChanged st
                   ]
@@ -245,7 +245,7 @@ render n =
               , HH.textarea
                   [ HP.id "detailedDescription"
                   , HP.rows 5
-                  , HP.cols 60
+                  , HP.cols 40
                   , HP.value $ fromMaybe "" note.longDesc
                   , HE.onValueInput \st -> LongDescChanged st
                   ]

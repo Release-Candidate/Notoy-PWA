@@ -141,6 +141,22 @@ function runSpago() {
 }
 
 //==============================================================================
+// Run tailwindcss.
+async function runTailwind() {
+    return (
+        exec(`tailwindcss -i src/input.css -o ${outDir}/notoy-pwa.css`),
+        (error, stdout, stderr) => {
+            if (error) {
+                console.error(`exec error: ${error}`)
+                return
+            }
+            console.log(`stdout: ${stdout}`)
+            console.log(`stderr: ${stderr}`)
+        }
+    )
+}
+
+//==============================================================================
 // Start HTTPS server.
 function runHTTPS(cb) {
     connect.server({
@@ -254,7 +270,7 @@ function cleanOutput(cb) {
 const cleanTarget = parallel(cleanOutput, cleanHTTP)
 
 const bundleTarget = series(
-    parallel(runSpago, copyAssets),
+    parallel(runSpago, copyAssets, runTailwind),
     parallel(
         replaceVersionOutdir,
         processApp,

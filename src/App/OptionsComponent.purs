@@ -21,6 +21,7 @@ import App.State (getState)
 import Data.Maybe (Maybe(..))
 import Data.Options (AddDate(..), AddYamlHeader(..), Format(..), LookupLocation(..), Options(..), addDateFromBool, formatFromString, lookupLocationFromBool, yamlHeaderFromBool)
 import Effect.Aff.Class (class MonadAff)
+import Halogen (ClassName(..))
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
@@ -129,12 +130,22 @@ render opts =
   let
     Options options = opts
   in
-    HH.div [ HP.id "options" ]
+    HH.div
+      [ HP.id "options"
+      , HP.classes
+          [ ClassName "container"
+          , ClassName "mx-auto"
+          , ClassName "space-y-3"
+          ]
+      ]
       [ HH.div [ HP.id "format" ]
           [ HH.fieldset
-              [ HP.id "formatParent" ]
-              [ HH.legend [] [ HH.text "Note file format" ]
-              , HH.label [ HP.for "markdown" ]
+              [ HP.id "formatParent"
+              , HP.classes []
+              ]
+              [ HH.legend []
+                  [ HH.text "Note file format" ]
+              , HH.label [ HP.for "markdown", HP.classes [ ClassName "block" ] ]
                   [ HH.input
                       [ HP.id "markdown"
                       , HP.name "formatRadio"
@@ -145,7 +156,7 @@ render opts =
                       ]
                   , HH.text "Markdown (Obsidian, Joplin, Zettlr)"
                   ]
-              , HH.label [ HP.for "orgMode" ]
+              , HH.label [ HP.for "orgMode", HP.classes [ ClassName "block" ] ]
                   [ HH.input
                       [ HP.id "orgMode"
                       , HP.name "formatRadio"
@@ -156,7 +167,7 @@ render opts =
                       ]
                   , HH.text "Org-Mode (Emacs)"
                   ]
-              , HH.label [ HP.for "text" ]
+              , HH.label [ HP.for "text", HP.classes [ ClassName "block" ] ]
                   [ HH.input
                       [ HP.id "text"
                       , HP.name "formatRadio"
@@ -170,7 +181,7 @@ render opts =
               ]
           ]
       , HH.div [ HP.id "timestamp" ]
-          [ HH.label [ HP.for "timestampInput" ]
+          [ HH.label [ HP.for "timestampInput", HP.classes [ ClassName "block" ] ]
               [ HH.span_ [ HH.text "Add the current date to the note?" ]
               , HH.input
                   [ HP.type_ HP.InputCheckbox
@@ -181,7 +192,7 @@ render opts =
               ]
           ]
       , HH.div [ HP.id "reverseGeolocation" ]
-          [ HH.label [ HP.for "reverseGeolocationInput" ]
+          [ HH.label [ HP.for "reverseGeolocationInput", HP.classes [ ClassName "block" ] ]
               [ HH.span_ [ HH.text "Look the position up on BigData?" ]
               , HH.input
                   [ HP.type_ HP.InputCheckbox
@@ -192,7 +203,7 @@ render opts =
               ]
           ]
       , HH.div [ HP.id "yaml" ]
-          [ HH.label [ HP.for "yamlFrontMatter" ]
+          [ HH.label [ HP.for "yamlFrontMatter", HP.classes [ ClassName "block" ] ]
               [ HH.span_ [ HH.text "Add YAML front matter (YAML metadata block for Pandoc)?" ]
               , HH.input
                   [ HP.type_ HP.InputCheckbox

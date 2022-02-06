@@ -30,6 +30,7 @@ import Data.String.Regex.Flags (unicode)
 import Data.String.Regex.Unsafe (unsafeRegex)
 import Data.URL (NoteURL, noteUrlFromString, noteUrlToString)
 import Effect.Aff.Class (class MonadAff)
+import Halogen (ClassName(..))
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
@@ -163,13 +164,26 @@ render n =
 
     Note note = n
   in
-    HH.div [ HP.id "note" ]
-      [ HH.div [ HP.id "title" ]
+    HH.div
+      [ HP.id "note"
+      , HP.classes
+          [ ClassName "container"
+          , ClassName "mx-auto"
+          , ClassName "space-y-3"
+          ]
+      ]
+      [ HH.div [ HP.id "title", HP.classes [ ClassName "block" ] ]
           [ HH.label [ HP.for "titleText" ]
-              [ HH.span_ [ HH.text "Title:" ]
+              [ HH.span [ HP.classes [] ] [ HH.text "Title:" ]
               , HH.br_
               , HH.input
                   [ HP.id "titleText"
+                  , HP.classes
+                      [ ClassName "rounded-md"
+                      , ClassName "border-gray-300"
+                      , ClassName "shadow-sm"
+                      , ClassName "w-full"
+                      ]
                   , HP.type_ HP.InputText
                   , HP.min 50.0
                   , HP.value $ fromMaybe "" note.title
@@ -177,12 +191,18 @@ render n =
                   ]
               ]
           ]
-      , HH.div [ HP.id "url" ]
+      , HH.div [ HP.id "url", HP.classes [ ClassName "block" ] ]
           [ HH.label [ HP.for "pageURL" ]
               [ HH.span_ [ HH.text "URL:" ]
               , HH.br_
               , HH.input
                   [ HP.id "pageURL"
+                  , HP.classes
+                      [ ClassName "rounded-md"
+                      , ClassName "border-gray-300"
+                      , ClassName "shadow-sm"
+                      , ClassName "w-full"
+                      ]
                   , HP.type_ HP.InputUrl
                   , HP.min 50.0
                   , HP.value $ replace urlSuffixRegex ""
@@ -192,12 +212,18 @@ render n =
                   ]
               ]
           ]
-      , HH.div [ HP.id "keywords" ]
+      , HH.div [ HP.id "keywords", HP.classes [ ClassName "block" ] ]
           [ HH.label [ HP.for "keyWords" ]
               [ HH.span_ [ HH.text "Keywords (comma separated):" ]
               , HH.br_
               , HH.input
                   [ HP.id "keyWords"
+                  , HP.classes
+                      [ ClassName "rounded-md"
+                      , ClassName "border-gray-300"
+                      , ClassName "shadow-sm"
+                      , ClassName "w-full"
+                      ]
                   , HP.type_ HP.InputText
                   , HP.min 50.0
                   , HP.placeholder "keyword1, key word 2, Keyword 3"
@@ -206,12 +232,31 @@ render n =
                   ]
               ]
           ]
-      , HH.div [ HP.id "Geolocation" ]
-          [ HH.label [ HP.for "currentPosition" ]
+      , HH.div
+          [ HP.id "Geolocation"
+          , HP.classes
+              [ ClassName "flex"
+              , ClassName "flex-row"
+              , ClassName "flex-wrap"
+              , ClassName "items-end"
+              , ClassName "space-x-4"
+              , ClassName "space-y-2"
+              ]
+          ]
+          [ HH.label
+              [ HP.for "currentPosition"
+              , HP.classes [ ClassName "inline", ClassName "grow" ]
+              ]
               [ HH.span_ [ HH.text "Location:" ]
               , HH.br_
               , HH.input
                   [ HP.id "currentPosition"
+                  , HP.classes
+                      [ ClassName "rounded-md"
+                      , ClassName "border-gray-300"
+                      , ClassName "shadow-sm"
+                      , ClassName "w-full"
+                      ]
                   , HP.type_ HP.InputText
                   , HP.min 50.0
                   , HP.placeholder "Position"
@@ -221,16 +266,30 @@ render n =
               ]
           , HH.button
               [ HP.id "positionButton"
+              , HP.classes
+                  [ ClassName "inline"
+                  , ClassName "btn"
+                  , ClassName "btn-blue"
+                  , ClassName "position"
+                  , ClassName "h-fit-content"
+                  ]
               , HE.onClick \_ -> GetPosition
               ]
-              [ HH.text "Get current position" ]
+              [ HH.text "Get position" ]
           ]
-      , HH.div [ HP.id "description" ]
+      , HH.div [ HP.id "description", HP.classes [ ClassName "block" ] ]
           [ HH.label [ HP.for "descriptionText" ]
               [ HH.span_ [ HH.text "Short description:" ]
               , HH.br_
               , HH.textarea
                   [ HP.id "descriptionText"
+                  , HP.classes
+                      [ ClassName "rounded-md"
+                      , ClassName "border-gray-300"
+                      , ClassName "shadow-sm"
+                      , ClassName "resize"
+                      , ClassName "w-full"
+                      ]
                   , HP.rows 5
                   , HP.cols 40
                   , HP.value $ fromMaybe "" note.shortDesc
@@ -238,12 +297,19 @@ render n =
                   ]
               ]
           ]
-      , HH.div [ HP.id "detailed_text" ]
+      , HH.div [ HP.id "detailed_text", HP.classes [ ClassName "block" ] ]
           [ HH.label [ HP.for "detailedDescription" ]
               [ HH.span_ [ HH.text "Detailed description:" ]
               , HH.br_
               , HH.textarea
                   [ HP.id "detailedDescription"
+                  , HP.classes
+                      [ ClassName "rounded-md"
+                      , ClassName "border-gray-300"
+                      , ClassName "shadow-sm"
+                      , ClassName "resize"
+                      , ClassName "w-full"
+                      ]
                   , HP.rows 5
                   , HP.cols 40
                   , HP.value $ fromMaybe "" note.longDesc
@@ -251,23 +317,47 @@ render n =
                   ]
               ]
           ]
-      , HH.div [ HP.id "save" ]
-          [ HH.button
-              [ HP.id "saveButton"
-              , HE.onClick \_ -> DownloadNote
+      , HH.div [ HP.id "buttons", HP.classes [ ClassName "space-x-4" ] ]
+          [ HH.div
+              [ HP.id "save"
+              , HP.classes
+                  [ ClassName "inline"
+                  , ClassName "px-2"
+                  ]
               ]
-              [ HH.text "Save" ]
-          ]
-      , HH.div [ HP.id "share" ]
-          if canShare then
-            [ HH.button
-                [ HP.id "shareButton"
-                , HE.onClick \_ -> ShareNote
+              [ HH.button
+                  [ HP.id "saveButton"
+                  , HP.classes
+                      [ ClassName "btn"
+                      , ClassName "btn-blue"
+                      , ClassName "download"
+                      ]
+                  , HE.onClick \_ -> DownloadNote
+                  ]
+                  [ HH.text "Save" ]
+              ]
+          , HH.div
+              [ HP.id "share"
+              , HP.classes
+                  [ ClassName "inline"
+                  , ClassName "px-2"
+                  ]
+              ]
+              if canShare then
+                [ HH.button
+                    [ HP.id "shareButton"
+                    , HP.classes
+                        [ ClassName "btn"
+                        , ClassName "btn-blue"
+                        , ClassName "share"
+                        ]
+                    , HE.onClick \_ -> ShareNote
+                    ]
+                    [ HH.text "Share" ]
                 ]
-                [ HH.text "Share" ]
-            ]
-          else
-            []
+              else
+                []
+          ]
       ]
 
 {-------------------------------------------------------------------------------

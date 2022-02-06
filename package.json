@@ -15,11 +15,13 @@
         "build": "spago build",
         "test": "spago test",
         "repl": "spago repl",
+        "css": "tailwindcss -i ./src/input.css -o ./http/notoy-pwa.css",
         "bundle": "gulp bundle",
         "https": "gulp serve",
         "watch": "gulp watch"
     },
     "devDependencies": {
+        "@tailwindcss/forms": "^0.4.0",
         "delete": "^1.1.0",
         "esbuild": "^0.14.11",
         "eslint": "^8.3.0",
@@ -30,6 +32,7 @@
         "gulp-esbuild": "^0.10.0",
         "gulp-string-replace": "^1.1.2",
         "spago": "^0.20.3",
+        "tailwindcss": "^3.0.18",
         "url": "^0.11.0",
         "xhr2": "^0.2.1"
     }

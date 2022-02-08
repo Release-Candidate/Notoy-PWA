@@ -133,12 +133,13 @@ render opts =
     HH.div
       [ HP.id "options"
       , HP.classes
-          [ ClassName "container"
-          , ClassName "mx-auto"
+          [ ClassName "px-4"
           , ClassName "space-y-3"
           ]
       ]
-      [ HH.div [ HP.id "format" ]
+      [ HH.h2 [ HP.classes [] ] [ HH.text "Options" ]
+      , HH.div
+          [ HP.id "format" ]
           [ HH.fieldset
               [ HP.id "formatParent"
               , HP.classes []

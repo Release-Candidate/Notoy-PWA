@@ -22,6 +22,7 @@ import App.State (State, initialState)
 import Data.Maybe (Maybe(..), fromJust)
 import Effect (Effect)
 import Effect.Aff.Class (class MonadAff)
+import Halogen (ClassName(..))
 import Halogen as H
 import Halogen.Aff as HA
 import Halogen.HTML as HH
@@ -64,7 +65,14 @@ parentComponent =
 -}
 render :: forall m. MonadAff m => State -> H.ComponentHTML Action Slots m
 render state =
-  HH.div [ HP.id "all" ]
+  HH.div
+    [ HP.id "all"
+    , HP.classes
+        [ ClassName "flex"
+        , ClassName "flex-wrap"
+        , ClassName "justify-center"
+        ]
+    ]
     [ HH.div [ HP.id "hiddenDiv" ]
         [ HH.a [ HP.id hiddenURLId, hiddenP true ]
             [ HH.text "download.md" ]

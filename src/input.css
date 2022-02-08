@@ -26,3 +26,32 @@
     content: url("./icons/position.svg");
     @apply block float-left  w-4 h-4 mr-4;
 }
+
+.ml--4 {
+    margin-left: -1rem;
+    width: calc(100% + 1rem);
+}
+
+h6 {
+    @apply font-bold;
+}
+
+h5 {
+    @apply text-lg font-semibold;
+}
+
+h4 {
+    @apply text-lg font-bold;
+}
+
+h3 {
+    @apply text-lg font-extrabold;
+}
+
+h2 {
+    @apply text-xl font-bold;
+}
+
+h1 {
+    @apply text-xl font-extrabold;
+}

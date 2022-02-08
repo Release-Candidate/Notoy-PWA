@@ -44,32 +44,28 @@ canShare = canShareJS unit
 | * `note` - The Note to share.
 -}
 shareNote :: Note -> Aff Unit
-shareNote note =
+shareNote (Note note) =
   if canShare then
     toAffE $ shareNoteJS noteRecord
   else
     pure unit
   where
-  Note
-    { title: title
-  , url: url
-  , keywords: keywords
-  , shortDesc: shortDesc
-  , longDesc: longDesc
-  } = note
-
-  keywordString = case keywords of
+  keywordString = case note.keywords of
     Nothing -> ""
     Just keywordArr -> "Keywords: " <> show keywordArr <> "\n\n"
 
-  shortDescString = case shortDesc of
+  locationString = case note.location of
+    Nothing -> ""
+    Just position -> "Location: " <> position <> "\n\n"
+
+  shortDescString = case note.shortDesc of
     Nothing -> ""
     Just shortD -> shortD <> "\n"
 
   noteRecord =
-    { title: fromMaybe "" title
-    , url: fromMaybe "" $ map noteUrlToString url
-    , text: keywordString <> shortDescString <> fromMaybe "" longDesc
+    { title: fromMaybe "" note.title
+    , url: fromMaybe "" $ map noteUrlToString note.url
+    , text: keywordString <> locationString <> shortDescString <> fromMaybe "" note.longDesc
     }
 
 {-------------------------------------------------------------------------------

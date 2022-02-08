@@ -167,8 +167,9 @@ render n =
     HH.div
       [ HP.id "note"
       , HP.classes
-          [ ClassName "container"
-          , ClassName "mx-auto"
+          [ ClassName "px-4"
+          , ClassName "max-w-4xl"
+          , ClassName "grow"
           , ClassName "space-y-3"
           ]
       ]
@@ -239,13 +240,18 @@ render n =
               , ClassName "flex-row"
               , ClassName "flex-wrap"
               , ClassName "items-end"
-              , ClassName "space-x-4"
+              --, ClassName "gap-x-4"
+              , ClassName "ml--4"
               , ClassName "space-y-2"
               ]
           ]
           [ HH.label
               [ HP.for "currentPosition"
-              , HP.classes [ ClassName "inline", ClassName "grow" ]
+              , HP.classes
+                  [ ClassName "inline"
+                  , ClassName "grow"
+                  , ClassName "ml-4"
+                  ]
               ]
               [ HH.span_ [ HH.text "Location:" ]
               , HH.br_
@@ -271,6 +277,7 @@ render n =
                   , ClassName "btn"
                   , ClassName "btn-blue"
                   , ClassName "position"
+                  , ClassName "ml-4"
                   , ClassName "h-fit-content"
                   ]
               , HE.onClick \_ -> GetPosition
@@ -317,7 +324,14 @@ render n =
                   ]
               ]
           ]
-      , HH.div [ HP.id "buttons", HP.classes [ ClassName "space-x-4" ] ]
+      , HH.div
+          [ HP.id "buttons"
+          , HP.classes
+              [ ClassName "flex"
+              , ClassName "flex-wrap"
+              , ClassName "place-content-between"
+              ]
+          ]
           [ HH.div
               [ HP.id "save"
               , HP.classes
@@ -331,6 +345,7 @@ render n =
                       [ ClassName "btn"
                       , ClassName "btn-blue"
                       , ClassName "download"
+                      , ClassName "my-1"
                       ]
                   , HE.onClick \_ -> DownloadNote
                   ]
@@ -350,6 +365,7 @@ render n =
                         [ ClassName "btn"
                         , ClassName "btn-blue"
                         , ClassName "share"
+                        , ClassName "my-1"
                         ]
                     , HE.onClick \_ -> ShareNote
                     ]

@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
 module.exports = {
-    content: ["./src/App/*.purs", "./assets/*.html"],
+    content: ["./src/App/*.purs", "./src/Main.purs", "./assets/*.html"],
     theme: {
         container: {
             center: true,

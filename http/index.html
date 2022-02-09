@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui" />
+        <link rel="icon" href="./favicon.ico" sizes="any" />
+        <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+        <link rel="manifest" href="./manifest.json" />
+        <link rel="mask-icon" href="./safari-pinned-tab.svg" color="#bfab91" />
+        <link href="./notoy-pwa.css" rel="stylesheet" />
+        <meta name="msapplication-TileColor" content="#bfab91" />
+        <meta name="theme-color" content="#bfab91" />
+        <script type="module">
+            if ("serviceWorker" in navigator) {
+                navigator.serviceWorker
+                    .register(new URL("./sw.js", import.meta.url), {
+                        type: "module",
+                        scope: "/",
+                    })
+                    .then(function () {
+                        console.log("[index.html] Service Worker Registered")
+                    })
+            }
+        </script>
+        <title>Notoy</title>
+    </head>
+
+    <body>
+        <noscript>
+            <h2>Needs Javascript to work!</h2>
+            This is a progressive web app (PWA) which is meant to be installed
+            on a mobile device.
+        </noscript>
+        <div id="app"></div>
+        <script src="./app.js" type="module"></script>
+    </body>
+</html>

@@ -3,7 +3,7 @@
     "name": "Notoy",
     "short_name": "Notoy",
     "start_url": "/Notoy-PWA/http/",
-    "id": "/",
+    "id": "/Notoy-PWA/http/",
     "scope": "/Notoy-PWA/http/",
     "display": "standalone",
     "theme_color": "#bfab91",
@@ -11,7 +11,7 @@
     "version": "0.9.0",
     "description": "Notoy.",
     "share_target": {
-        "action": "/",
+        "action": "/Notoy-PWA/http/",
         "method": "GET",
         "enctype": "application/x-www-form-urlencoded",
         "params": {

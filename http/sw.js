@@ -28,7 +28,6 @@
             "/Notoy-PWA/http/browserconfig.xml",
             "/Notoy-PWA/http/favicon.ico",
             "/Notoy-PWA/http/favicon.svg",
-            "/Notoy-PWA/http/icons",
             "/Notoy-PWA/http/icons/download.svg",
             "/Notoy-PWA/http/icons/icon.svg",
             "/Notoy-PWA/http/icons/maskable_128.png",

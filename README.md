@@ -2,4 +2,4 @@
 
 Progressive web app to save notes of a website shared to it on a mobile device.
 
-[./http/index.html](./http/index.html)
+[Notoy PWA at GitHub Pages](https://release-candidate.github.io/Notoy-PWA/http/index.html)

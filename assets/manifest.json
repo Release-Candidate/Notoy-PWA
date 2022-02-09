@@ -4,7 +4,7 @@
     "short_name": "Notoy",
     "start_url": "/",
     "id": "/",
-    "scope": "/Notoy-PWA/http/",
+    "scope": "/",
     "display": "standalone",
     "theme_color": "#bfab91",
     "background_color": "#bfab91",

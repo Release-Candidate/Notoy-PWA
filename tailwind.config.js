@@ -10,6 +10,14 @@ module.exports = {
             height: {
                 "fit-content": "fit-content",
             },
+            spacing: {
+                128: "32rem",
+                136: "34rem",
+                144: "36rem",
+                152: "38rem",
+                160: "40rem",
+                168: "42rem",
+            },
         },
     },
     extend: {},

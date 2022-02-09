@@ -134,15 +134,21 @@ render opts =
       [ HP.id "options"
       , HP.classes
           [ ClassName "px-4"
+          , ClassName "max-w-4xl"
+          , ClassName "grow"
           , ClassName "space-y-3"
+          , ClassName "mt-4"
           ]
       ]
       [ HH.h2 [ HP.classes [] ] [ HH.text "Options" ]
       , HH.div
-          [ HP.id "format" ]
+          [ HP.id "format"
+          , HP.classes
+              []
+          ]
           [ HH.fieldset
               [ HP.id "formatParent"
-              , HP.classes []
+              , HP.classes [ ClassName "space-y-2 space-x-4" ]
               ]
               [ HH.legend []
                   [ HH.text "Note file format" ]
@@ -152,10 +158,16 @@ render opts =
                       , HP.name "formatRadio"
                       , HP.type_ HP.InputRadio
                       , HP.value $ show Markdown
+                      , HP.classes [ ClassName "mr-1" ]
                       , HP.checked $ options.format == Markdown
                       , HE.onChecked \_ -> FormatChanged $ show Markdown
                       ]
-                  , HH.text "Markdown (Obsidian, Joplin, Zettlr)"
+                  , HH.span
+                      [ HP.classes
+                          [ ClassName "align-middle"
+                          ]
+                      ]
+                      [ HH.text "Markdown (Obsidian, Joplin, Zettlr)" ]
                   ]
               , HH.label [ HP.for "orgMode", HP.classes [ ClassName "block" ] ]
                   [ HH.input
@@ -163,10 +175,16 @@ render opts =
                       , HP.name "formatRadio"
                       , HP.type_ HP.InputRadio
                       , HP.value $ show OrgMode
+                      , HP.classes [ ClassName "mr-1" ]
                       , HP.checked $ options.format == OrgMode
                       , HE.onChecked \_ -> FormatChanged $ show OrgMode
                       ]
-                  , HH.text "Org-Mode (Emacs)"
+                  , HH.span
+                      [ HP.classes
+                          [ ClassName "align-middle"
+                          ]
+                      ]
+                      [ HH.text "Org-Mode (Emacs)" ]
                   ]
               , HH.label [ HP.for "text", HP.classes [ ClassName "block" ] ]
                   [ HH.input
@@ -174,19 +192,31 @@ render opts =
                       , HP.name "formatRadio"
                       , HP.type_ HP.InputRadio
                       , HP.value $ show Text
+                      , HP.classes [ ClassName "mr-1" ]
                       , HP.checked $ options.format == Text
                       , HE.onChecked \_ -> FormatChanged $ show Text
                       ]
-                  , HH.text "Plain Text"
+                  , HH.span
+                      [ HP.classes
+                          [ ClassName "align-middle"
+                          ]
+                      ]
+                      [ HH.text "Plain Text" ]
                   ]
               ]
           ]
       , HH.div [ HP.id "timestamp" ]
           [ HH.label [ HP.for "timestampInput", HP.classes [ ClassName "block" ] ]
-              [ HH.span_ [ HH.text "Add the current date to the note?" ]
+              [ HH.span
+                  [ HP.classes
+                      [ ClassName "align-middle"
+                      ]
+                  ]
+                  [ HH.text "Add the current date to the note?" ]
               , HH.input
                   [ HP.type_ HP.InputCheckbox
                   , HP.id "timestampInput"
+                  , HP.classes [ ClassName "ml-1" ]
                   , HP.checked $ options.addDate == AddDate
                   , HE.onChecked \b -> AddDateChanged b
                   ]
@@ -194,10 +224,16 @@ render opts =
           ]
       , HH.div [ HP.id "reverseGeolocation" ]
           [ HH.label [ HP.for "reverseGeolocationInput", HP.classes [ ClassName "block" ] ]
-              [ HH.span_ [ HH.text "Look the position up on BigData?" ]
+              [ HH.span
+                  [ HP.classes
+                      [ ClassName "align-middle"
+                      ]
+                  ]
+                  [ HH.text "Look the position up on BigData?" ]
               , HH.input
                   [ HP.type_ HP.InputCheckbox
                   , HP.id "reverseGeolocationInput"
+                  , HP.classes [ ClassName "ml-1" ]
                   , HP.checked $ options.lookupLocation == ReverseGeolocation
                   , HE.onChecked \b -> ReverseGeolocChanged b
                   ]
@@ -205,10 +241,16 @@ render opts =
           ]
       , HH.div [ HP.id "yaml" ]
           [ HH.label [ HP.for "yamlFrontMatter", HP.classes [ ClassName "block" ] ]
-              [ HH.span_ [ HH.text "Add YAML front matter (YAML metadata block for Pandoc)?" ]
+              [ HH.span
+                  [ HP.classes
+                      [ ClassName "align-middle"
+                      ]
+                  ]
+                  [ HH.text "Add YAML front matter (YAML metadata block for Pandoc)?" ]
               , HH.input
                   [ HP.type_ HP.InputCheckbox
                   , HP.id "yamlFrontMatter"
+                  , HP.classes [ ClassName "ml-1" ]
                   , HP.checked $ options.addYaml == AddYamlHeader
                   , HE.onChecked \b -> AddYamlHeaderChanged b
                   ]

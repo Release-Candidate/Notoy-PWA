@@ -71,6 +71,7 @@ render state =
         [ ClassName "flex"
         , ClassName "flex-wrap"
         , ClassName "justify-center"
+        , ClassName "my-4"
         ]
     ]
     [ HH.div [ HP.id "hiddenDiv" ]

@@ -170,6 +170,7 @@ render n =
           [ ClassName "px-4"
           , ClassName "max-w-4xl"
           , ClassName "grow"
+          , ClassName "w-160"
           , ClassName "space-y-3"
           ]
       ]

@@ -1,3 +1,13 @@
+/*
+ SPDX-License-Identifier: GPL-3.0-or-later
+ Copyright (C) 2022 Roland Csaszar
+
+ Project:  notoy-pwa
+ File:     input.css
+ Date:     11.Feb.2022
+
+ =============================================================================*/
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

@@ -24,7 +24,7 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 **Desktop (please complete the following information):**
- - OS: [e.g. Windows 10]
+ - OS: [e.g. Android or Windows 10]
  - Browser [e.g. Chrome, Firefox]
  - Version [e.g. 22]
 

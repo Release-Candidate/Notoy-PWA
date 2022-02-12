@@ -1,0 +1,65 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2022 Roland Csaszar
+#
+# Project:  notoy-pwa
+# File:     mkdocs.yml
+# Date:     12.Feb.2022
+#
+# ==============================================================================
+
+site_name: Notoy
+
+site_url: https://readthedocs.org/projects/notoy-pwa/
+repo_url: https://github.com/Release-Candidate/Notoy-PWA.git
+repo_name: GitHub
+copyright: (C) 2022 Roland Csaszar
+
+docs_dir: docs
+site_dir: site
+
+nav:
+  - Home: index.md
+  - Project Links:
+      - "Notoy Firefox Add-on": "https://addons.mozilla.org/addon/roland-csaszar"
+      - "Downloads": "https://github.com/Release-Candidate/Notoy-PWA/releases/latest"
+      - "GitHub Project Page": "https://github.com/Release-Candidate/Notoy-PWA"
+      - "Report a Bug or a Feature Request": "https://github.com/Release-Candidate/Notoy-PWA/issues/new/choose"
+      - "Issue Tracker at GitHub": "https://github.com/Release-Candidate/Notoy-PWA/issues"
+  - "Installation & Usage":
+      - "Installation & Usage": usage.md
+      - "License": license.md
+  - Contributing:
+      - Contributing: contributing.md
+
+theme:
+  name: readthedocs
+  prev_next_buttons_location: both
+  navigation_depth: 8
+  collapse_navigation: False
+  style_nav_header_background: "#5DB1DE"
+
+extra_javascript:
+  - https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML
+
+markdown_extensions:
+  - markdown.extensions.fenced_code
+  - markdown.extensions.meta
+  - markdown.extensions.smarty
+  - markdown.extensions.admonition
+  - markdown.extensions.def_list
+  - markdown.extensions.attr_list
+  - markdown.extensions.abbr
+  - markdown.extensions.footnotes
+  - markdown.extensions.codehilite:
+      guess_lang: False
+      noclasses: True
+      pygments_style: emacs
+  - markdown.extensions.tables
+  - markdown.extensions.nl2br
+  - markdown.extensions.sane_lists
+  - markdown.extensions.toc:
+      permalink: True
+  - mdx_math
+
+plugins:
+  - search

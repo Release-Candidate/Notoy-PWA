@@ -9,3 +9,4 @@ dist/
 #http/
 bla.txt
 generated-docs/
+Pipfile.lock

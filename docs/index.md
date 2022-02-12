@@ -4,7 +4,7 @@ Information about the [Usage](./usage.md).
 
 The website and app: [Notoy PWA at GitHub Pages](https://release-candidate.github.io/Notoy-PWA/http/index.html)
 
-![Notoy app on mobile](./docs/images/android.jpg)
+![Notoy app on mobile](./images/android.jpg)
 
 [YouTube video of the app on Android](https://youtu.be/xJgV62jFl-s)
 
@@ -13,7 +13,7 @@ filing bug reports or feature requests, to contributing source code, to adding d
 or translations or any other way you can help.
 
 I also made browser extensions called Notoy to work with desktop browsers: [Notoy Browser Extensions](https://github.com/Release-Candidate/Notoy-BrowserExtensions)
-![GIF showing the usage of the Notoy browser extension](./images/video_en_mdn.gif)
+![GIF showing the usage of the Notoy browser extension](https://github.com/Release-Candidate/Notoy-BrowserExtensions/raw/main/docs/images/video_en_mdn.gif)
 
 ## Links
 

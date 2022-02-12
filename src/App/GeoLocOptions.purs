@@ -176,7 +176,7 @@ instance showHighAccuracy :: Show HighAccuracy where
   show = genericShow
 
 {-------------------------------------------------------------------------------
-| ATTENTION: 2 is the number of values of `HighAccuracy`.
+ ATTENTION: 2 is the number of values of `HighAccuracy`.
 -}
 instance arbitraryHighAccuracy :: Arbitrary HighAccuracy where
   arbitrary = map intToHighAccuracy arbitrary

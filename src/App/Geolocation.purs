@@ -137,7 +137,8 @@ instance arbitraryGeolocationPosition :: Arbitrary GeolocationPosition where
   arbitrary = genericArbitrary
 
 {-------------------------------------------------------------------------------
-| Return a String containing the latitude and longitude of the position.
+| Return a String (latitude°, longitude°) containing the latitude and longitude
+| of the position.
 |
 | Example:
 |

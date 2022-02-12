@@ -16,6 +16,7 @@ module App.NoteComponent
   ) where
 
 import Prelude
+import App.Geolocation (supportsGeoLocation)
 import App.ShareTarget (canShare)
 import App.State (getState)
 import Data.Argonaut (class DecodeJson, class EncodeJson)
@@ -271,19 +272,22 @@ render n =
                   , HE.onValueInput \st -> PositionChanged st
                   ]
               ]
-          , HH.button
-              [ HP.id "positionButton"
-              , HP.classes
-                  [ ClassName "inline"
-                  , ClassName "btn"
-                  , ClassName "btn-blue"
-                  , ClassName "position"
-                  , ClassName "ml-4"
-                  , ClassName "h-fit-content"
-                  ]
-              , HE.onClick \_ -> GetPosition
-              ]
-              [ HH.text "Get position" ]
+          , if supportsGeoLocation then
+              HH.button
+                [ HP.id "positionButton"
+                , HP.classes
+                    [ ClassName "inline"
+                    , ClassName "btn"
+                    , ClassName "btn-blue"
+                    , ClassName "position"
+                    , ClassName "ml-4"
+                    , ClassName "h-fit-content"
+                    ]
+                , HE.onClick \_ -> GetPosition
+                ]
+                [ HH.text "Get position" ]
+            else
+              HH.div_ []
           ]
       , HH.div [ HP.id "description", HP.classes [ ClassName "block" ] ]
           [ HH.label [ HP.for "descriptionText" ]

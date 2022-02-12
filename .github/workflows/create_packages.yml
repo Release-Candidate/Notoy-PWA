@@ -1,0 +1,66 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2022 Roland Csaszar
+#
+# Project:  notoy-pwa
+# File:     create_packages.yml
+# Date:     12.Feb.2022
+#
+# ==============================================================================
+
+name: Generate Packages
+
+on:
+  release:
+    types: [created]
+
+  push:
+    tags:
+      - "v*.*.*"
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  package:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16.x
+          cache: 'npm'
+      - uses: olegtarasov/get-tag@v2.1
+        id: tagName
+        with:
+          tagRegex: "v(.*)"
+
+      - name: Zip Package
+        run: |
+          npm install
+          npm install --dev
+          npm run bundle
+          cd $GITHUB_WORKSPACE/http
+          zip -r -v notoy-pwa-${{ env.GIT_TAG_NAME }}.zip *
+
+      - name: Generate Changelog
+        run: |
+          cd $GITHUB_WORKSPACE/scripts
+          ./get_changelog.sh ${{ env.GIT_TAG_NAME }} > ../first_changelog.md
+
+      - name: Release to GitHub
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          name: Version ${{ env.GIT_TAG_NAME }}
+          body_path: first_changelog.md
+          files: ./http/notoy-pwa-${{ env.GIT_TAG_NAME }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/upload-artifact@v2
+        if: ${{ always() }}
+        with:
+          name: Notoy PWA Package
+          path: ./http/*.zip

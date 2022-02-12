@@ -1,4 +1,4 @@
-# ![](./assets/icons/transparent_48.png) Notoy Progressive Web App
+# ![](./assets/icons/transparent_48.png) Notoy Progressive Web App <!-- omit in toc -->
 
 [![Documentation Status](https://readthedocs.org/projects/notoy-pwa/badge/?version=latest)](https://notoy-pwa.readthedocs.io/en/latest/?badge=latest)
 [![Build](https://github.com/Release-Candidate/Notoy-PWA/actions/workflows/build.yml/badge.svg)](https://github.com/Release-Candidate/Notoy-PWA/actions/workflows/build.yml)
@@ -10,6 +10,15 @@ Progressive web app to save notes of a website shared to it on a mobile device.
 ![Notoy app on mobile](./docs/images/android.jpg)
 
 [YouTube video of the app on Android](https://youtu.be/xJgV62jFl-s)
+
+- [Installation](#installation)
+- [Privacy Policy](#privacy-policy)
+- [License](#license)
+
+I also made browser extensions called Notoy to work with desktop browsers: [Notoy Browser Extensions](https://github.com/Release-Candidate/Notoy-BrowserExtensions)
+![GIF showing the usage of the Notoy browser extension](https://github.com/Release-Candidate/Notoy-BrowserExtensions/raw/main/docs/images/video_en_mdn.gif)
+
+## Installation
 
 ![Screenshot of the website in Firefox](./docs/images/firefox.jpg)
 

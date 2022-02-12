@@ -1,5 +1,7 @@
 # ![](./assets/icons/transparent_48.png) Notoy Progressive Web App
 
+[![Documentation Status](https://readthedocs.org/projects/notoy-pwa/badge/?version=latest)](https://notoy-pwa.readthedocs.io/en/latest/?badge=latest)
+
 Progressive web app to save notes of a website shared to it on a mobile device.
 
 [Notoy PWA at GitHub Pages](https://release-candidate.github.io/Notoy-PWA/http/index.html)

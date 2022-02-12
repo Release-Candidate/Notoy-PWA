@@ -33,7 +33,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     - run: npm install --dev
-    - run: npm run build >> build.txt 2>&1
+    - run: npm run build >>build.txt 2>&1
 
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v2.2.4

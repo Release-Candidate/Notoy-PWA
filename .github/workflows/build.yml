@@ -2,10 +2,11 @@
 # Copyright (C) 2022 Roland Csaszar
 #
 # Project:  notoy-pwa
-# File:     eslint.yml
-# Date:     12.Feb.2022
+# File:     build.yml
+# Date:     13.Feb.2022
 #
 # ==============================================================================
+
 
 name: Build
 

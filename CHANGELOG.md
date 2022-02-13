@@ -1,5 +1,9 @@
 # Notoy PWA Changelog
 
+## Version 0.9.2 (2022-02-13)
+
+Fix script permission
+
 ## Version 0.9.1 (2022-02-13)
 
 Fix GitHub package workflow

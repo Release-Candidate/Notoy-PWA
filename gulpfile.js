@@ -6,26 +6,45 @@
 // Date:     02.Dec.2021
 //
 // ==============================================================================
+/* eslint-disable max-lines */
 /* eslint-disable no-console */
 
 //==============================================================================
 // Directories and files.
 
-// Path to HTTPS certificate and key
-const httpsCertificate = "../https_cert.pem"
-const httpsCertificateKey = "../https_cert-key.pem"
+// Name of the app.
+const appName = "Notoy-PWA"
 
-// HTTPS port to use
-const httpsPort = 1234
+// The navigation scope of the PWA, the root path to the service worker.
+const navScopePWA = "/"
+const navScopeGitHub = `/${appName}/http/`
 
 // Service worker, JS file.
-const serviceWorkerJS = "./src/service_worker/sw.js"
+const serviceWorkerJS = "sw.js"
+
+// Service worker, map file name.
+const serviceWorkerJSMap = serviceWorkerJS + ".map"
+
+// Service worker, full path.
+const serviceWorkerJSPath = "./src/service_worker/" + serviceWorkerJS
 
 // App JS file.
 const appJS = "app.js"
 
+// App, map file name
+const appJSMap = appJS + ".map"
+
 // Manifest filename (original).
 const manifestJSON = "manifest.json"
+
+// Directory to exclude in the list of files to cache. Only the directory itself, not it's content!
+const excludeDir = "/icons"
+
+// CSS file to process by TailwindCSS.
+const tailwindInput = "src/input.css"
+
+// Name of the CSS file TailwindCSS produced in directory `outDir`.
+const tailwindOutput = appName.toLowerCase() + ".css"
 
 // Changelog file.
 const changelogPath = "./CHANGELOG.md"
@@ -42,6 +61,13 @@ const spagoOutdir = "./output"
 // Destination directory of the bundler, the source directory for the HTTPS
 // Server.
 const serveDir = outDir
+
+// Path to HTTPS certificate and key
+const httpsCertificate = "../https_cert.pem"
+const httpsCertificateKey = "../https_cert-key.pem"
+
+// HTTPS port to use
+const httpsPort = 1234
 
 //==============================================================================
 // JS requires
@@ -91,7 +117,7 @@ function generateTimestamp() {
 }
 
 //==============================================================================
-// Replace Version
+// Replace Version and the PWA scope path.
 
 function scanChangelogVersion() {
     let version = ""
@@ -109,19 +135,55 @@ function scanChangelogVersion() {
     return version
 }
 
-function replaceVersion(dirName, version) {
+function processManifest(dirName, version, scopePath) {
     return src(dirName + "/" + manifestJSON)
         .pipe(
             replace(
                 /"version":\s+"[0-9]+.[0-9]+.[0-9]+",/gu,
-                '"version": "' + version + '",'
+                `"version": "${version}",`
             )
         )
+        .pipe(
+            replace(/"start_url": "[\S]+",/gu, `"start_url": "${scopePath}",`)
+        )
+        .pipe(replace(/"id": "[\S]+",/gu, `"id": "${scopePath}",`))
+        .pipe(replace(/"scope": "[\S]+",/gu, `"scope": "${scopePath}",`))
+        .pipe(replace(/"action": "[\S]+",/gu, `"action": "${scopePath}",`))
+
         .pipe(dest(dirName))
 }
 
-function replaceVersionOutdir() {
-    return replaceVersion(outDir, scanChangelogVersion())
+function processManifestOutdirGitHub() {
+    return processManifest(outDir, scanChangelogVersion(), navScopeGitHub)
+}
+function processManifestOutdir() {
+    return processManifest(outDir, scanChangelogVersion(), navScopePWA)
+}
+
+//==============================================================================
+// Replace the PWA scope path in index.html.
+function processIndexHTML(scopePath) {
+    const newUrlRex = new RegExp(
+        `new URL\\("[\\S]+${serviceWorkerJS}", import\\.meta\\.url\\)`,
+        "gu"
+    )
+    return src(outDir + "/index.html")
+        .pipe(
+            replace(
+                newUrlRex,
+                `new URL("${scopePath}${serviceWorkerJS}", import.meta.url)`
+            )
+        )
+        .pipe(replace(/scope: "[\S]+",/gu, `scope: "${scopePath}",`))
+        .pipe(dest(outDir))
+}
+
+function processIndexHTMLGitHub() {
+    return processIndexHTML(navScopeGitHub)
+}
+
+function processIndexHTMLPWA() {
+    return processIndexHTML(navScopePWA)
 }
 
 //==============================================================================
@@ -144,7 +206,7 @@ function runSpago() {
 // Run tailwindcss.
 async function runTailwind() {
     return (
-        exec(`tailwindcss -i src/input.css -o ${outDir}/notoy-pwa.css`),
+        exec(`tailwindcss -i ${tailwindInput} -o ${outDir}/${tailwindOutput}`),
         (error, stdout, stderr) => {
             if (error) {
                 console.error(`exec error: ${error}`)
@@ -175,23 +237,28 @@ function runHTTPS(cb) {
 //==============================================================================
 // Return a list of all files in the directory `.http`, as a comma and newline
 // Separated list.
-function getListOfFiles() {
+function getListOfFiles(dir) {
     let listOfFiles = new filelist.FileList()
     listOfFiles.include(outDir + "/**")
     const outdirNoSlashes = outDir.replace(/^[./\\]*/gu, "")
 
     const addedFiles = listOfFiles
         .toArray()
-        .map((e) => '"' + e.toString().replace(outdirNoSlashes, "") + '"')
-        .concat(['"/"', '"/sw.js.map"', '"/app.js.map"'])
+        .filter((e) => e !== outdirNoSlashes + excludeDir)
+        .map((e) => '"' + e.replace(outdirNoSlashes + "/", dir) + '"')
+        .concat([
+            `"${dir}"`,
+            `"${dir}${appJSMap}"`,
+            `"${dir}${serviceWorkerJSMap}"`,
+        ])
     return [...new Set(addedFiles)]
 }
 
 //==============================================================================
 // Copy service worker to ./http
-function copyServiceWorker() {
-    const listOfFiles = getListOfFiles()
-    return src(serviceWorkerJS)
+function copyServiceWorker(dir) {
+    const listOfFiles = getListOfFiles(dir)
+    return src(serviceWorkerJSPath)
         .pipe(
             replace(
                 /const manifest\s*=\s*\[\s*LIST_OF_FILES\s*\]/gu,
@@ -201,10 +268,18 @@ function copyServiceWorker() {
         .pipe(
             replace(
                 /const version\s*=\s*TIMESTAMP/gu,
-                'const version = "Notoy-PWA-' + generateTimestamp() + '"'
+                `const version = "${appName}-` + generateTimestamp() + '"'
             )
         )
         .pipe(dest(outDir))
+}
+
+function copyServiceWorkerGitHub() {
+    return copyServiceWorker(navScopeGitHub)
+}
+
+function copyServiceWorkerNavScopePWA() {
+    return copyServiceWorker(navScopePWA)
 }
 
 //==============================================================================
@@ -231,11 +306,11 @@ function processJS(file) {
 }
 
 function processSW() {
-    return processJS("sw.js")
+    return processJS(serviceWorkerJS)
 }
 
 function processApp() {
-    return processJS("app.js")
+    return processJS(appJS)
 }
 
 //==============================================================================
@@ -272,9 +347,20 @@ const cleanTarget = parallel(cleanOutput, cleanHTTP)
 const bundleTarget = series(
     parallel(runSpago, copyAssets, runTailwind),
     parallel(
-        replaceVersionOutdir,
+        processManifestOutdir,
+        processIndexHTMLPWA,
         processApp,
-        series(copyServiceWorker, processSW)
+        series(copyServiceWorkerNavScopePWA, processSW)
+    )
+)
+
+const bundleTargetGitHub = series(
+    parallel(runSpago, copyAssets, runTailwind),
+    parallel(
+        processManifestOutdirGitHub,
+        processIndexHTMLGitHub,
+        processApp,
+        series(copyServiceWorkerGitHub, processSW)
     )
 )
 
@@ -285,6 +371,10 @@ exports.clean = cleanTarget
 
 // eslint-disable-next-line no-undef
 exports.bundle = bundleTarget
+
+// eslint-disable-next-line no-undef
+exports.bundleGitHub = bundleTargetGitHub
+
 // eslint-disable-next-line no-undef
 exports.serve = serveTarget
 

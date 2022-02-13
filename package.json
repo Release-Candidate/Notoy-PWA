@@ -17,6 +17,7 @@
         "repl": "spago repl",
         "css": "tailwindcss -i ./src/input.css -o ./http/notoy-pwa.css",
         "bundle": "gulp bundle",
+        "bundleGitHub": "gulp bundleGitHub",
         "https": "gulp serve",
         "watch": "gulp watch"
     },

@@ -16,13 +16,10 @@
         <script type="module">
             if ("serviceWorker" in navigator) {
                 navigator.serviceWorker
-                    .register(
-                        new URL("/Notoy-PWA/http/sw.js", import.meta.url),
-                        {
-                            type: "module",
-                            scope: "/Notoy-PWA/http/",
-                        }
-                    )
+                    .register(new URL("/Notoy-PWA/http/sw.js", import.meta.url), {
+                        type: "module",
+                        scope: "/Notoy-PWA/http/",
+                    })
                     .then(function () {
                         console.log("[index.html] Service Worker Registered")
                     })

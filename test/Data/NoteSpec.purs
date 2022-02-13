@@ -147,11 +147,11 @@ fromSharedSpecs =
 
             note1 =
               Note
-                { title: title
+                { title: map trim title
                 , url: url
                 , keywords: Nothing
                 , location: Nothing
-                , shortDesc: shortDesc
+                , shortDesc: map trim shortDesc
                 , longDesc: Nothing
                 }
           in

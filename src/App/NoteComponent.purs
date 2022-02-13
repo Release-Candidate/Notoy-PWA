@@ -16,12 +16,25 @@ module App.NoteComponent
   ) where
 
 import Prelude
+import App.Constants
+  ( localeToTranslation
+  , noteTextGetPosition
+  , noteTextKeywords
+  , noteTextLongDescription
+  , noteTextPosition
+  , noteTextSave
+  , noteTextShare
+  , noteTextShortDescription
+  , noteTextTitle
+  , noteTextUrl
+  )
 import App.Geolocation (supportsGeoLocation)
 import App.ShareTarget (canShare)
 import App.State (getState)
 import Data.Argonaut (class DecodeJson, class EncodeJson)
 import Data.Argonaut.Decode.Generic (genericDecodeJson)
 import Data.Argonaut.Encode.Generic (genericEncodeJson)
+import Data.DateTimeFormat (Locale(..))
 import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Note (KeyWordArray, Note(..), keyWordArrayFromString)
@@ -164,6 +177,8 @@ render n =
     urlSuffixRegex = unsafeRegex "[/]+$" unicode
 
     Note note = n
+
+    transFunc = localeToTranslation $ Locale "en-US" -- this should be an input
   in
     HH.div
       [ HP.id "note"
@@ -177,7 +192,7 @@ render n =
       ]
       [ HH.div [ HP.id "title", HP.classes [ ClassName "block" ] ]
           [ HH.label [ HP.for "titleText" ]
-              [ HH.span [ HP.classes [] ] [ HH.text "Title:" ]
+              [ HH.span [ HP.classes [] ] [ HH.text $ transFunc noteTextTitle ]
               , HH.br_
               , HH.input
                   [ HP.id "titleText"
@@ -196,7 +211,7 @@ render n =
           ]
       , HH.div [ HP.id "url", HP.classes [ ClassName "block" ] ]
           [ HH.label [ HP.for "pageURL" ]
-              [ HH.span_ [ HH.text "URL:" ]
+              [ HH.span_ [ HH.text $ transFunc noteTextUrl ]
               , HH.br_
               , HH.input
                   [ HP.id "pageURL"
@@ -217,7 +232,7 @@ render n =
           ]
       , HH.div [ HP.id "keywords", HP.classes [ ClassName "block" ] ]
           [ HH.label [ HP.for "keyWords" ]
-              [ HH.span_ [ HH.text "Keywords (comma separated):" ]
+              [ HH.span_ [ HH.text $ transFunc noteTextKeywords ]
               , HH.br_
               , HH.input
                   [ HP.id "keyWords"
@@ -255,7 +270,7 @@ render n =
                   , ClassName "ml-4"
                   ]
               ]
-              [ HH.span_ [ HH.text "Location:" ]
+              [ HH.span_ [ HH.text $ transFunc noteTextPosition ]
               , HH.br_
               , HH.input
                   [ HP.id "currentPosition"
@@ -285,13 +300,13 @@ render n =
                     ]
                 , HE.onClick \_ -> GetPosition
                 ]
-                [ HH.text "Get position" ]
+                [ HH.text $ transFunc noteTextGetPosition ]
             else
               HH.div_ []
           ]
       , HH.div [ HP.id "description", HP.classes [ ClassName "block" ] ]
           [ HH.label [ HP.for "descriptionText" ]
-              [ HH.span_ [ HH.text "Short description:" ]
+              [ HH.span_ [ HH.text $ transFunc noteTextShortDescription ]
               , HH.br_
               , HH.textarea
                   [ HP.id "descriptionText"
@@ -311,7 +326,7 @@ render n =
           ]
       , HH.div [ HP.id "detailed_text", HP.classes [ ClassName "block" ] ]
           [ HH.label [ HP.for "detailedDescription" ]
-              [ HH.span_ [ HH.text "Detailed description:" ]
+              [ HH.span_ [ HH.text $ transFunc noteTextLongDescription ]
               , HH.br_
               , HH.textarea
                   [ HP.id "detailedDescription"
@@ -354,7 +369,7 @@ render n =
                       ]
                   , HE.onClick \_ -> DownloadNote
                   ]
-                  [ HH.text "Save" ]
+                  [ HH.text $ transFunc noteTextSave ]
               ]
           , HH.div
               [ HP.id "share"
@@ -374,7 +389,7 @@ render n =
                         ]
                     , HE.onClick \_ -> ShareNote
                     ]
-                    [ HH.text "Share" ]
+                    [ HH.text $ transFunc noteTextShare ]
                 ]
               else
                 []

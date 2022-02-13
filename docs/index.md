@@ -8,12 +8,9 @@ The website and app: [Notoy PWA at GitHub Pages](https://release-candidate.githu
 
 [YouTube video of the app on Android](https://youtu.be/xJgV62jFl-s)
 
-[Contributing](./contributing.md) has information about how to contribute to Notoy, by
-filing bug reports or feature requests, to contributing source code, to adding documentation
-or translations or any other way you can help.
+[Contributing](./contributing.md) has information about how to contribute to Notoy, by filing bug reports or feature requests, to contributing source code, to adding documentation or translations or any other way you can help.
 
 I also made browser extensions called Notoy to work with desktop browsers: [Notoy Browser Extensions](https://github.com/Release-Candidate/Notoy-BrowserExtensions)
-![GIF showing the usage of the Notoy browser extension](https://github.com/Release-Candidate/Notoy-BrowserExtensions/raw/main/docs/images/video_en_mdn.gif)
 
 ## Links
 

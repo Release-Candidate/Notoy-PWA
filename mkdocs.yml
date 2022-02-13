@@ -20,11 +20,13 @@ site_dir: site
 nav:
   - Home: index.md
   - Project Links:
-      - "Notoy Firefox Add-on": "https://addons.mozilla.org/addon/roland-csaszar"
-      - "Downloads": "https://github.com/Release-Candidate/Notoy-PWA/releases/latest"
+      - "App": "https://release-candidate.github.io/Notoy-PWA/http/index.html"
       - "GitHub Project Page": "https://github.com/Release-Candidate/Notoy-PWA"
       - "Report a Bug or a Feature Request": "https://github.com/Release-Candidate/Notoy-PWA/issues/new/choose"
       - "Issue Tracker at GitHub": "https://github.com/Release-Candidate/Notoy-PWA/issues"
+      - "Notoy Chrome Extension": "https://chrome.google.com/webstore/detail/notoy/ejmcdafpeijhmmmfebmdpcmgaaoaminc"
+      - "Notoy Edge Add-On": "https://microsoftedge.microsoft.com/addons/detail/notoy/nnocnobndadkcpggkegckgcnehmnohbl"
+      - "Notoy Firefox Add-on": "https://addons.mozilla.org/addon/roland-csaszar"
   - "Installation & Usage":
       - "Installation & Usage": usage.md
       - "License": license.md

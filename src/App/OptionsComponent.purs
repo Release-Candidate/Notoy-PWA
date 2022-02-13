@@ -17,9 +17,30 @@ module App.OptionsComponent
   ) where
 
 import Prelude
+import App.Constants
+  ( localeToTranslation
+  , optionsTextFormat
+  , optionsTextMarkdown
+  , optionsTextOrgMode
+  , optionsTextPosLookup
+  , optionsTextText
+  , optionsTextTimestamp
+  , optionsTextYAML
+  )
 import App.State (getState)
+import Data.DateTimeFormat (Locale(..))
 import Data.Maybe (Maybe(..))
-import Data.Options (AddDate(..), AddYamlHeader(..), Format(..), LookupLocation(..), Options(..), addDateFromBool, formatFromString, lookupLocationFromBool, yamlHeaderFromBool)
+import Data.Options
+  ( AddDate(..)
+  , AddYamlHeader(..)
+  , Format(..)
+  , LookupLocation(..)
+  , Options(..)
+  , addDateFromBool
+  , formatFromString
+  , lookupLocationFromBool
+  , yamlHeaderFromBool
+  )
 import Effect.Aff.Class (class MonadAff)
 import Halogen (ClassName(..))
 import Halogen as H
@@ -129,6 +150,8 @@ render :: forall m. MonadAff m => Options -> H.ComponentHTML Action () m
 render opts =
   let
     Options options = opts
+
+    transFunc = localeToTranslation $ Locale "en-US" -- this should be an input
   in
     HH.div
       [ HP.id "options"
@@ -151,7 +174,7 @@ render opts =
               , HP.classes [ ClassName "space-y-2 space-x-4" ]
               ]
               [ HH.legend []
-                  [ HH.text "Note file format" ]
+                  [ HH.text $ transFunc optionsTextFormat ]
               , HH.label [ HP.for "markdown", HP.classes [ ClassName "block" ] ]
                   [ HH.input
                       [ HP.id "markdown"
@@ -167,7 +190,7 @@ render opts =
                           [ ClassName "align-middle"
                           ]
                       ]
-                      [ HH.text "Markdown (Obsidian, Joplin, Zettlr)" ]
+                      [ HH.text $ transFunc optionsTextMarkdown ]
                   ]
               , HH.label [ HP.for "orgMode", HP.classes [ ClassName "block" ] ]
                   [ HH.input
@@ -184,7 +207,7 @@ render opts =
                           [ ClassName "align-middle"
                           ]
                       ]
-                      [ HH.text "Org-Mode (Emacs)" ]
+                      [ HH.text $ transFunc optionsTextOrgMode ]
                   ]
               , HH.label [ HP.for "text", HP.classes [ ClassName "block" ] ]
                   [ HH.input
@@ -201,7 +224,7 @@ render opts =
                           [ ClassName "align-middle"
                           ]
                       ]
-                      [ HH.text "Plain Text" ]
+                      [ HH.text $ transFunc optionsTextText ]
                   ]
               ]
           ]
@@ -212,7 +235,7 @@ render opts =
                       [ ClassName "align-middle"
                       ]
                   ]
-                  [ HH.text "Add the current date to the note?" ]
+                  [ HH.text $ transFunc optionsTextTimestamp ]
               , HH.input
                   [ HP.type_ HP.InputCheckbox
                   , HP.id "timestampInput"
@@ -229,7 +252,7 @@ render opts =
                       [ ClassName "align-middle"
                       ]
                   ]
-                  [ HH.text "Look the position up on BigData?" ]
+                  [ HH.text $ transFunc optionsTextPosLookup ]
               , HH.input
                   [ HP.type_ HP.InputCheckbox
                   , HP.id "reverseGeolocationInput"
@@ -246,7 +269,7 @@ render opts =
                       [ ClassName "align-middle"
                       ]
                   ]
-                  [ HH.text "Add YAML front matter (YAML metadata block for Pandoc)?" ]
+                  [ HH.text $ transFunc optionsTextYAML ]
               , HH.input
                   [ HP.type_ HP.InputCheckbox
                   , HP.id "yamlFrontMatter"

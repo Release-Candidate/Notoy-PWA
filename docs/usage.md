@@ -1,63 +1,31 @@
 # Installation & Usage
 
-## Installation
+### Installation
 
-Go to the extension website of your browser and download `Notoy`
+Visit the URL [Notoy PWA at GitHub Pages](https://release-candidate.github.io/Notoy-PWA/http/index.html) and you can install the app if you have a mobile device or a computer with Chrome or Edge.
 
-- Chrome: [Notoy at Chrome Web Store](https://chrome.google.com/webstore/detail/notoy/ejmcdafpeijhmmmfebmdpcmgaaoaminc)
-- Edge: [Notoy at Edge Add-Ons](https://microsoftedge.microsoft.com/addons/detail/notoy/nnocnobndadkcpggkegckgcnehmnohbl)
-- Firefox: [Notoy at Firefox Add-ons](https://addons.mozilla.org/addon/roland-csaszar)
+Firefox does not allow to install the app and cannot share the note with other programs or the clipboard. Therefore the `Install`- and `Share`-buttons are missing:
+![Screenshot of the website in Firefox](./images/firefox.jpg)
 
-or install from GitHub: [manually install extension](#manually-install-extensions)
+On mobile devices you have to click the `Install Notoy to Home Screen`-badge at the bottom of the site. See: [YouTube video of the app on Android](https://youtu.be/xJgV62jFl-s)
 
-## Usage
+Here you can see the `Install`-button marked in the upper right corner of a Chrome browser. After clicking, the app is installed on your computer.You do only need connection to the internet if you want to get the name of your location from the website `BigData`.
+![Screenshot of the installation of the desktop app using Chrome](images/install_chrome_en.jpg)
+The same `Install`-button on Edge.
+![Screenshot of the installation of the desktop app using Edge](./images/install_edge_en.jpg)
+Below are two screenshots of the installed app on a computer, the first is using Chrome, the second Edge.
+![Screenshot of the installed app in Chrome](./images/installed_chrome_en.jpg)
 
-![GIF showing the usage of the Notoy browser extension](./images/video_en_mdn.gif)
+![Screenshot of the installed app in Edge](images/installed_edge_en.jpg)
 
-There is also a video on YouTube: [Notoy usage on YouTube](https://www.youtube.com/watch?v=8UxsE7TW_Tc)
+### Usage
 
-### Screenshots
+See the YouTube video on how to share a website to Notoy and save the note: [YouTube video of the app on Android](https://youtu.be/xJgV62jFl-s)
 
-#### Chrome
+Notoy can save the note in one of three formats: as markdown to be used with programs like Obsidian, Zettlr, Joplin, ... as an Org-Mode file to use with Emacs or as a simple, plain text file.
 
-Popup screen:
-![Screenshot of the extension's popup, running in Chrome](./images/chrome_en.png)
+### Usage with Your Own Server
 
-Options Screen:
-![Screenshot of the extension's options page, running in Chrome](./images/chrome_options_en.png)
+You need to have `npm` installed, included with `NodeJS`: [NodeJS Downloads](https://nodejs.org/en/download/)
 
-#### Edge
-
-Popup screen:
-![Screenshot of the extension's popup, running in Edge](./images/edge_en.png)
-
-Options Screen:
-![Screenshot of the extension's options page, running in Edge](./images/edge_options_en.png)
-
-#### Firefox
-
-Popup screen:
-![Screenshot of the extension's popup, running in Firefox](./images/firefox_en.png)
-
-Options Screen:
-![Screenshot of the extension's options page, running in Firefox](./images/firefox_options_en.png)
-
-## Manually Install Extensions
-
-1. Download the latest release for your browser from GitHub [latest release at GitHub](https://github.com/Release-Candidate/Notoy-BrowserExtensions/releases/latest)
-2. Follow the instructions to install the extension for your browser:
-    - Chrome:
-        1. unzip the downloaded file to a directory
-        2. go to [chrome://extensions/](chrome://extensions/)
-        3. enable `Developer mode` in the upper right corner
-        4. click `Load unpacked` and select the unpacked extension
-    - Edge:
-        1. unzip the downloaded file to a directory
-        2. go to [edge://extensions/](edge://extensions/)
-        3. enable `Developer mode` in the lower left corner
-        4. click `Load unpacked` and select the unpacked extension
-    - Firefox:
-        1. go to [about:debugging](about:debugging)
-        2. click `This Firefox` to the upper left
-        3. click `Load Temporary Add-On...`
-        4. select the downloaded zip file
+If you want to host Notoy on your own HTTPS server, checkout the Git repository or unzip the downloaded zip-file. In the `Notoy-PWA` directory, run `npm install` and `npm install purescript` and then `npm run bundle`. Now the Notoy progressive web app is contained in the `http` directory - serve this directory as root `/` using your HTTPS server. You need HTTPS to be able to install the app.

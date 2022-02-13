@@ -44,6 +44,8 @@ Visit the URL [Notoy PWA at GitHub Pages](https://release-candidate.github.io/No
 Firefox does not allow to install the app and cannot share the note with other programs or the clipboard. Therefore the `Install`- and `Share`-buttons are missing:
 ![Screenshot of the website in Firefox](./docs/images/firefox.jpg)
 
+On mobile devices you have to click the `Install Notoy to Home Screen`-badge at the bottom of the site. See: [YouTube video of the app on Android](https://youtu.be/xJgV62jFl-s)
+
 Here you can see the `Install`-button marked in the upper right corner of a Chrome browser. After clicking, the app is installed on your computer.You do only need connection to the internet if you want to get the name of your location from the website `BigData`.
 ![Screenshot of the installation of the desktop app using Chrome](docs/images/install_chrome_en.jpg)
 The same `Install`-button on Edge.

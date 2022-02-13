@@ -22,8 +22,7 @@ If you encounter a problem using Notoy, a task is not as easy as you'd like it t
   - [What is What? - List of all Files](#what-is-what---list-of-all-files)
     - [GitHub Workflows & Issue Templates](#github-workflows--issue-templates)
     - [MkDocs documentation](#mkdocs-documentation)
-    - [Translations](#translations)
-    - [Javascript sources, HTML and CSS](#javascript-sources-html-and-css)
+    - [Purescript sources, HTML and CSS](#purescript-sources-html-and-css)
 
 ## Report Issues (Bugs and Feature Requests)
 
@@ -242,15 +241,18 @@ Directory `./.github/workflows/`:
 nav:
   - Home: index.md
   - Project Links:
-      - "Downloads": https://github.com/Release-Candidate/Notoy-BrowserExtensions/releases/latest
-      - "GitHub Project Page": "https://github.com/Release-Candidate/Notoy-BrowserExtensions"
-      - "Report a Bug or a Feature Request": "https://github.com/Release-Candidate/Notoy-BrowserExtensions/issues/new/choose"
-      - "Issue Tracker at GitHub": "https://github.com/Release-Candidate/Notoy-BrowserExtensions/issues"
+      - "App": "https://release-candidate.github.io/Notoy-PWA/http/index.html"
+      - "GitHub Project Page": "https://github.com/Release-Candidate/Notoy-PWA"
+      - "Report a Bug or a Feature Request": "https://github.com/Release-Candidate/Notoy-PWA/issues/new/choose"
+      - "Issue Tracker at GitHub": "https://github.com/Release-Candidate/Notoy-PWA/issues"
+      - "Notoy Chrome Extension": "https://chrome.google.com/webstore/detail/notoy/ejmcdafpeijhmmmfebmdpcmgaaoaminc"
+      - "Notoy Edge Add-On": "https://microsoftedge.microsoft.com/addons/detail/notoy/nnocnobndadkcpggkegckgcnehmnohbl"
+      - "Notoy Firefox Add-on": "https://addons.mozilla.org/addon/roland-csaszar"
   - "Installation & Usage":
       - "Installation & Usage": usage.md
       - "License": license.md
-  - Contributing:
-      - Contributing: contributing.md
+  - "Contributing":
+      - "Contributing": contributing.md
 ```
 
 - `https://readthedocs.org/`, to host the generated documentation.
@@ -263,49 +265,10 @@ Directory `./docs`:
 - `./docs/contributing.md` - Information on how to contribute to the project.
 - `./docs/license.md` - The license of the Notoy browser extensions, GPLv3
 
-Directory `./run_haddock.bat`. Sadly I haven't found a way to generate that documentation using `mkdocs build`, which is what Read the Docs calls to build it. So for now it is included in the source repository (but not the Stack template file).
+### Purescript sources, HTML and CSS
 
-### Translations
-
-Each language has its own file containing the translated texts in a subdirectory of the directory `_locales/` named after the language.
-
-Examples:
-
-- German translation: `./_locales/de/messages.json`
-- English translation: `./_locales/en/messages.json`
-
-A translation file in JSON format looks like this:
-
-```json
-{
-  "extensionName": {
-    "message": "Notoy",
-    "description": "Name of the extension."
-  },
-  "extensionDescription": {
-    "message": "Saves a link to the current active tab with its title, keywords and a long and short description as markdown, Org-Mode or plain text",
-    "description": "Description of the extension."
-  },
-  "browserExtension": {
-    "message": "browser extension",
-    "description": "Translation of 'browser extension'"
-  },
-  "previewDescription": {
-    "message": "This is a short description of the content of the website, usually set by the website itself, but you can change that.",
-    "description": "Short description for the preview in the 'options' page"
-  },
-  ...
-}
-```
-
-### Javascript sources, HTML and CSS
-
-- `manifest.json` - The extension's configuration, one for each supported browser
-- `formatContent.js` - Functions and constants needed by the other source files
-- `background.js` - The source of the background script, that saves the title, url, short description and keywords of the current tab
-- `options.js` - The option page of the extension, Javascript source
-- `options.html` - The option page of the extension, HTML
-- `options.css` - The option page of the extension, CSS
-- `popup.js` - The popup of the extension, Javascript source - main source file
-- `popup.html` - The popup of the extension, HTML
-- `popup.css` - The popup of the extension, CSS
+- `./src` contains all Purescript sources and the Javascript files for the FFI
+- `./src/input.css` is CSS file for TailwindCSS to process
+- `./test` contains the tests
+- `./assets` holds all needed assets of the website, the icons, images, HTML, ...
+- `./assets/manifest.json` is the progressive web apps manifest. CAUTION: the values of `start_url`, `id`, `scope` and `action` get set by the gulp targets `bundle` and `bundleGitHub`, do not edit these in the manifest!

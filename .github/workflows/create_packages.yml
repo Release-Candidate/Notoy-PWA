@@ -40,6 +40,7 @@ jobs:
         run: |
           npm install
           npm install --dev
+          npm install --save-dev purescript
           npm run bundle
           cd $GITHUB_WORKSPACE/http
           zip -r -v notoy-pwa-${{ env.GIT_TAG_NAME }}.zip *

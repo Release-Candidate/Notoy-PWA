@@ -10,8 +10,8 @@
 site_name: Notoy
 
 site_url: https://readthedocs.org/projects/notoy-pwa/
-repo_url: https://github.com/Release-Candidate/Notoy-PWA.git
-repo_name: GitHub
+#repo_url: https://github.com/Release-Candidate/Notoy-PWA.git
+#repo_name: GitHub
 copyright: (C) 2022 Roland Csaszar
 
 docs_dir: docs
@@ -31,7 +31,7 @@ nav:
       - "Installation & Usage": usage.md
       - "License": license.md
   - Contributing:
-      - Contributing: contributing.md
+      - "Contributing": contributing.md
 
 theme:
   name: readthedocs

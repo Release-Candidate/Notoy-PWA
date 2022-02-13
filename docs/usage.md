@@ -1,6 +1,6 @@
 # Installation & Usage
 
-### Installation
+## Installation
 
 Visit the URL [Notoy PWA at GitHub Pages](https://release-candidate.github.io/Notoy-PWA/http/index.html) and you can install the app if you have a mobile device or a computer with Chrome or Edge.
 
@@ -18,13 +18,13 @@ Below are two screenshots of the installed app on a computer, the first is using
 
 ![Screenshot of the installed app in Edge](images/installed_edge_en.jpg)
 
-### Usage
+## Usage
 
 See the YouTube video on how to share a website to Notoy and save the note: [YouTube video of the app on Android](https://youtu.be/xJgV62jFl-s)
 
 Notoy can save the note in one of three formats: as markdown to be used with programs like Obsidian, Zettlr, Joplin, ... as an Org-Mode file to use with Emacs or as a simple, plain text file.
 
-### Usage with Your Own Server
+## Usage with Your Own Server
 
 You need to have `npm` installed, included with `NodeJS`: [NodeJS Downloads](https://nodejs.org/en/download/)
 

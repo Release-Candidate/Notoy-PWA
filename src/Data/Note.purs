@@ -175,11 +175,11 @@ fromShared (Just title) Nothing (Just text) =
 
 fromShared title url text =
   Note
-    { title: title
+    { title: map trim title
     , url: url
     , keywords: Nothing
     , location: Nothing
-    , shortDesc: text
+    , shortDesc: map trim text
     , longDesc: Nothing
     }
 

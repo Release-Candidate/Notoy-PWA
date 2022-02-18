@@ -24,6 +24,15 @@ See the YouTube video on how to share a website to Notoy and save the note: [You
 
 Notoy can save the note in one of three formats: as markdown to be used with programs like Obsidian, Zettlr, Joplin, ... as an Org-Mode file to use with Emacs or as a simple, plain text file.
 
+## Privacy Policy
+
+Notoy (the progressive web app) does not send any data at all to any other host as long as the reverse geolocation is disabled in the options - which is the default.
+
+If you enable the option to look the GPS coordinates up at `BigData`, a request is send to `BigData` to get the name of the city this position is nearest to. `BigData` adheres to the the EU General Data Protection Regulations (GDPR) and the Australian Privacy Principles contained in the Privacy Act 1988 (Cth).
+
+The privacy policy of `BigData` can be seen at [BigData Privacy Policy](https://www.bigdatacloud.com/privacy-and-cookie-policy)
+
+
 ## Usage with Your Own Server
 
 You need to have `npm` installed, included with `NodeJS`: [NodeJS Downloads](https://nodejs.org/en/download/)

@@ -1,3 +1,8 @@
+> [!WARNING]
+> This repository has been moved to [Codeberg: Notoy Progressive Web App](https://codeberg.org/Release-Candidate/Notoy-PWA)
+> 
+> The App itself has been moved to [Notoy PWA at Codeberg Pages](https://release-candidate.codeberg.page/Notoy-PWA/http/)
+
 # ![](./assets/icons/transparent_48.png) Notoy Progressive Web App <!-- omit in toc -->
 
 [![Documentation Status](https://readthedocs.org/projects/notoy-pwa/badge/?version=latest)](https://notoy-pwa.readthedocs.io/en/latest/?badge=latest)
